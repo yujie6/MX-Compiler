@@ -1,5 +1,10 @@
 //adapted from official java grammar file
 grammar mx;
+@header {
+import com.antrl.CalcVisitor;
+import com.antrl.CalcListener;
+import com.antrl.CalcParser;
+}
 
 //lexer part
 //keyword
