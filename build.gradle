@@ -35,6 +35,11 @@ application {
     mainClassName = 'Compiler.App'
 }
 
+run {
+    args = ["/home/yujie6/Music/Compiler/MX-Compiler/src/main/java/Compiler/test.txt"]
+    // options.warnings = false
+}
+
 generateGrammarSource {
     println "Copying generated grammar lexer/parser files to main directory."
     // println sourceSets.main.java.srcDirs

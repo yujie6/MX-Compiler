@@ -1,17 +1,15 @@
 package AST;
 
-import Tools.Location;
-
 import java.util.List;
 import Tools.Location;
 
 
 public class MxProgramNode extends ASTNode {
-    private List<DeclarationNode> DeclChildren;
+    private List<DecNode> DecNodeList;
 
-    public MxProgramNode(Location location, List<DeclarationNode> declChildren) {
+    public MxProgramNode(Location location, List<DecNode> decNodeList) {
         super(location);
-        this.DeclChildren = declChildren;
+        this.DecNodeList = decNodeList;
     }
 
     @Override

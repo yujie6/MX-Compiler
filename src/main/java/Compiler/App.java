@@ -3,14 +3,56 @@
  */
 package Compiler;
 
+import AST.ASTNode;
+import AST.MxProgramNode;
+import org.antlr.v4.runtime.CharStream;
+import org.antlr.v4.runtime.CharStreams;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.tree.ParseTree;
+import com.antlr.MxLexer;
+import com.antlr.MxParser;
 import Frontend.ASTBuilder;
+
+import java.io.IOException;
+import java.io.InputStream;
+
 
 public class App {
     public String getGreeting() {
         return "Hello world.";
     }
 
+    private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
+        MxLexer lexer = new MxLexer(input);
+        CommonTokenStream tokens = new CommonTokenStream(lexer);
+        MxParser parser = new MxParser(tokens);
+        ParseTree tree = parser.mxProgram();
+
+        ASTBuilder visitor = new ASTBuilder();
+        MxProgramNode ast = (MxProgramNode) visitor.visit(tree);
+        System.out.println(tree.toStringTree(parser));
+        return ast;
+    }
+
     public static void main(String[] args) {
-        System.out.println(new App().getGreeting());
+        System.out.println("Application start");
+        CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
+        if (args.length == 1) {
+            String fileName = String.valueOf(args[0]);
+            try {
+                input = CharStreams.fromFileName(fileName);
+            } catch (IOException e) {
+                System.err.println("Read File Failed.\n");
+            }
+        } else {
+            // InputStream is = System.in;
+            // input = CharStreams.fromStream(is);
+            System.out.println("Use default test text.");
+            input = CharStreams.fromString("(3 + 65) / 3 - 56");
+        }
+
+        MxProgramNode ast = GetAbstractSyntaxTree(input);
+
+
     }
 }
