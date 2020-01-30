@@ -39,6 +39,6 @@ generateGrammarSource {
     println "Copying generated grammar lexer/parser files to main directory."
     // println sourceSets.main.java.srcDirs
     maxHeapSize = "64m"
-    arguments += ["-visitor", "-long-messages", "-package", "com.antrl"]
+    arguments += ["-visitor", "-long-messages", "-package", "com.antlr"]
 }
 

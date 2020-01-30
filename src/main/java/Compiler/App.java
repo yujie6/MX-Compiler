@@ -3,6 +3,8 @@
  */
 package Compiler;
 
+import Frontend.ASTBuilder;
+
 public class App {
     public String getGreeting() {
         return "Hello world.";
