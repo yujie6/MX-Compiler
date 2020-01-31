@@ -5,7 +5,7 @@ import org.antlr.v4.codegen.model.decl.Decl;
 
 public class DecNode extends ASTNode {
 
-    String name;
+    protected String identifier;
 
     public DecNode(Location location) {
         super(location);

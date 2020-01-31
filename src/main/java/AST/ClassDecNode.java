@@ -6,18 +6,20 @@ import java.util.List;
 public class ClassDecNode extends DecNode {
 
     private List<VariableDecNode> VarNodeList;
-    private List<FunctionDecNode> FuncNodeList;
+    private List<MethodDecNode> MethodNodeList;
 
     public ClassDecNode(Location location,
+                        String id,
                         List<VariableDecNode> varNodeList,
-                        List<FunctionDecNode> funcNodeList) {
+                        List<MethodDecNode> methodNodeList) {
         super(location);
+        this.identifier = id;
         this.VarNodeList = varNodeList;
-        this.FuncNodeList = funcNodeList;
+        this.MethodNodeList = methodNodeList;
     }
 
-    public List<FunctionDecNode> getFuncNodeList() {
-        return FuncNodeList;
+    public List<MethodDecNode> getMethodNodeList() {
+        return MethodNodeList;
     }
 
     public List<VariableDecNode> getVarNodeList() {

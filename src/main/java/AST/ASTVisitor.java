@@ -8,5 +8,9 @@ public interface ASTVisitor {
     public void visit(ClassDecNode node);
 
 
-    public void visit(TypeNode typeNode);
+    public void visit(TypeNode node);
+
+    public void visit(BlockNode node);
+
+    public void visit(VarDecoratorNode node);
 }

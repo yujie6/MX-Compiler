@@ -2,20 +2,23 @@ package AST;
 
 import Tools.Location;
 
+import java.util.List;
+
 public class VariableDecNode extends DecNode {
 
-    TypeNode VarType;
-    ExprNode InitValue;
+    private TypeNode VarType;
+    private List<VarDecoratorNode> VarDecoratorList;
 
-    public VariableDecNode(Location location, String name, TypeNode varType, ExprNode expr) {
+    public VariableDecNode(Location location,
+                           TypeNode varType,
+                           List<VarDecoratorNode> varDecoratorList) {
         super(location);
         this.VarType = varType;
-        this.InitValue = expr;
-        this.name = name;
+        this.VarDecoratorList = varDecoratorList;
     }
 
-    public ExprNode getInitValue() {
-        return InitValue;
+    public List<VarDecoratorNode> getVarDecoratorList() {
+        return VarDecoratorList;
     }
 
     public TypeNode getVarType() {
