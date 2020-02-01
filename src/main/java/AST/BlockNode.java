@@ -2,9 +2,14 @@ package AST;
 
 import Tools.Location;
 
+import java.util.List;
+
 public class BlockNode extends ASTNode {
-    public BlockNode(Location location) {
+    List<StmtNode> StmtList;
+
+    public BlockNode(Location location, List<StmtNode> stmtList) {
         super(location);
+        this.StmtList = stmtList;
     }
 
     @Override
