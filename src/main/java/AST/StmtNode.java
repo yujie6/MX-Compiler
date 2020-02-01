@@ -4,7 +4,6 @@ import Tools.Location;
 
 public class StmtNode extends ASTNode {
 
-
     public StmtNode(Location location) {
         super(location);
     }

@@ -13,4 +13,6 @@ public interface ASTVisitor {
     public void visit(BlockNode node);
 
     public void visit(VarDecoratorNode node);
+
+    public void visit(ConstNode node);
 }

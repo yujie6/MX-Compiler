@@ -26,7 +26,9 @@ methodDeclaration: (typeTypeOrVoid)? IDENTIFIER parameters block;
 
 variableDeclaration:typeType variableDecorator(',' variableDecorator)* ;
 variableDecorator: IDENTIFIER ( '=' expression)?;
-typeType: (classType | primitiveType) ('[' ']')*;
+typeType: typeType '[' ']' #arrayType
+        | (classType | primitiveType) #nonArrayType
+        ;
 typeTypeOrVoid: typeType
                 | VOID;
 classType:IDENTIFIER;
@@ -107,3 +109,4 @@ creator
     : (classType |primitiveType) ('[' expression']')+ ('['']')* #arrayCreator
       | (classType |primitiveType) ('(' ')' )?  #constructorCreator
     ;
+    // should have some parameters for the constructor

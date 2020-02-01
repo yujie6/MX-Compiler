@@ -6,10 +6,6 @@ import java.util.List;
 
 public class MethodDecNode extends FunctionDecNode {
 
-    private String Identifier;
-    private TypeNode ReturnType;
-    private List<VariableDecNode> ParaDecList;
-    private BlockNode FuncBlock;
     private boolean isConstructMethod;
 
     public MethodDecNode(Location location,
