@@ -6,7 +6,7 @@ import Tools.Operators;
 import com.antlr.MxBaseVisitor;
 import com.antlr.MxParser;
 import org.antlr.v4.runtime.ParserRuleContext;
-import org.antlr.v4.runtime.Token;
+import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,7 +40,24 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitMethodDeclaration(MxParser.MethodDeclarationContext ctx) {
-        return super.visitMethodDeclaration(ctx);
+        BlockNode block = (BlockNode) visit(ctx.block());
+        String id = ctx.IDENTIFIER().getText();
+        List<ParameterNode> paras = new ArrayList<ParameterNode>();
+        for (MxParser.ParameterContext subctx : ctx.parameters().parameterList().parameter()) {
+            paras.add((ParameterNode) visit(subctx));
+        }
+        if (ctx.typeTypeOrVoid() != null) {
+            TypeNode type = (TypeNode) visit(ctx.typeTypeOrVoid());
+            return new MethodDecNode(new Location(ctx), block, type, paras, false, id);
+        }
+        return new MethodDecNode(new Location(ctx), block, null, paras, true, id);
+    }
+
+    @Override
+    public ASTNode visitParameter(MxParser.ParameterContext ctx) {
+        String id = ctx.IDENTIFIER().getText();
+        TypeNode type = (TypeNode) visit(ctx.typeType());
+        return new ParameterNode(new Location(ctx), type, id);
     }
 
     @Override
@@ -88,9 +105,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         String id = ctx.IDENTIFIER().getText();
         TypeNode ReturnType = (TypeNode) visit(ctx.typeTypeOrVoid());
         BlockNode blockNode = (BlockNode) visit(ctx.block());
-        List<VariableDecNode> paraList = new ArrayList<VariableDecNode>();
+        List<ParameterNode> paraList = new ArrayList<>();
         for (MxParser.ParameterContext SubPara : ctx.parameters().parameterList().parameter()) {
-            paraList.add((VariableDecNode) visit(SubPara));
+            paraList.add((ParameterNode) visit(SubPara));
         }
 
         return new FunctionDecNode(location, blockNode, ReturnType, paraList, id);
@@ -102,6 +119,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         return visit(ctx.typeType());
     }
 
+
     @Override
     public ASTNode visitArrayType(MxParser.ArrayTypeContext ctx) {
         /*
@@ -109,17 +127,13 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
          *  FIXME: DEAL WITH ARRAY TYPE
          *
          */
-        TypeNode OriginalType = (TypeNode) visit(ctx.typeType());
-        if (OriginalType instanceof ArrayTypeNode) {
-            ArrayTypeNode ori = ((ArrayTypeNode) OriginalType);
-            return new ArrayTypeNode(ori.getOriginalType(), ori.getArrayLevel() + 1);
-        } else {
-            return new ArrayTypeNode(OriginalType, 1);
-        }
+        TypeNode OriginalType = (TypeNode) visit(ctx.nonArrayTypeNode());
+        int arrayLevel = (ctx.getChildCount() - 1) / 2;
+        return new ArrayTypeNode(OriginalType, arrayLevel);
     }
 
     @Override
-    public ASTNode visitNonArrayType(MxParser.NonArrayTypeContext ctx) {
+    public ASTNode visitNonArrayTypeNode(MxParser.NonArrayTypeNodeContext ctx) {
         if (ctx.classType() != null) {
             return new TypeNode(
                     new Location(ctx),
@@ -136,6 +150,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             }
         }
         return null;
+    }
+
+    @Override
+    public ASTNode visitNonArrayType(MxParser.NonArrayTypeContext ctx) {
+        return visit(ctx.nonArrayTypeNode());
     }
 
     /* TODO Stmt function */
@@ -371,12 +390,29 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitArrayCreator(MxParser.ArrayCreatorContext ctx) {
-        return super.visitArrayCreator(ctx);
+        TypeNode type = (TypeNode) visit(ctx.nonArrayTypeNode());
+        List<ExprNode> exprNodeList = new ArrayList<>();
+        for (MxParser.ExpressionContext expr : ctx.expression()) {
+            exprNodeList.add((ExprNode) visit(expr));
+        }
+        int arrayLevel = (ctx.getChildCount() - 1 - ctx.expression().size()) / 2
+                + ctx.expression().size();
+        return new ArrayCreatorNode(new Location(ctx), type, exprNodeList, arrayLevel);
     }
 
     @Override
     public ASTNode visitConstructorCreator(MxParser.ConstructorCreatorContext ctx) {
-        return super.visitConstructorCreator(ctx);
+        TypeNode type = (TypeNode) visit(ctx.nonArrayTypeNode());
+        if (ctx.getChildCount() > 1) {
+            return new ConstructCreatorNode(new Location(ctx), type, true);
+        }
+        return new ConstructCreatorNode(new Location(ctx), type, false);
+    }
+
+    @Override
+    public ASTNode visitTerminal(TerminalNode node) {
+        System.err.println("Should've handle all the terminals");
+        return null;
     }
 
     @Override

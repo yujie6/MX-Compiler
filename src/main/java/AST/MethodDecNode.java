@@ -11,11 +11,15 @@ public class MethodDecNode extends FunctionDecNode {
     public MethodDecNode(Location location,
                          BlockNode funcBlock,
                          TypeNode returnType,
-                         List<VariableDecNode> paraDecList,
+                         List<ParameterNode> paraDecList,
                          boolean isConstruct,
                          String identifier) {
         super(location, funcBlock, returnType, paraDecList, identifier);
         this.isConstructMethod = isConstruct;
+    }
+
+    public boolean isConstructMethod() {
+        return isConstructMethod;
     }
 
     @Override

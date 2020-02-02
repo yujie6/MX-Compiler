@@ -8,13 +8,13 @@ public class FunctionDecNode extends DecNode {
 
     private String Identifier;
     private TypeNode ReturnType;
-    private List<VariableDecNode> ParaDecList;
+    private List<ParameterNode> ParaDecList;
     private BlockNode FuncBlock;
 
     public FunctionDecNode(Location location,
                            BlockNode funcBlock,
                            TypeNode returnType,
-                           List<VariableDecNode> paraDecList,
+                           List<ParameterNode> paraDecList,
                            String identifier) {
         super(location);
         this.Identifier = identifier;
