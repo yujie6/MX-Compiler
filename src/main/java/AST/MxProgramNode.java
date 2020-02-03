@@ -12,6 +12,10 @@ public class MxProgramNode extends ASTNode {
         this.DecNodeList = decNodeList;
     }
 
+    public List<DecNode> getDecNodeList() {
+        return DecNodeList;
+    }
+
     @Override
     public void accept(ASTVisitor visitor)
     {

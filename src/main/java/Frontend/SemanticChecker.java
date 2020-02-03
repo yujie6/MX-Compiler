@@ -2,7 +2,7 @@ package Frontend;
 
 import AST.*;
 
-public class LocalScopeBuilder implements ASTVisitor {
+public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(MxProgramNode node) {
 

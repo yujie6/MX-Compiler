@@ -15,5 +15,7 @@ public class ParameterNode extends DecNode {
         return VarType;
     }
 
-
+    public Type getType() {
+        return VarType.getType();
+    }
 }

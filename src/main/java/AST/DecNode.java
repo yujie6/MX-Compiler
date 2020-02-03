@@ -11,6 +11,10 @@ public class DecNode extends ASTNode {
         super(location);
     }
 
+    public String getIdentifier() {
+        return identifier;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

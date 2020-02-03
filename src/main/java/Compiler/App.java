@@ -5,6 +5,9 @@ package Compiler;
 
 import AST.ASTNode;
 import AST.MxProgramNode;
+import Frontend.GlobalScopeBuilder;
+import Frontend.Scope;
+import Tools.MXError;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -35,7 +38,14 @@ public class App {
         return ast;
     }
 
-    public static void main(String[] args) {
+    private static Scope GetGlobalScope(MxProgramNode ast) {
+        GlobalScopeBuilder gsbuilder = new GlobalScopeBuilder();
+        gsbuilder.visit(ast);
+        System.out.println("GlobalScope build smoothly");
+        return gsbuilder.getGlobalScope();
+    }
+
+    public static void main(String[] args) throws MXError {
         System.out.println("Application start on " + args[0]);
         CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
         if (args.length == 1) {
@@ -53,6 +63,7 @@ public class App {
         }
 
         MxProgramNode ast = GetAbstractSyntaxTree(input);
+        Scope globalScope = GetGlobalScope(ast);
 
 
     }
