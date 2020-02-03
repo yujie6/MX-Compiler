@@ -28,14 +28,15 @@ public class App {
         MxParser parser = new MxParser(tokens);
         ParseTree tree = parser.mxProgram();
 
-        ASTBuilder visitor = new ASTBuilder();
-        MxProgramNode ast = (MxProgramNode) visitor.visit(tree);
+        ASTBuilder astBuilder = new ASTBuilder();
+        MxProgramNode ast = (MxProgramNode) astBuilder.visit(tree);
         System.out.println(tree.toStringTree(parser));
+        System.out.println("AST build successfully.");
         return ast;
     }
 
     public static void main(String[] args) {
-        System.out.println("Application start");
+        System.out.println("Application start on " + args[0]);
         CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
         if (args.length == 1) {
             String fileName = String.valueOf(args[0]);

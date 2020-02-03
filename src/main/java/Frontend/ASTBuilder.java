@@ -75,8 +75,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitVariableDecorator(MxParser.VariableDecoratorContext ctx) {
         Location location = new Location(ctx);
         String id = ctx.IDENTIFIER().getText();
-        ExprNode expr = (ExprNode) visit(ctx.expression());
-        return new VarDecoratorNode(location, id, expr);
+        if (ctx.expression() != null) {
+            ExprNode expr = (ExprNode) visit(ctx.expression());
+            return new VarDecoratorNode(location, id, expr);
+        }
+        return new VarDecoratorNode(location, id, null);
     }
 
 
@@ -105,11 +108,12 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         String id = ctx.IDENTIFIER().getText();
         TypeNode ReturnType = (TypeNode) visit(ctx.typeTypeOrVoid());
         BlockNode blockNode = (BlockNode) visit(ctx.block());
-        List<ParameterNode> paraList = new ArrayList<>();
-        for (MxParser.ParameterContext SubPara : ctx.parameters().parameterList().parameter()) {
-            paraList.add((ParameterNode) visit(SubPara));
+        List<ParameterNode> paraList = new ArrayList<ParameterNode>();
+        if (ctx.parameters().parameterList() != null) {
+            for (MxParser.ParameterContext SubPara : ctx.parameters().parameterList().parameter()) {
+                paraList.add((ParameterNode) visit(SubPara));
+            }
         }
-
         return new FunctionDecNode(location, blockNode, ReturnType, paraList, id);
     }
 
@@ -203,7 +207,8 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitVariableDeclStmt(MxParser.VariableDeclStmtContext ctx) {
-        return visit(ctx.variableDeclaration());
+        return new VarDecStmtNode(new Location(ctx),
+                (VariableDecNode) visit(ctx.variableDeclaration()));
     }
 
     @Override

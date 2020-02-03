@@ -2,7 +2,7 @@ package AST;
 
 import Tools.Location;
 
-public class ConstNode extends ASTNode {
+public class ConstNode extends ExprNode {
     Type type;
 
     public ConstNode(Location location, Type type) {
