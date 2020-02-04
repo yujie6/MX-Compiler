@@ -14,11 +14,6 @@ public class ASTPrinter implements ASTVisitor {
     }
 
     @Override
-    public void visit(DecNode node) {
-
-    }
-
-    @Override
     public void visit(FunctionDecNode node) {
 
     }
@@ -100,6 +95,11 @@ public class ASTPrinter implements ASTVisitor {
 
     @Override
     public void visit(ExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ParameterNode node) {
 
     }
 

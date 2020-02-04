@@ -3,7 +3,7 @@ package AST;
 import Tools.Location;
 import org.antlr.v4.codegen.model.decl.Decl;
 
-public class DecNode extends ASTNode {
+public abstract class DecNode extends ASTNode {
 
     protected String identifier;
 
@@ -15,9 +15,11 @@ public class DecNode extends ASTNode {
         return identifier;
     }
 
-    @Override
-    public void accept(ASTVisitor visitor) {
-        visitor.visit(this);
-    }
+//    @Override
+//    public void accept(ASTVisitor visitor) {
+//        visitor.visit(this);
+//    }
+
+    public abstract void accept(ASTVisitor visitor);
 
 }

@@ -34,19 +34,15 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(MxProgramNode node) {
         LocalScope = GlogalScope;
         for (DecNode declaration : node.getDecNodeList()) {
-            if (declaration instanceof FunctionDecNode) {
-                visit((FunctionDecNode) declaration);
-            } else if (declaration instanceof ClassDecNode) {
-                visit((ClassDecNode) declaration);
-            } else if (declaration instanceof VariableDecNode) {
-                visit((VariableDecNode) declaration);
-            }
+            declaration.accept(this);
+//            if (declaration instanceof FunctionDecNode) {
+//                visit((FunctionDecNode) declaration);
+//            } else if (declaration instanceof ClassDecNode) {
+//                visit((ClassDecNode) declaration);
+//            } else if (declaration instanceof VariableDecNode) {
+//                visit((VariableDecNode) declaration);
+//            }
         }
-    }
-
-    @Override
-    public void visit(DecNode node) {
-
     }
 
     @Override
@@ -162,6 +158,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ParameterNode node) {
 
     }
 }

@@ -18,4 +18,9 @@ public class ParameterNode extends DecNode {
     public Type getType() {
         return VarType.getType();
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }
