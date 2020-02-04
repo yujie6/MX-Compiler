@@ -17,4 +17,8 @@ public class IfStmtNode extends StmtNode{
         this.HasElse = hasElse;
     }
 
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

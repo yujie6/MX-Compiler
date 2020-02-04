@@ -14,4 +14,9 @@ public class ForStmtNode extends StmtNode {
         this.updateExpr = updateExpr;
         this.LoopStmt = loopStmt;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

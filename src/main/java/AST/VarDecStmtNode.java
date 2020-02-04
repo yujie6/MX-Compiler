@@ -9,4 +9,9 @@ public class VarDecStmtNode extends StmtNode {
         super(location);
         this.variableDecNode = variableDecNode;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

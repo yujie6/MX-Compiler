@@ -2,6 +2,7 @@ package MxEntity;
 
 import AST.ParameterNode;
 import AST.Type;
+import AST.VariableDecNode;
 
 public class VariableEntity extends Entity {
     Type VarType;
@@ -16,6 +17,13 @@ public class VariableEntity extends Entity {
         super(para.getIdentifier());
         setScope(null);
         this.VarType = para.getType();
+    }
+
+    public VariableEntity(VariableDecNode var) {
+        super(var.getIdentifier());
+        setScope(null);
+        this.VarType = var.getType();
+
     }
 
     public Type getVarType() {

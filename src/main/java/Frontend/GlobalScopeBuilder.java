@@ -42,6 +42,8 @@ public class GlobalScopeBuilder implements ASTVisitor {
                 visit((FunctionDecNode) declaration);
             } else if (declaration instanceof ClassDecNode) {
                 visit((ClassDecNode) declaration);
+            } else if (declaration instanceof VariableDecNode) {
+                visit((VariableDecNode) declaration);
             }
         }
         CheckMainEntry();
@@ -53,13 +55,14 @@ public class GlobalScopeBuilder implements ASTVisitor {
 
     @Override
     public void visit(FunctionDecNode node) {
-        FunctionEntity mx_function = new FunctionEntity(globalScope, node);
+        FunctionEntity mx_function = new FunctionEntity(globalScope, node, false, null);
         globalScope.defineFunction(mx_function);
     }
 
     @Override
     public void visit(VariableDecNode node) {
-
+        VariableEntity mx_var = new VariableEntity(node);
+        globalScope.defineVariable(mx_var);
     }
 
     @Override
@@ -94,12 +97,52 @@ public class GlobalScopeBuilder implements ASTVisitor {
     }
 
     @Override
-    public void visit(StmtNode node) {
+    public void visit(IfStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(BreakStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(WhileStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(ContinueStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(ExprStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(ForStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(ReturnStmtNode node) {
+
+    }
+
+    @Override
+    public void visit(VarDecStmtNode node) {
 
     }
 
     @Override
     public void visit(ExprNode node) {
 
+    }
+
+    @Override
+    public void visit(MethodDecNode node) {
+        
     }
 }

@@ -2,12 +2,11 @@ package Frontend;
 
 import AST.*;
 
-import java.util.HashMap;
+public class ASTPrinter implements ASTVisitor {
+    // used to print an AST
+    public ASTPrinter() {
 
-public class SymbolTable implements ASTVisitor {
-
-    // public HashMap<String, Value>
-
+    }
 
     @Override
     public void visit(MxProgramNode node) {
@@ -31,11 +30,6 @@ public class SymbolTable implements ASTVisitor {
 
     @Override
     public void visit(ClassDecNode node) {
-
-    }
-
-    @Override
-    public void visit(MethodDecNode node) {
 
     }
 
@@ -106,6 +100,11 @@ public class SymbolTable implements ASTVisitor {
 
     @Override
     public void visit(ExprNode node) {
+
+    }
+
+    @Override
+    public void visit(MethodDecNode node) {
 
     }
 }

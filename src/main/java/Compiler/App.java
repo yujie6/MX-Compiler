@@ -7,6 +7,7 @@ import AST.ASTNode;
 import AST.MxProgramNode;
 import Frontend.GlobalScopeBuilder;
 import Frontend.Scope;
+import Frontend.SemanticChecker;
 import Tools.MXError;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -64,7 +65,7 @@ public class App {
 
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
-
+        (new SemanticChecker(globalScope)).visit(ast);
 
     }
 }

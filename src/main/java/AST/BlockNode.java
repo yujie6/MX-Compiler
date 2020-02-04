@@ -12,6 +12,10 @@ public class BlockNode extends ASTNode {
         this.StmtList = stmtList;
     }
 
+    public List<StmtNode> getStmtList() {
+        return StmtList;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

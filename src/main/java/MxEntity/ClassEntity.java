@@ -15,7 +15,7 @@ public class ClassEntity extends Entity {
         super(node.getIdentifier());
         setScope(father);
         for (MethodDecNode method : node.getMethodNodeList()) {
-            FunctionEntity mx_method = new FunctionEntity(scope, method);
+            FunctionEntity mx_method = new FunctionEntity(scope, method, true, getIdentifier());
             scope.defineFunction(mx_method);
         }
     }

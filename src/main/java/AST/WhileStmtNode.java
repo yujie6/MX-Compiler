@@ -10,4 +10,9 @@ public class WhileStmtNode extends StmtNode {
         this.expr = expr;
         this.LoopStmt = loopStmt;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }
