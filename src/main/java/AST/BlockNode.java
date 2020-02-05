@@ -4,7 +4,7 @@ import Tools.Location;
 
 import java.util.List;
 
-public class BlockNode extends ASTNode {
+public class BlockNode extends StmtNode {
     List<StmtNode> StmtList;
 
     public BlockNode(Location location, List<StmtNode> stmtList) {

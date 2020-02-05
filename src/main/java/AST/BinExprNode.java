@@ -13,4 +13,16 @@ public class BinExprNode extends ExprNode {
         this.LeftExpr = leftExpr;
         this.RightExpr = rightExpr;
     }
+
+    public Operators.BinaryOp getBop() {
+        return bop;
+    }
+
+    public ExprNode getLeftExpr() {
+        return LeftExpr;
+    }
+
+    public ExprNode getRightExpr() {
+        return RightExpr;
+    }
 }

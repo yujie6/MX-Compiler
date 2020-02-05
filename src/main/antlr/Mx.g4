@@ -48,6 +48,12 @@ blockStatement
     ;
 //oneLineStatement: variableDeclaration';' | statement;
 
+// for statement shall always bring a new scope
+/*
+int a = 0;
+for(;;) int a = 0;
+for (int i = 1;;)  valid or not?
+*/
 statement
     : blockLabel=block                                  #blockStmt
     | IF '('expression')' statement (ELSE statement)?   #ifStmt
@@ -87,7 +93,7 @@ expression
 forControl
     : forinit=expression? ';' forcond=expression? ';' forUpdate=expression?
     ;
-
+// FIXME >>> forinit could be VarDecNode
 
 expressionList
     : expression (',' expression)*

@@ -10,7 +10,6 @@ public interface ASTVisitor {
     public void visit(MethodDecNode node);
 
     public void visit(TypeNode node);
-    public void visit(BlockNode node);
     public void visit(VarDecoratorNode node);
 
     /* Statement */
@@ -23,6 +22,7 @@ public interface ASTVisitor {
     public void visit(ForStmtNode node);
     public void visit(ReturnStmtNode node);
     public void visit(VarDecStmtNode node);
+    public void visit(BlockNode node);
 
     public void visit(ConstNode node);
     public void visit(CreatorNode node);

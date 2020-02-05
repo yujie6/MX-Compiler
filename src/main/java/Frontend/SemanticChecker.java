@@ -5,7 +5,10 @@ import MxEntity.ClassEntity;
 import MxEntity.Entity;
 import MxEntity.FunctionEntity;
 import MxEntity.VariableEntity;
-import Tools.Location;
+import Tools.MXError;
+import Tools.Operators;
+
+import java.util.Stack;
 
 public class SemanticChecker implements ASTVisitor {
 
@@ -17,43 +20,40 @@ public class SemanticChecker implements ASTVisitor {
      * 1. Check if a var/func/class is defined
      * 2. Check if they are defined more than once
      */
-    private Scope GlogalScope, LocalScope;
+    private Scope GlobalScope, LocalScope;
+    private Stack<Scope> EnteredScope;
     public SemanticChecker(Scope gs) {
-        this.GlogalScope = gs;
+        EnteredScope = new Stack<>();
+        this.GlobalScope = gs;
     }
 
     private void EnterScope(Entity mx_entity) {
-        LocalScope = mx_entity.getScope();
+        EnteredScope.push(LocalScope);
+        if (mx_entity != null) LocalScope = mx_entity.getScope();
     }
 
     private void ExitScope() {
-        LocalScope = GlogalScope;
+        LocalScope = EnteredScope.lastElement();
+        EnteredScope.pop();
     }
 
     @Override
     public void visit(MxProgramNode node) {
-        LocalScope = GlogalScope;
+        LocalScope = GlobalScope;
         for (DecNode declaration : node.getDecNodeList()) {
             declaration.accept(this);
-//            if (declaration instanceof FunctionDecNode) {
-//                visit((FunctionDecNode) declaration);
-//            } else if (declaration instanceof ClassDecNode) {
-//                visit((ClassDecNode) declaration);
-//            } else if (declaration instanceof VariableDecNode) {
-//                visit((VariableDecNode) declaration);
-//            }
         }
     }
 
     @Override
     public void visit(FunctionDecNode node) {
-        FunctionEntity functionEntity = GlogalScope.GetFunction(node.getIdentifier());
+        FunctionEntity functionEntity = LocalScope.GetFunction(node.getIdentifier());
         EnterScope(functionEntity);
         for (ParameterNode para : node.getParaDecList()) {
             VariableEntity mx_para = new VariableEntity(para);
             LocalScope.defineVariable(mx_para);
         }
-
+        // TODO special cases
         for (StmtNode statement : node.getFuncBlock().getStmtList()) {
             statement.accept(this);
         }
@@ -68,7 +68,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ClassDecNode node) {
-        ClassEntity classEntity = GlogalScope.GetClass(node.getIdentifier());
+        ClassEntity classEntity = GlobalScope.GetClass(node.getIdentifier());
         EnterScope(classEntity);
         for (VariableDecNode LocalVar : node.getVarNodeList()) {
             VariableEntity LocalMxVar = new VariableEntity(LocalVar);
@@ -88,7 +88,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(MethodDecNode node) {
-
+        visit((FunctionDecNode) node);
     }
 
     @Override
@@ -98,7 +98,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(BlockNode node) {
-
+        EnterScope(null);
+        for (StmtNode statement : node.getStmtList()) {
+            statement.accept(this);
+        }
+        ExitScope();
     }
 
     @Override
@@ -118,37 +122,55 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(IfStmtNode node) {
-
+        node.getThenStmt().accept(this);
+        if (node.isHasElse()) {
+            node.getElseStmt().accept(this);
+        }
     }
 
     @Override
     public void visit(BreakStmtNode node) {
-
+        // must be in a loop
+        if (LocalScope.LoopLevel <= 0) {
+            throw new MXError("Continue statement not in a loop");
+        }
     }
 
     @Override
     public void visit(WhileStmtNode node) {
-
+        LocalScope.LoopLevel++;
+        node.getLoopStmt().accept(this);
+        LocalScope.LoopLevel--;
     }
 
     @Override
     public void visit(ContinueStmtNode node) {
-
+        // must be in a loop
+        if (LocalScope.LoopLevel <= 0) {
+            throw new MXError("Continue statement not in a loop");
+        }
     }
 
     @Override
     public void visit(ExprStmtNode node) {
-
+        // TODO check left value
+        // damn it ++a; (a); (++a); a + a; are all valid statement!!
+        // only <array,member,id> can be count as left value
+        // a = 123 for example, what  about a = b = 1 ?
     }
 
     @Override
     public void visit(ForStmtNode node) {
-
+        LocalScope.LoopLevel++;
+        node.getLoopBlcok().accept(this);
+        LocalScope.LoopLevel--;
     }
 
     @Override
     public void visit(ReturnStmtNode node) {
-
+        if (LocalScope.inFunction = false) {
+            throw new MXError("Return statement not in a function");
+        }
     }
 
     @Override

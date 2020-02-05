@@ -26,6 +26,8 @@ public class FunctionEntity extends Entity {
             }
         }
         ReturnType = node.getReturnType().getType();
+        scope.setFuncRetType(ReturnType);
+        scope.inFunction = true;
         this.ParaListSize = node.getParaDecList().size();
         for (ParameterNode para : node.getParaDecList()) {
             VariableEntity mx_var = new VariableEntity(para);

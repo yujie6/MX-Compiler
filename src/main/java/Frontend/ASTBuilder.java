@@ -2,6 +2,7 @@ package Frontend;
 
 import AST.*;
 import Tools.Location;
+import Tools.MXError;
 import Tools.Operators;
 import com.antlr.MxBaseVisitor;
 import com.antlr.MxParser;
@@ -304,8 +305,11 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
             case "||":
                 bop = Operators.BinaryOp.LOGIC_OR;
                 break;
+            case "=":
+                bop = Operators.BinaryOp.EQUAL;
             default:
-                bop = Operators.BinaryOp.DEFAULT;
+                throw new MXError("Binary op is not valid", LHS.GetLocation());
+                // bop = Operators.BinaryOp.DEFAULT;
         }
 
         return new BinExprNode(location, bop, LHS, RHS);

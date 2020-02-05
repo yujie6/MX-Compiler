@@ -1,21 +1,32 @@
 package Frontend;
 
 import AST.FunctionDecNode;
+import AST.Type;
 import AST.VariableDecNode;
 import MxEntity.*;
 import Tools.MXError;
-
 import java.util.HashMap;
 
 public class Scope {
     private HashMap<String, VariableEntity> VarMap;
     private HashMap<String, FunctionEntity> FuncMap;
     private HashMap<String, ClassEntity> ClassMap;
-
+    int LoopLevel;
+    public boolean inFunction;
+    private Type FuncRetType;
     public Scope() {
+        LoopLevel = 0;
         VarMap = new HashMap<>();
         FuncMap = new HashMap<>();
         ClassMap = new HashMap<>();
+    }
+
+    public void setFuncRetType(Type funcRetType) {
+        FuncRetType = funcRetType;
+    }
+
+    public Type getFuncRetType() {
+        return FuncRetType;
     }
 
     public void defineVariable(VariableEntity mx_variable) {
