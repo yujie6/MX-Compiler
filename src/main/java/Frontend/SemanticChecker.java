@@ -22,6 +22,7 @@ public class SemanticChecker implements ASTVisitor {
      */
     private Scope GlobalScope, LocalScope;
     private Stack<Scope> EnteredScope;
+
     public SemanticChecker(Scope gs) {
         EnteredScope = new Stack<>();
         this.GlobalScope = gs;
@@ -50,29 +51,37 @@ public class SemanticChecker implements ASTVisitor {
         FunctionEntity functionEntity = LocalScope.GetFunction(node.getIdentifier());
         EnterScope(functionEntity);
         for (ParameterNode para : node.getParaDecList()) {
-            VariableEntity mx_para = new VariableEntity(para);
+            VariableEntity mx_para = new VariableEntity(LocalScope, para);
             LocalScope.defineVariable(mx_para);
         }
         // TODO special cases
         for (StmtNode statement : node.getFuncBlock().getStmtList()) {
             statement.accept(this);
         }
-
         ExitScope();
     }
 
     @Override
     public void visit(VariableDecNode node) {
-
+        Type DecType = node.getType();
+        // check if the type is defined
+        if (DecType.getBaseType() == BaseType.STYPE_CLASS) {
+            if (!LocalScope.hasClass(DecType.getName())) {
+                throw new MXError("Invalid class: " + DecType.getName(), node.GetLocation());
+            }
+        }
+        for (VarDecoratorNode var : node.getVarDecoratorList()) {
+            VariableEntity mx_var = new VariableEntity(LocalScope, var, DecType);
+            LocalScope.defineVariable(mx_var);
+        }
     }
 
     @Override
     public void visit(ClassDecNode node) {
         ClassEntity classEntity = GlobalScope.GetClass(node.getIdentifier());
         EnterScope(classEntity);
-        for (VariableDecNode LocalVar : node.getVarNodeList()) {
-            VariableEntity LocalMxVar = new VariableEntity(LocalVar);
-            LocalScope.defineVariable(LocalMxVar);
+        for (VariableDecNode MemberDecNode : node.getVarNodeList()) {
+            visit(MemberDecNode);
         }
 
         for (MethodDecNode method : node.getMethodNodeList()) {
@@ -121,6 +130,58 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
+    public void visit(BinExprNode node) {
+        if (node.getBop().equals(Operators.BinaryOp.ASSIGN)) {
+            // Assign statement: check left value (Array/member/id)
+            ExprNode LHS = node.getLeftExpr();
+            if (!(LHS instanceof MemberExprNode || LHS instanceof IDExprNode ||
+                    LHS instanceof ArrayExprNode)) {
+                throw new MXError("Assign statement has wrong left value.", node.GetLocation());
+            }
+            node.getLeftExpr().accept(this);
+            node.getRightExpr().accept(this);
+        }
+    }
+
+    @Override
+    public void visit(IDExprNode node) {
+        if (!LocalScope.hasVariable(node.getIdentifier())) {
+            throw new MXError(String.format("Variable %s is not defined", node.getIdentifier()),
+                    node.GetLocation());
+        }
+    }
+
+    @Override
+    public void visit(MemberExprNode node) {
+        // after type checking
+    }
+
+    @Override
+    public void visit(ArrayExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PrefixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PostfixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ThisExprNode node) {
+
+    }
+
+    @Override
+    public void visit(CallExprNode node) {
+
+    }
+
+    @Override
     public void visit(IfStmtNode node) {
         node.getThenStmt().accept(this);
         if (node.isHasElse()) {
@@ -153,10 +214,10 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ExprStmtNode node) {
-        // TODO check left value
         // damn it ++a; (a); (++a); a + a; are all valid statement!!
         // only <array,member,id> can be count as left value
         // a = 123 for example, what  about a = b = 1 ?
+        node.getExpr().accept(this);
     }
 
     @Override
@@ -175,12 +236,7 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(VarDecStmtNode node) {
-
-    }
-
-    @Override
-    public void visit(ExprNode node) {
-
+        visit(node.getVariableDecNode());
     }
 
     @Override

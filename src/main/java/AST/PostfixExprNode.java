@@ -18,4 +18,9 @@ public class PostfixExprNode extends ExprNode {
     public Operators.PostFixOp getPostfixOp() {
         return PostfixOp;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

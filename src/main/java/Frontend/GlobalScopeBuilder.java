@@ -5,13 +5,13 @@ import MxEntity.*;
 import Tools.MXError;
 
 public class GlobalScopeBuilder implements ASTVisitor {
-    Scope globalScope;
+    private Scope globalScope;
 
     public GlobalScopeBuilder() {
         globalScope = new Scope();
     }
 
-    public void CheckMainEntry() {
+    private void CheckMainEntry() {
         FunctionEntity mainFunc = globalScope.GetFunction("main");
         if (mainFunc == null) {
             throw new MXError("Program entry \"main\" doesn't exist");
@@ -51,8 +51,11 @@ public class GlobalScopeBuilder implements ASTVisitor {
 
     @Override
     public void visit(VariableDecNode node) {
-        VariableEntity mx_var = new VariableEntity(node);
-        globalScope.defineVariable(mx_var);
+        Type DecType = node.getType();
+        for (VarDecoratorNode var : node.getVarDecoratorList()) {
+            VariableEntity mx_var = new VariableEntity(globalScope, var, DecType);
+            globalScope.defineVariable(mx_var);
+        }
     }
 
     @Override
@@ -83,6 +86,46 @@ public class GlobalScopeBuilder implements ASTVisitor {
 
     @Override
     public void visit(CreatorNode node) {
+
+    }
+
+    @Override
+    public void visit(BinExprNode node) {
+
+    }
+
+    @Override
+    public void visit(IDExprNode node) {
+
+    }
+
+    @Override
+    public void visit(MemberExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ArrayExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PrefixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PostfixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ThisExprNode node) {
+
+    }
+
+    @Override
+    public void visit(CallExprNode node) {
 
     }
 
@@ -123,11 +166,6 @@ public class GlobalScopeBuilder implements ASTVisitor {
 
     @Override
     public void visit(VarDecStmtNode node) {
-
-    }
-
-    @Override
-    public void visit(ExprNode node) {
 
     }
 

@@ -54,6 +54,46 @@ public class ASTPrinter implements ASTVisitor {
     }
 
     @Override
+    public void visit(BinExprNode node) {
+
+    }
+
+    @Override
+    public void visit(IDExprNode node) {
+
+    }
+
+    @Override
+    public void visit(MemberExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ArrayExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PrefixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(PostfixExprNode node) {
+
+    }
+
+    @Override
+    public void visit(ThisExprNode node) {
+
+    }
+
+    @Override
+    public void visit(CallExprNode node) {
+
+    }
+
+    @Override
     public void visit(IfStmtNode node) {
 
     }
@@ -93,10 +133,6 @@ public class ASTPrinter implements ASTVisitor {
 
     }
 
-    @Override
-    public void visit(ExprNode node) {
-
-    }
 
     @Override
     public void visit(ParameterNode node) {

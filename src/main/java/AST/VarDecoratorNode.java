@@ -16,6 +16,10 @@ public class VarDecoratorNode extends ASTNode {
         return InitValue;
     }
 
+    public String getIdentifier() {
+        return Identifier;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

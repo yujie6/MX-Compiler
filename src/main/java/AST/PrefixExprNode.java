@@ -18,4 +18,9 @@ public class PrefixExprNode extends ExprNode {
     public Operators.PreFixOp getPrefixOp() {
         return PrefixOp;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

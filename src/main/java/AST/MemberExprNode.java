@@ -10,4 +10,9 @@ public class MemberExprNode extends ExprNode {
         this.expr = expr;
         this.member = id;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

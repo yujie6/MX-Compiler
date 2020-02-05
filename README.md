@@ -7,5 +7,8 @@ To run the project:
 ```
 
 ### Current Objectives
-* Implement Semantic checker
+* Improve grammar file for "for-init"
+* Better support for array type
+* Check the correctness of variable redefinition 
+in local scope
 * Implement Type checking

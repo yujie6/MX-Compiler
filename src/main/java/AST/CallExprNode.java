@@ -12,4 +12,9 @@ public class CallExprNode extends ExprNode {
         this.obj = obj;
         this.Parameters = para;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

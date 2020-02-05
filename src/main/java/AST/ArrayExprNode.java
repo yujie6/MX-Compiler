@@ -9,4 +9,9 @@ public class ArrayExprNode extends ExprNode {
         this.ArrayId = arrayId;
         this.offset = offset;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }

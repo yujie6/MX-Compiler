@@ -30,7 +30,7 @@ public class FunctionEntity extends Entity {
         scope.inFunction = true;
         this.ParaListSize = node.getParaDecList().size();
         for (ParameterNode para : node.getParaDecList()) {
-            VariableEntity mx_var = new VariableEntity(para);
+            VariableEntity mx_var = new VariableEntity(father, para);
             scope.defineVariable(mx_var);
         }
     }

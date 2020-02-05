@@ -13,6 +13,7 @@ public class ClassEntity extends Entity {
 
     public ClassEntity(Scope father, ClassDecNode node) {
         super(node.getIdentifier());
+        father.inClass = true;
         setScope(father);
         scope.inFunction = false;
         for (MethodDecNode method : node.getMethodNodeList()) {

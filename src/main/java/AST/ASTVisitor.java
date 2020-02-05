@@ -28,7 +28,14 @@ public interface ASTVisitor {
     public void visit(CreatorNode node);
 
     /* Expression */
-    public void visit(ExprNode node);
+    public void visit(BinExprNode node);
+    public void visit(IDExprNode node);
+    public void visit(MemberExprNode node);
+    public void visit(ArrayExprNode node);
+    public void visit(PrefixExprNode node);
+    public void visit(PostfixExprNode node);
+    public void visit(ThisExprNode node);
+    public void visit(CallExprNode node);
 
     public void visit(ParameterNode node);
 }

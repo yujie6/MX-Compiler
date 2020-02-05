@@ -2,8 +2,8 @@ package AST;
 
 public class Type
 {
-    BaseType baseType;
-    String name;
+    private BaseType baseType;
+    private String name;
 
     public Type(BaseType type) {
         this.baseType = type;

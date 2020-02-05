@@ -2,10 +2,14 @@ package MxEntity;
 
 import AST.ParameterNode;
 import AST.Type;
+import AST.VarDecoratorNode;
 import AST.VariableDecNode;
+import Frontend.Scope;
+import Tools.Location;
 
 public class VariableEntity extends Entity {
-    Type VarType;
+    private Type VarType;
+    private Location location;
 
     public VariableEntity(String id, Type varType) {
         super(id);
@@ -13,18 +17,24 @@ public class VariableEntity extends Entity {
         this.VarType = varType;
     }
 
-    public VariableEntity(ParameterNode para) {
+    public VariableEntity(Scope scope, ParameterNode para) {
         super(para.getIdentifier());
-        setScope(null);
+        setScope(scope);
+        this.location = para.GetLocation();
         this.VarType = para.getType();
     }
 
-    public VariableEntity(VariableDecNode var) {
+    public VariableEntity(Scope scope, VarDecoratorNode var, Type decType) {
         super(var.getIdentifier());
-        setScope(null);
-        this.VarType = var.getType();
-
+        setScope(scope);
+        this.location = var.GetLocation();
+        this.VarType = decType;
     }
+
+    public Location getLocation() {
+        return location;
+    }
+
 
     public Type getVarType() {
         return VarType;

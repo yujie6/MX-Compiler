@@ -4,10 +4,15 @@ import Tools.Location;
 
 public class VarDecStmtNode extends StmtNode {
 
-    VariableDecNode variableDecNode;
+    private VariableDecNode variableDecNode;
+
     public VarDecStmtNode(Location location, VariableDecNode variableDecNode) {
         super(location);
         this.variableDecNode = variableDecNode;
+    }
+
+    public VariableDecNode getVariableDecNode() {
+        return variableDecNode;
     }
 
     @Override

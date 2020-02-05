@@ -162,7 +162,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         return visit(ctx.nonArrayTypeNode());
     }
 
-    /* TODO Stmt function */
+    /*  Stmt function */
 
     @Override
     public ASTNode visitBlock(MxParser.BlockContext ctx) {
@@ -241,7 +241,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         return new ExprStmtNode(new Location(ctx), expr);
     }
 
-    /* TODO Expr visit function */
+    /* Expr visit function */
 
     @Override
     public ASTNode visitBinaryOpExpr(MxParser.BinaryOpExprContext ctx) {
@@ -306,9 +306,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
                 bop = Operators.BinaryOp.LOGIC_OR;
                 break;
             case "=":
-                bop = Operators.BinaryOp.EQUAL;
+                bop = Operators.BinaryOp.ASSIGN;
+                break;
             default:
-                throw new MXError("Binary op is not valid", LHS.GetLocation());
+                throw new MXError("Binary op:"+ op + " is not valid", LHS.GetLocation());
                 // bop = Operators.BinaryOp.DEFAULT;
         }
 

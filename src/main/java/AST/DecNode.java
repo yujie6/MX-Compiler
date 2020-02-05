@@ -15,11 +15,6 @@ public abstract class DecNode extends ASTNode {
         return identifier;
     }
 
-//    @Override
-//    public void accept(ASTVisitor visitor) {
-//        visitor.visit(this);
-//    }
-
     public abstract void accept(ASTVisitor visitor);
 
 }

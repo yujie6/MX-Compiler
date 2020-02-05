@@ -12,4 +12,9 @@ public class IDExprNode extends ExprNode {
     public String getIdentifier() {
         return Identifier;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+        visitor.visit(this);
+    }
 }
