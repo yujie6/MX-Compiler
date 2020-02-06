@@ -7,6 +7,7 @@ import MxEntity.FunctionEntity;
 import MxEntity.VariableEntity;
 import Tools.MXError;
 import Tools.Operators;
+import com.sun.jdi.connect.IllegalConnectorArgumentsException;
 
 import java.util.Stack;
 
@@ -36,6 +37,10 @@ public class SemanticChecker implements ASTVisitor {
     private void ExitScope() {
         LocalScope = EnteredScope.lastElement();
         EnteredScope.pop();
+    }
+
+    private Scope getFatherScope() {
+        return EnteredScope.lastElement();
     }
 
     @Override
@@ -145,8 +150,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(IDExprNode node) {
-        if (!LocalScope.hasVariable(node.getIdentifier())) {
-            throw new MXError(String.format("Variable %s is not defined", node.getIdentifier()),
+        // what if this is an method's name
+        if (! (LocalScope.hasVariable(node.getIdentifier()) ||
+                LocalScope.hasClass(node.getIdentifier()) ||
+                LocalScope.hasFunction(node.getIdentifier()) )) {
+            throw new MXError(String.format("Variable or class or function \"%s\" is not defined", node.getIdentifier()),
                     node.GetLocation());
         }
     }
@@ -154,31 +162,40 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(MemberExprNode node) {
         // after type checking
+        node.getExpr().accept(this);
     }
 
     @Override
     public void visit(ArrayExprNode node) {
-
+        node.getArrayId().accept(this);
+        node.getOffset().accept(this);
     }
 
     @Override
     public void visit(PrefixExprNode node) {
-
+        node.getExpr().accept(this);
     }
 
     @Override
     public void visit(PostfixExprNode node) {
-
+        node.getExpr().accept(this);
     }
 
     @Override
     public void visit(ThisExprNode node) {
-
+        if (!LocalScope.inClass) {
+            throw new MXError("Using \"this\" out of a class domain.", node.GetLocation());
+        }
     }
 
     @Override
     public void visit(CallExprNode node) {
-
+        node.getObj().accept(this);
+        // if (node.getParameters().size() != )
+        for (ExprNode para : node.getParameters()) {
+           para.accept(this);
+        }
+        // node.getParameters().forEach();
     }
 
     @Override
@@ -200,6 +217,11 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(WhileStmtNode node) {
         LocalScope.LoopLevel++;
+        if (node.getCondition() == null) {
+            throw new MXError("While statement has no condition expr.", node.GetLocation());
+        } else {
+            node.getCondition().accept(this);
+        }
         node.getLoopStmt().accept(this);
         LocalScope.LoopLevel--;
     }
@@ -223,6 +245,15 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(ForStmtNode node) {
         LocalScope.LoopLevel++;
+        if (node.getCondExpr() != null) {
+            node.getCondExpr().accept(this);
+        }
+        if (node.getInitExpr() != null) {
+            node.getInitExpr().accept(this);
+        }
+        if (node.getUpdateExpr() != null) {
+            node.getUpdateExpr().accept(this);
+        }
         node.getLoopBlcok().accept(this);
         LocalScope.LoopLevel--;
     }

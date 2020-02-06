@@ -2,7 +2,7 @@ package AST;
 
 import Tools.Location;
 
-public class CreatorNode extends ASTNode {
+public class CreatorNode extends ExprNode {
     TypeNode type;
     public CreatorNode(Location location, TypeNode typeNode) {
         super(location);

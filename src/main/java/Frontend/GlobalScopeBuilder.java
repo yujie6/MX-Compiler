@@ -12,13 +12,16 @@ public class GlobalScopeBuilder implements ASTVisitor {
     }
 
     private void CheckMainEntry() {
-        FunctionEntity mainFunc = globalScope.GetFunction("main");
-        if (mainFunc == null) {
+
+        if (!globalScope.hasFunction("main")) {
             throw new MXError("Program entry \"main\" doesn't exist");
-        } else if (mainFunc.getParaListSize() != 0) {
-            throw new MXError("Program entry \"main\" has more than one argument");
-        } else if (mainFunc.getReturnType().getBaseType() != BaseType.DTYPE_INT) {
-            throw new MXError("Progran entry \"main\" should has int return type");
+        } else {
+            FunctionEntity mainFunc = globalScope.GetFunction("main");
+            if (mainFunc.getParaListSize() != 0) {
+                throw new MXError("Program entry \"main\" has more than one argument");
+            } else if (mainFunc.getReturnType().getBaseType() != BaseType.DTYPE_INT) {
+                throw new MXError("Progran entry \"main\" should has int return type");
+            }
         }
      }
 

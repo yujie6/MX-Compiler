@@ -3,10 +3,14 @@ package AST;
 import Tools.Location;
 
 public class ReturnStmtNode extends StmtNode {
-    ExprNode expr;
+    private ExprNode ReturnedExpr;
     public ReturnStmtNode(Location location, ExprNode expr) {
         super(location);
-        this.expr = expr;
+        this.ReturnedExpr = expr;
+    }
+
+    public ExprNode getReturnedExpr() {
+        return ReturnedExpr;
     }
 
     @Override

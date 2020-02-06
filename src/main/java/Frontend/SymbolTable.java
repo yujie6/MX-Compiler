@@ -4,10 +4,18 @@ import AST.*;
 
 import java.util.HashMap;
 
+/**
+ * @apiNote Used to do type referencing
+ */
 public class SymbolTable implements ASTVisitor {
 
     // public HashMap<String, Value>
+    private Type LocalRetType;
+    private Scope GlobalScope, LocalScope;
 
+    public SymbolTable(Scope gs) {
+        this.GlobalScope = gs;
+    }
 
     @Override
     public void visit(MxProgramNode node) {
@@ -138,7 +146,6 @@ public class SymbolTable implements ASTVisitor {
     public void visit(VarDecStmtNode node) {
 
     }
-    
 
     @Override
     public void visit(ParameterNode node) {

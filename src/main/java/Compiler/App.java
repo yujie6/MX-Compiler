@@ -5,9 +5,7 @@ package Compiler;
 
 import AST.ASTNode;
 import AST.MxProgramNode;
-import Frontend.GlobalScopeBuilder;
-import Frontend.Scope;
-import Frontend.SemanticChecker;
+import Frontend.*;
 import Tools.MXError;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
@@ -15,7 +13,6 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import com.antlr.MxLexer;
 import com.antlr.MxParser;
-import Frontend.ASTBuilder;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -66,6 +63,6 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
         (new SemanticChecker(globalScope)).visit(ast);
-
+        // (new SymbolTable(globalScope)).visit(ast);
     }
 }

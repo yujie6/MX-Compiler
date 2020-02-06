@@ -16,7 +16,12 @@ public class ParameterNode extends DecNode {
     }
 
     public Type getType() {
-        return VarType.getType();
+        if (VarType instanceof  ArrayTypeNode) {
+            return new Type(VarType.getType().getBaseType(), ((ArrayTypeNode) VarType).getArrayLevel(),
+                    VarType.getType().getName());
+        } else {
+            return VarType.getType();
+        }
     }
 
     @Override

@@ -64,7 +64,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitVariableDeclaration(MxParser.VariableDeclarationContext ctx) {
         Location location = new Location(ctx);
-        TypeNode vartype = (TypeNode) visit(ctx.typeType());
+        TypeNode vartype = (TypeNode) visit(ctx.typeTypeOrVoid());
         List<VarDecoratorNode> VarDecoList = new ArrayList<VarDecoratorNode>();
         for (MxParser.VariableDecoratorContext subDecoctx : ctx.variableDecorator()) {
             VarDecoList.add((VarDecoratorNode) visit(subDecoctx));
@@ -134,7 +134,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
          */
         TypeNode OriginalType = (TypeNode) visit(ctx.nonArrayTypeNode());
         int arrayLevel = (ctx.getChildCount() - 1) / 2;
-        return new ArrayTypeNode(OriginalType, arrayLevel);
+        if (arrayLevel == 0 ) {
+            return new TypeNode(new Location(ctx), OriginalType.getType());
+        } else return new ArrayTypeNode(OriginalType, arrayLevel);
     }
 
     @Override
@@ -386,8 +388,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitMethodCallExpr(MxParser.MethodCallExprContext ctx) {
         ExprNode obj = (ExprNode) visit(ctx.expression());
         List<ExprNode> paras = new ArrayList<ExprNode>();
-        for (MxParser.ExpressionContext subctx : ctx.expressionList().expression()) {
-            paras.add((ExprNode) visit(subctx));
+        if (ctx.expressionList() != null) {
+            for (MxParser.ExpressionContext subctx : ctx.expressionList().expression()) {
+                paras.add((ExprNode) visit(subctx));
+            }
         }
         return new CallExprNode(new Location(ctx), obj, paras);
     }

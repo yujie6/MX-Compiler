@@ -79,7 +79,7 @@ public class Scope {
     public FunctionEntity GetFunction(String name) {
         if (!FuncMap.containsKey(name)) {
             throw new MXError("The function " + name +
-                    "is not defined.");
+                    " is not defined.");
         }
         return FuncMap.get(name);
     }

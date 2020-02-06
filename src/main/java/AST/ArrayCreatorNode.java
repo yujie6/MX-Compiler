@@ -6,8 +6,8 @@ import java.util.List;
 
 public class ArrayCreatorNode extends CreatorNode {
 
-    int ArrayLevel;
-    List<ExprNode> ExprList;
+    private int ArrayLevel;
+    private List<ExprNode> ExprList;
 
     public ArrayCreatorNode(Location location, TypeNode type,
                             List<ExprNode> exprList, int arrayLevel) {
@@ -16,4 +16,11 @@ public class ArrayCreatorNode extends CreatorNode {
         this.ArrayLevel = arrayLevel;
     }
 
+    public int getArrayLevel() {
+        return ArrayLevel;
+    }
+
+    public List<ExprNode> getExprList() {
+        return ExprList;
+    }
 }

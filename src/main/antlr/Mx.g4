@@ -12,7 +12,7 @@ import LexerRules;
 
 //parser part
 mxProgram: (declaration)* EOF;
-declaration: classDeclaration
+declaration: classDeclaration ';'
            | funcDeclaration
            | variableDeclaration ';'
            ;
@@ -24,7 +24,7 @@ classBodyDeclaration:variableDeclaration ';'
 methodDeclaration: (typeTypeOrVoid)? IDENTIFIER parameters block;
 
 
-variableDeclaration:typeType variableDecorator(',' variableDecorator)* ;
+variableDeclaration:typeTypeOrVoid variableDecorator(',' variableDecorator)* ;
 variableDecorator: IDENTIFIER ( '=' expression)?;
 typeType: nonArrayTypeNode ('[' ']')* #arrayType
         | nonArrayTypeNode #nonArrayType

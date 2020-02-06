@@ -11,6 +11,14 @@ public class MemberExprNode extends ExprNode {
         this.member = id;
     }
 
+    public ExprNode getExpr() {
+        return expr;
+    }
+
+    public String getMember() {
+        return member;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

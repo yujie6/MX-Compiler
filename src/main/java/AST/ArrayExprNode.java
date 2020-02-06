@@ -10,6 +10,14 @@ public class ArrayExprNode extends ExprNode {
         this.offset = offset;
     }
 
+    public ExprNode getArrayId() {
+        return ArrayId;
+    }
+
+    public ExprNode getOffset() {
+        return offset;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);
