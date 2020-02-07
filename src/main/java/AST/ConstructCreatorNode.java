@@ -8,4 +8,9 @@ public class ConstructCreatorNode extends CreatorNode{
         super(location, typeNode);
         this.UseConstructMethod = useConstructMethod;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+
+    }
 }

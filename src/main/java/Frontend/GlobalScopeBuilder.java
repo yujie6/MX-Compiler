@@ -88,7 +88,12 @@ public class GlobalScopeBuilder implements ASTVisitor {
     }
 
     @Override
-    public void visit(CreatorNode node) {
+    public void visit(ArrayCreatorNode node) {
+
+    }
+
+    @Override
+    public void visit(ConstructCreatorNode node) {
 
     }
 

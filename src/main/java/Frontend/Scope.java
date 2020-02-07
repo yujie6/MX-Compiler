@@ -24,6 +24,12 @@ public class Scope {
         inClass = false;
     }
 
+    public void clear() {
+        VarMap.clear();
+        FuncMap.clear();
+        ClassMap.clear();
+    }
+
     public void setFuncRetType(Type funcRetType) {
         FuncRetType = funcRetType;
     }
@@ -33,13 +39,13 @@ public class Scope {
     }
 
     public void defineVariable(VariableEntity mx_variable) {
-        if (VarMap.containsKey(mx_variable.getIdentifier())) {
-            if (VarMap.get(mx_variable.getIdentifier()).getScope() == this) {
-                // mx_variable's scope is just a reference of local scope
-                throw new MXError("The variable " + mx_variable.getIdentifier() +
-                        " has been defined twice", mx_variable.getLocation());
-            }
-        }
+//        if (VarMap.containsKey(mx_variable.getIdentifier())) {
+//            if (VarMap.get(mx_variable.getIdentifier()).getScope() == this) {
+//                // mx_variable's scope is just a reference of local scope
+//                throw new MXError("The variable " + mx_variable.getIdentifier() +
+//                        " has been defined twice", mx_variable.getLocation());
+//            }
+//        }
         VarMap.put(mx_variable.getIdentifier(), mx_variable);
     }
 

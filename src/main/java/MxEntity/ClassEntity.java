@@ -17,9 +17,15 @@ public class ClassEntity extends Entity {
         setScope(father);
         scope.inFunction = false;
         for (MethodDecNode method : node.getMethodNodeList()) {
+            // scope here is incomplete
             FunctionEntity mx_method = new FunctionEntity(scope, method,
                     true, getIdentifier());
             scope.defineFunction(mx_method);
+        }
+
+        for (MethodDecNode method : node.getMethodNodeList()) {
+            scope.GetFunction(this.getIdentifier() + '.' + method.getIdentifier())
+                    .setScope(scope);
         }
     }
 

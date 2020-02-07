@@ -25,6 +25,7 @@ public class SemanticChecker implements ASTVisitor {
     private Stack<Scope> EnteredScope;
 
     private FunctionEntity CurrFunctionCall;
+    private ClassEntity CurrClass;
 
     public SemanticChecker(Scope gs) {
         FunctionType = new Type(BaseType.STYPE_FUNC);
@@ -33,6 +34,13 @@ public class SemanticChecker implements ASTVisitor {
         IntType = new Type(BaseType.DTYPE_INT);
         EnteredScope = new Stack<>();
         this.GlobalScope = gs;
+    }
+
+    boolean isValid(Type type) {
+        if (type.isClass()) {
+            return GlobalScope.hasClass(type.getName());
+        }
+        return true;
     }
 
     private void EnterScope(Entity mx_entity) {
@@ -53,18 +61,37 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(MxProgramNode node) {
         LocalScope = GlobalScope;
         for (DecNode declaration : node.getDecNodeList()) {
-            declaration.accept(this);
+            if (! (declaration instanceof  VariableDecNode)) {
+                declaration.accept(this);
+            }
         }
         System.out.println("Semantic checks successfully, no error detected.");
     }
 
     @Override
     public void visit(FunctionDecNode node) {
-        FunctionEntity functionEntity = LocalScope.GetFunction(node.getIdentifier());
+        FunctionEntity functionEntity;
+        if (!LocalScope.inClass) {
+            functionEntity = LocalScope.GetFunction(node.getIdentifier());
+        } else {
+            functionEntity = CurrClass.getMethod(node.getIdentifier());
+        }
         EnterScope(functionEntity);
+        LocalScope.inFunction = true;
+        LocalScope.setFuncRetType(node.getReturnType().getType());
+        if (!isValid(LocalScope.getFuncRetType())) {
+            throw new MXError(String.format("The class or type %s is not defined.",
+                    node.getReturnType().getType().getName()), node.GetLocation());
+        }
+
         for (ParameterNode para : node.getParaDecList()) {
 
             VariableEntity mx_para = new VariableEntity(LocalScope, para);
+            if (!isValid(mx_para.getVarType()) ) {
+                throw new MXError(String.format("The class or type %s is not defined.",
+                        mx_para.getVarType().getName()), node.GetLocation());
+            }
+            mx_para.setScopeLevel(EnteredScope.size());
             LocalScope.defineVariable(mx_para);
         }
         for (StmtNode statement : node.getFuncBlock().getStmtList()) {
@@ -77,13 +104,24 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(VariableDecNode node) {
         Type DecType = node.getType();
         // check if the type is defined
-        if (DecType.getBaseType() == BaseType.STYPE_CLASS) {
+        if (!isValid(DecType)) {
             if (!LocalScope.hasClass(DecType.getName())) {
                 throw new MXError("Invalid class: " + DecType.getName(), node.GetLocation());
             }
         }
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
             VariableEntity mx_var = new VariableEntity(LocalScope, var, DecType);
+            if (LocalScope.hasVariable(mx_var.getIdentifier())) {
+                // checking variable redefinition
+                // check if last scope have this var
+                VariableEntity exist_var = LocalScope.GetVariable(mx_var.getIdentifier());
+                if (mx_var.getScopeLevel() == exist_var.getScopeLevel()) {
+                    throw new MXError(String.format("Variable %s has been defined twice in the same scope"
+                            , mx_var.getIdentifier()), node.GetLocation());
+                }
+
+            }
+            mx_var.setScopeLevel(EnteredScope.size());
             LocalScope.defineVariable(mx_var);
         }
     }
@@ -91,20 +129,19 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(ClassDecNode node) {
         ClassEntity classEntity = GlobalScope.GetClass(node.getIdentifier());
+        CurrClass = classEntity;
         EnterScope(classEntity);
+        LocalScope.inClass = true;
         for (VariableDecNode MemberDecNode : node.getVarNodeList()) {
             visit(MemberDecNode);
-        }
-
-        for (MethodDecNode method : node.getMethodNodeList()) {
-            FunctionEntity LocalMethod = new FunctionEntity(LocalScope, method, true, node.getIdentifier());
-            LocalScope.defineFunction(LocalMethod);
         }
 
         for (MethodDecNode method : node.getMethodNodeList()) {
             visit(method);
         }
         ExitScope();
+        LocalScope.inClass = false;
+        CurrClass = null;
     }
 
     @Override
@@ -137,7 +174,12 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(CreatorNode node) {
+    public void visit(ArrayCreatorNode node) {
+
+    }
+
+    @Override
+    public void visit(ConstructCreatorNode node) {
 
     }
 
@@ -435,9 +477,15 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ReturnStmtNode node) {
+        node.getReturnedExpr().accept(this);
         if (LocalScope.inFunction = false) {
             throw new MXError("Return statement not in a function");
         }
+        Type RetType = node.getReturnedExpr().getExprType();
+        if (!LocalScope.getFuncRetType().equals(RetType)) {
+            throw new MXError("Return type mismatch.", node.GetLocation());
+        }
+
     }
 
     @Override

@@ -7,8 +7,7 @@ To run the project:
 ```
 
 ### Current Objectives
-* Debugging variable redefinition 
-in local scope
+* Add Build-in functions
 * Improve grammar file for "for-init"
 * Improve error handler, collect as much errors as possible.
 * Building LLVM IR

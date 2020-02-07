@@ -25,7 +25,9 @@ public interface ASTVisitor {
     public void visit(BlockNode node);
 
     public void visit(ConstNode node);
-    public void visit(CreatorNode node);
+
+    public void visit(ArrayCreatorNode node);
+    public void visit(ConstructCreatorNode node);
 
     /* Expression */
     public void visit(BinExprNode node);

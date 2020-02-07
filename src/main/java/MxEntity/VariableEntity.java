@@ -10,6 +10,7 @@ import Tools.Location;
 public class VariableEntity extends Entity {
     private Type VarType;
     private Location location;
+    private int ScopeLevel;
 
     public VariableEntity(String id, Type varType) {
         super(id);
@@ -40,4 +41,11 @@ public class VariableEntity extends Entity {
         return VarType;
     }
 
+    public void setScopeLevel(int scopeLevel) {
+        ScopeLevel = scopeLevel;
+    }
+
+    public int getScopeLevel() {
+        return ScopeLevel;
+    }
 }

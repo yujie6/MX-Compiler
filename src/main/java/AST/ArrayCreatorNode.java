@@ -23,4 +23,9 @@ public class ArrayCreatorNode extends CreatorNode {
     public List<ExprNode> getExprList() {
         return ExprList;
     }
+
+    @Override
+    public void accept(ASTVisitor visitor) {
+
+    }
 }
