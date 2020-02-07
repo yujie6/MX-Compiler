@@ -17,9 +17,20 @@ public class ClassEntity extends Entity {
         setScope(father);
         scope.inFunction = false;
         for (MethodDecNode method : node.getMethodNodeList()) {
-            FunctionEntity mx_method = new FunctionEntity(scope, method, true, getIdentifier());
+            FunctionEntity mx_method = new FunctionEntity(scope, method,
+                    true, getIdentifier());
             scope.defineFunction(mx_method);
         }
     }
+
+    public FunctionEntity getMethod(String name) {
+        // must specify class name
+        return scope.GetFunction(getIdentifier() + '.' + name);
+    }
+
+    public VariableEntity getMember(String name) {
+        return scope.GetVariable(getIdentifier() + '.' + name);
+    }
+
 
 }

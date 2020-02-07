@@ -10,6 +10,10 @@ public class ConstNode extends ExprNode {
         this.type = type;
     }
 
+    public Type getType() {
+        return type;
+    }
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

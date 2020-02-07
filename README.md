@@ -7,8 +7,8 @@ To run the project:
 ```
 
 ### Current Objectives
-* Improve grammar file for "for-init"
-* Better support for array type
-* Check the correctness of variable redefinition 
+* Debugging variable redefinition 
 in local scope
-* Implement Type checking
+* Improve grammar file for "for-init"
+* Improve error handler, collect as much errors as possible.
+* Building LLVM IR

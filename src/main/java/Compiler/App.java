@@ -63,6 +63,7 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
         (new SemanticChecker(globalScope)).visit(ast);
+
         // (new SymbolTable(globalScope)).visit(ast);
     }
 }

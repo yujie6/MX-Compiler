@@ -45,7 +45,9 @@ public class Scope {
 
     public void defineFunction(FunctionEntity mx_function) {
         // TODO: diff func and method
-        FuncMap.put(mx_function.getIdentifier(), mx_function);
+        if (mx_function.isMethod()) {
+            FuncMap.put(mx_function.getClassName() + '.' + mx_function.getIdentifier(), mx_function);
+        } else FuncMap.put(mx_function.getIdentifier(), mx_function);
     }
 
     public void defineClass(ClassEntity mx_class) {

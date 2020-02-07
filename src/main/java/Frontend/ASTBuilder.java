@@ -28,7 +28,6 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitDeclaration(MxParser.DeclarationContext ctx) {
-        Location location = new Location(ctx);
         if (ctx.classDeclaration() != null)
             return visit(ctx.classDeclaration());
         if (ctx.funcDeclaration() != null)

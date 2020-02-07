@@ -1,7 +1,6 @@
 package AST;
 
 import Tools.Location;
-import org.antlr.v4.codegen.model.decl.Decl;
 
 public abstract class DecNode extends ASTNode {
 
