@@ -13,15 +13,20 @@ public class FunctionEntity extends Entity {
     private boolean IsMethod;
     private String ClassName;
 
-    public FunctionEntity(String id, Scope father) {
+    public FunctionEntity(String id, Type RetType, String className,
+                          boolean isMethod, Scope father,
+                          ArrayList<VariableEntity> Paras) {
         super(id);
         setScope(father);
-        ParaList = new ArrayList<>();
+        this.ParaList = Paras;
+        this.IsMethod = isMethod;
+        this.ReturnType = RetType;
+        this.ClassName = className;
     }
 
     public FunctionEntity(Scope father, FunctionDecNode node, boolean isMethod, String className) {
         super(node.getIdentifier());
-        setScope(father);
+        this.scope = new Scope(father);
         this.IsMethod = isMethod;
         this.ClassName = (isMethod) ? className : null;
         if (node instanceof MethodDecNode) {
@@ -30,8 +35,8 @@ public class FunctionEntity extends Entity {
             }
         }
         ReturnType = node.getReturnType().getType();
-        scope.setFuncRetType(ReturnType);
-        scope.inFunction = true;
+        this.scope.setFuncRetType(ReturnType);
+        this.scope.inFunction = true;
         this.ParaListSize = node.getParaDecList().size();
         ParaList = new ArrayList<>();
         for (ParameterNode para : node.getParaDecList()) {

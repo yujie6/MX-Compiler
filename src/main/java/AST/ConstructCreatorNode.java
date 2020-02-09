@@ -7,10 +7,11 @@ public class ConstructCreatorNode extends CreatorNode{
     public ConstructCreatorNode(Location location, TypeNode typeNode, boolean useConstructMethod) {
         super(location, typeNode);
         this.UseConstructMethod = useConstructMethod;
+        this.ExprType = typeNode.getType();
     }
 
     @Override
     public void accept(ASTVisitor visitor) {
-
+        visitor.visit(this);
     }
 }

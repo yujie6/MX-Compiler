@@ -14,6 +14,7 @@ public class ArrayCreatorNode extends CreatorNode {
         super(location, type);
         this.ExprList = exprList;
         this.ArrayLevel = arrayLevel;
+        this.ExprType = type.getType();
     }
 
     public int getArrayLevel() {
@@ -26,6 +27,6 @@ public class ArrayCreatorNode extends CreatorNode {
 
     @Override
     public void accept(ASTVisitor visitor) {
-
+        visitor.visit(this);
     }
 }

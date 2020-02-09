@@ -11,8 +11,14 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
+    private Logger logger;
+    public ASTBuilder(Logger logger) {
+        this.logger = logger;
+    }
+
     @Override
     public ASTNode visitMxProgram(MxParser.MxProgramContext ctx) {
         Location location = new Location(ctx);

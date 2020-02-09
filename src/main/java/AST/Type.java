@@ -49,6 +49,10 @@ public class Type
     }
 
     public boolean equals(Type other) {
+        if (isArray()) {
+            return other.isArray() ||
+                    other.baseType == BaseType.DTYPE_NULL;
+        }
         if (other.baseType != baseType) return false;
         if (baseType == BaseType.STYPE_CLASS) {
             return name.equals(other.name);

@@ -24,6 +24,16 @@ public class Scope {
         inClass = false;
     }
 
+    public Scope(Scope other) {
+        this.VarMap = other.VarMap;
+        this.ClassMap = other.ClassMap;
+        this.FuncMap = other.FuncMap;
+        this.inClass = other.inClass;
+        this.inFunction = other.inFunction;
+        this.LoopLevel = other.LoopLevel;
+        this.FuncRetType = other.FuncRetType;
+    }
+
     public void clear() {
         VarMap.clear();
         FuncMap.clear();

@@ -36,7 +36,7 @@ application {
 }
 
 run {
-    args = ["/home/yujie6/Music/Compiler/MX-Compiler/src/test/resources/sema/basic-package/basic-10.mx"]
+    args = ["/home/yujie6/Music/Compiler/MX-Compiler/src/test/resources/sema/basic-package/basic-3.mx"]
     // options.warnings = false
 }
 

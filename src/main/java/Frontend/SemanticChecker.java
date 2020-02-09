@@ -6,6 +6,8 @@ import Tools.*;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.logging.Logger;
+
 
 public class SemanticChecker implements ASTVisitor {
 
@@ -20,6 +22,8 @@ public class SemanticChecker implements ASTVisitor {
     final private Type BoolType;
     final private Type IntType;
     final private Type StringType;
+    private Logger logger;
+
 
     private Scope GlobalScope, LocalScope;
     private Stack<Scope> EnteredScope;
@@ -27,13 +31,14 @@ public class SemanticChecker implements ASTVisitor {
     private FunctionEntity CurrFunctionCall;
     private ClassEntity CurrClass;
 
-    public SemanticChecker(Scope gs) {
+    public SemanticChecker(Scope gs, Logger logger) {
         FunctionType = new Type(BaseType.STYPE_FUNC);
         BoolType = new Type(BaseType.DTYPE_BOOL);
         StringType = new Type(BaseType.DTYPE_STRING);
         IntType = new Type(BaseType.DTYPE_INT);
         EnteredScope = new Stack<>();
         this.GlobalScope = gs;
+        this.logger = logger;
     }
 
     boolean isValid(Type type) {
@@ -60,12 +65,15 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public void visit(MxProgramNode node) {
         LocalScope = GlobalScope;
+        if (LocalScope.inClass) {
+            throw new MXError("Fatal error");
+        }
         for (DecNode declaration : node.getDecNodeList()) {
             if (! (declaration instanceof  VariableDecNode)) {
                 declaration.accept(this);
             }
         }
-        System.out.println("Semantic checks successfully, no error detected.");
+        logger.info("Semantic checks successfully, no error detected.");
     }
 
     @Override
@@ -98,6 +106,8 @@ public class SemanticChecker implements ASTVisitor {
             statement.accept(this);
         }
         ExitScope();
+        logger.fine("Semantic checks on function \'" + node.getIdentifier() + "\' successfully.");
+        LocalScope.inFunction = false;
     }
 
     @Override
@@ -142,6 +152,7 @@ public class SemanticChecker implements ASTVisitor {
         ExitScope();
         LocalScope.inClass = false;
         CurrClass = null;
+        logger.fine("Semantic checks on class \'" + node.getIdentifier() + "\' done successfully.");
     }
 
     @Override
@@ -175,7 +186,14 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public void visit(ArrayCreatorNode node) {
-
+        int arrayLevel = node.getExprList().size() + node.getArrayLevel();
+        if (node.getExprType().isClass()) {
+            node.setExprType(new Type(BaseType.STYPE_CLASS, arrayLevel,
+                    node.getExprType().getName()));
+        } else {
+            node.setExprType(new Type(node.getExprType().getBaseType(), arrayLevel,
+                    node.getExprType().getName()));
+        }
     }
 
     @Override
@@ -187,7 +205,6 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(BinExprNode node) {
         node.getLeftExpr().accept(this);
         node.getRightExpr().accept(this);
-
         if (!node.getLeftExpr().getExprType().equals(node.getRightExpr().getExprType())) {
             throw new MXError("Expr type mismatch.", node.GetLocation());
         }
@@ -284,6 +301,14 @@ public class SemanticChecker implements ASTVisitor {
     public void visit(MemberExprNode node) {
         // after type checking
         node.getExpr().accept(this);
+        if (node.getExpr().getExprType().isString()) {
+            CurrFunctionCall = GlobalScope.GetFunction("string." + node.getMember());
+            return;
+        } else if (node.getExpr().getExprType().isArray() && node.getMember().equals("size")) {
+            ClassEntity ArrayEntitry = GlobalScope.GetClass("Array");
+            CurrFunctionCall = ArrayEntitry.getMethod("size");
+            return;
+        }
         if (!node.getExpr().getExprType().isClass()) {
             throw new MXError("This expr has no member access", node.GetLocation());
         }
@@ -391,17 +416,21 @@ public class SemanticChecker implements ASTVisitor {
         if (ExpectedParas.size() != node.getParameters().size()) {
             throw new MXError("Function call has wrong number of parameters", node.GetLocation());
         }
-        for (int i = 0; i < ExpectedParas.size(); i++) {
-            Type ExpectedType = ExpectedParas.get(i).getVarType();
-            ExprNode para_i = node.getParameters().get(i);
-            para_i.accept(this);
-            // TODO: Another problem is that we cannot compare the type directly
-            if (!ExpectedType.equals(para_i.getExprType())) {
-                throw new MXError(String.format("Function call has wrong parameter type for the %d th parameter", i)
-                        , node.GetLocation());
+        if (ExpectedParas.size() != 0) {
+            for (int i = 0; i < ExpectedParas.size(); i++) {
+                Type ExpectedType = ExpectedParas.get(i).getVarType();
+                ExprNode para_i = node.getParameters().get(i);
+                para_i.accept(this);
+                // TODO: Another problem is that we cannot compare the type directly
+                if (!ExpectedType.equals(para_i.getExprType())) {
+                    throw new MXError(String.format("Function call has wrong parameter type for the %d th parameter", i)
+                            , node.GetLocation());
+                }
             }
         }
-        node.setExprType(CurrFunctionCall.getReturnType());
+        node.setExprType(node.getFunction().getReturnType());
+        logger.fine("Semantic checks on \'" + node.getFunction().getIdentifier() + "\' function call at line "
+                + node.GetLocation().getLine() + " done successfully.");
         // node.getParameters().forEach();
     }
 
@@ -438,6 +467,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopStmt().accept(this);
         LocalScope.LoopLevel--;
+        logger.fine("Semantic checks on \'while statement\' at line "
+                + node.GetLocation().getLine() + " done successfully.");
     }
 
     @Override
@@ -473,6 +504,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopBlcok().accept(this);
         LocalScope.LoopLevel--;
+        logger.fine("Semantic checks on \'for statement\' at line "
+                + node.GetLocation().getLine() + " done successfully.");
     }
 
     @Override

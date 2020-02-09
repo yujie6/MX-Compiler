@@ -3,7 +3,7 @@ package AST;
 import Tools.Location;
 
 public abstract class ExprNode extends ASTNode {
-    private Type ExprType;
+    protected Type ExprType;
 
     public ExprNode(Location location) {
         super(location);
