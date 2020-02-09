@@ -25,13 +25,13 @@ public class Scope {
     }
 
     public Scope(Scope other) {
-        this.VarMap = other.VarMap;
-        this.ClassMap = other.ClassMap;
-        this.FuncMap = other.FuncMap;
+        this.VarMap = new HashMap<>(other.VarMap);
+        this.ClassMap = new HashMap<>(other.ClassMap);
+        this.FuncMap = new HashMap<>(other.FuncMap);
         this.inClass = other.inClass;
         this.inFunction = other.inFunction;
         this.LoopLevel = other.LoopLevel;
-        this.FuncRetType = other.FuncRetType;
+        this.FuncRetType = new Type(other.FuncRetType);
     }
 
     public void clear() {
@@ -49,27 +49,35 @@ public class Scope {
     }
 
     public void defineVariable(VariableEntity mx_variable) {
-//        if (VarMap.containsKey(mx_variable.getIdentifier())) {
-//            if (VarMap.get(mx_variable.getIdentifier()).getScope() == this) {
-//                // mx_variable's scope is just a reference of local scope
-//                throw new MXError("The variable " + mx_variable.getIdentifier() +
-//                        " has been defined twice", mx_variable.getLocation());
-//            }
-//        }
+        if (VarMap.containsKey(mx_variable.getIdentifier())) {
+            throw new MXError("The variable " + mx_variable.getIdentifier() +
+                    " has been defined twice");
+        }
         VarMap.put(mx_variable.getIdentifier(), mx_variable);
     }
 
     public void defineFunction(FunctionEntity mx_function) {
         // TODO: diff func and method
         if (mx_function.isMethod()) {
-            FuncMap.put(mx_function.getClassName() + '.' + mx_function.getIdentifier(), mx_function);
-        } else FuncMap.put(mx_function.getIdentifier(), mx_function);
+            String funcName = mx_function.getClassName() + '.' + mx_function.getIdentifier();
+            if (FuncMap.containsKey(funcName)) {
+                throw new MXError("The function " + mx_function.getIdentifier() +
+                        " has been defined twice");
+            }
+            FuncMap.put(funcName, mx_function);
+        } else {
+            if (FuncMap.containsKey(mx_function.getIdentifier())) {
+                throw new MXError("The function " + mx_function.getIdentifier() +
+                        " has been defined twice");
+            }
+            FuncMap.put(mx_function.getIdentifier(), mx_function);
+        }
     }
 
     public void defineClass(ClassEntity mx_class) {
         if (ClassMap.containsKey(mx_class.getIdentifier())) {
             throw new MXError("The class " + mx_class.getIdentifier() +
-                    "has been defined twice");
+                    " has been defined twice");
         }
         ClassMap.put(mx_class.getIdentifier(), mx_class);
     }
@@ -89,7 +97,7 @@ public class Scope {
     public VariableEntity GetVariable(String name) {
         if (!VarMap.containsKey(name)) {
             throw new MXError("The variable " + name +
-                    "has been used before defined");
+                    " has been used before defined");
         }
         return VarMap.get(name);
     }
@@ -105,7 +113,7 @@ public class Scope {
     public ClassEntity GetClass(String name) {
         if (!ClassMap.containsKey(name)) {
             throw new MXError("The class " + name +
-                    "is not defined.");
+                    " is not defined.");
         }
         return ClassMap.get(name);
     }

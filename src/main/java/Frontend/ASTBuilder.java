@@ -49,8 +49,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         BlockNode block = (BlockNode) visit(ctx.block());
         String id = ctx.IDENTIFIER().getText();
         List<ParameterNode> paras = new ArrayList<ParameterNode>();
-        for (MxParser.ParameterContext subctx : ctx.parameters().parameterList().parameter()) {
-            paras.add((ParameterNode) visit(subctx));
+        if (ctx.parameters().parameterList() != null) {
+            for (MxParser.ParameterContext subctx : ctx.parameters().parameterList().parameter()) {
+                paras.add((ParameterNode) visit(subctx));
+            }
         }
         if (ctx.typeTypeOrVoid() != null) {
             TypeNode type = (TypeNode) visit(ctx.typeTypeOrVoid());
@@ -91,6 +93,9 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
 
     @Override
     public ASTNode visitClassDeclaration(MxParser.ClassDeclarationContext ctx) {
+        /*
+         * TODO: Catch exception from Parser, e.g. class int{} will throw an error
+         */
         String id = ctx.IDENTIFIER().getText();
         Location location = new Location(ctx);
         List<MethodDecNode> methodDecNodeList = new ArrayList<MethodDecNode>();
@@ -207,9 +212,10 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitForStmt(MxParser.ForStmtContext ctx) {
         StmtNode loopstmt = (StmtNode) visit(ctx.statement());
         MxParser.ForControlContext forexprs = ctx.forControl();
-        ExprNode initExpr = (ExprNode) visit(forexprs.forinit);
-        ExprNode condExpr = (ExprNode) visit(forexprs.forcond);
-        ExprNode updateExpr = (ExprNode) visit(forexprs.forUpdate);
+        ExprNode initExpr=null,  condExpr=null, updateExpr=null;
+        if (forexprs.forinit != null) initExpr = (ExprNode) visit(forexprs.forinit);
+        if (forexprs.forcond != null) condExpr = (ExprNode) visit(forexprs.forcond);
+        if (forexprs.forUpdate != null) updateExpr = (ExprNode) visit(forexprs.forUpdate);
         return new ForStmtNode(new Location(ctx), initExpr, condExpr, updateExpr, loopstmt);
     }
 
@@ -228,8 +234,13 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     @Override
     public ASTNode visitReturnStmt(MxParser.ReturnStmtContext ctx) {
         Location location = new Location(ctx);
-        ExprNode expr = (ExprNode) visit(ctx.expression());
-        return new ReturnStmtNode(location, expr);
+        if (ctx.expression() != null) {
+            ExprNode expr = (ExprNode) visit(ctx.expression());
+            return new ReturnStmtNode(location, expr);
+        } else {
+            logger.fine("Return statement at line " + location.getLine() + " has no return value.");
+            return new ReturnStmtNode(location, null);
+        }
     }
 
     @Override

@@ -112,7 +112,7 @@ public class GlobalScopeBuilder implements ASTVisitor {
                 globalScope, size_para);
         globalScope.defineFunction(mx_size);
         // Array class
-        ClassEntity mx_Array = new ClassEntity("Array", globalScope);
+        ClassEntity mx_Array = new ClassEntity("__Array", globalScope);
         globalScope.defineClass(mx_Array);
     }
 
@@ -120,7 +120,8 @@ public class GlobalScopeBuilder implements ASTVisitor {
     public void visit(MxProgramNode node) {
         PreProcess();
         for (DecNode declaration : node.getDecNodeList()) {
-            declaration.accept(this);
+            if (!(declaration instanceof VariableDecNode))
+                declaration.accept(this);
         }
         CheckMainEntry();
     }
@@ -143,6 +144,9 @@ public class GlobalScopeBuilder implements ASTVisitor {
     @Override
     public void visit(ClassDecNode node) {
         ClassEntity mx_class = new ClassEntity(globalScope, node);
+//        if (mx_class.getIdentifier().equals("main")) {
+//            throw new MXError("Duplicated name for main.", node.GetLocation());
+//        }
         globalScope.defineClass(mx_class);
     }
 

@@ -28,7 +28,10 @@ public class FunctionEntity extends Entity {
         super(node.getIdentifier());
         this.scope = new Scope(father);
         this.IsMethod = isMethod;
-        this.ClassName = (isMethod) ? className : null;
+        if (isMethod) {
+            this.ClassName = className;
+            // setIdentifier(className + '.' + node.getIdentifier());
+        } else this.ClassName = null;
         if (node instanceof MethodDecNode) {
             if (((MethodDecNode) node).isConstructMethod()) {
                 ReturnType = new ClassType(ClassName);

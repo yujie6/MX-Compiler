@@ -9,6 +9,14 @@ public class ReturnStmtNode extends StmtNode {
         this.ReturnedExpr = expr;
     }
 
+    public Type getRetType() {
+        if (ReturnedExpr != null) {
+            return ReturnedExpr.getExprType();
+        } else {
+            return new Type(BaseType.RTYPE_VOID);
+        }
+    }
+
     public ExprNode getReturnedExpr() {
         return ReturnedExpr;
     }

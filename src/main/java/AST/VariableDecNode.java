@@ -15,7 +15,7 @@ public class VariableDecNode extends DecNode {
                            List<VarDecoratorNode> varDecoratorList) {
         super(location);
         if (varType.getType().getBaseType() == BaseType.RTYPE_VOID) {
-            throw new MXError("Variable can not be void type.", location);
+            throw new MXError("Variable can not be declared as void type.", location);
         }
         this.VarType = varType;
         this.VarDecoratorList = varDecoratorList;

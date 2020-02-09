@@ -66,7 +66,7 @@ statement
     | statementExpression=expression ';'                #exprStmt
     | variableDeclaration ';'                           #variableDeclStmt
     ;
-
+// conficting new int [] -> (new int)[]
 expression
     : primary                                    #primaryExpr
     | expression bop='.' IDENTIFIER              #memberExpr

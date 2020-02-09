@@ -11,6 +11,7 @@ public class VariableEntity extends Entity {
     private Type VarType;
     private Location location;
     private int ScopeLevel;
+    private boolean isMember;
 
     public VariableEntity(String id, Type varType) {
         super(id);

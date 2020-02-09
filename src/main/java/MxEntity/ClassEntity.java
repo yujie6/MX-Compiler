@@ -1,7 +1,6 @@
 package MxEntity;
 
-import AST.ClassDecNode;
-import AST.MethodDecNode;
+import AST.*;
 import Frontend.Scope;
 
 public class ClassEntity extends Entity {
@@ -15,6 +14,17 @@ public class ClassEntity extends Entity {
         super(node.getIdentifier());
         scope = new Scope(father);
         scope.inClass = true;
+        for (VariableDecNode var_list : node.getVarNodeList()) {
+            Type DecType = var_list.getType();
+            for (VarDecoratorNode var : var_list.getVarDecoratorList()) {
+                VariableEntity mx_var = new VariableEntity(scope, var, DecType);
+                // mx_var.setIdentifier(node.getIdentifier() + '.' + var.getIdentifier());
+                mx_var.setIdentifier(var.getIdentifier());
+                mx_var.setScopeLevel(2);
+                scope.defineVariable(mx_var);
+            }
+        }
+
         for (MethodDecNode method : node.getMethodNodeList()) {
             // scope here is incomplete
             FunctionEntity mx_method = new FunctionEntity(scope, method,
@@ -22,10 +32,10 @@ public class ClassEntity extends Entity {
             scope.defineFunction(mx_method);
         }
 
-        for (MethodDecNode method : node.getMethodNodeList()) {
-            scope.GetFunction(this.getIdentifier() + '.' + method.getIdentifier())
-                    .setScope(scope);
-        }
+//        for (MethodDecNode method : node.getMethodNodeList()) {
+//            scope.GetFunction(this.getIdentifier() + '.' + method.getIdentifier())
+//                    .setScope(scope);
+//        }
     }
 
     public FunctionEntity getMethod(String name) {
@@ -34,7 +44,7 @@ public class ClassEntity extends Entity {
     }
 
     public VariableEntity getMember(String name) {
-        return scope.GetVariable(getIdentifier() + '.' + name);
+        return scope.GetVariable(name);
     }
 
 

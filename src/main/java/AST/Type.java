@@ -6,6 +6,14 @@ public class Type
     private String name;
     protected int arrayLevel;
 
+    public Type (Type other) {
+        if (other != null) {
+            this.baseType = other.baseType;
+            this.name = other.name;
+            this.arrayLevel = other.arrayLevel;
+        }
+    }
+
     public Type(BaseType type) {
         this.baseType = type;
         this.name = type.toString();
@@ -53,17 +61,19 @@ public class Type
             return other.isArray() ||
                     other.baseType == BaseType.DTYPE_NULL;
         }
-        if (other.baseType != baseType) return false;
-        if (baseType == BaseType.STYPE_CLASS) {
-            return name.equals(other.name);
+        if (isClass()) {
+            return name.equals(other.name) || other.baseType == BaseType.DTYPE_NULL;
         }
-        return true;
+        return other.baseType == baseType;
     }
 
     public boolean isClass() {
         return baseType.equals(BaseType.STYPE_CLASS);
     }
 
+    public boolean isNull() {
+        return baseType.equals(BaseType.DTYPE_NULL);
+    }
     public int getArrayLevel() {
         return arrayLevel;
     }

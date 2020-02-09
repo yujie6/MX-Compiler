@@ -10,6 +10,11 @@ public class ConstructCreatorNode extends CreatorNode{
         this.ExprType = typeNode.getType();
     }
 
+    public boolean isUseConstructMethod() {
+        return UseConstructMethod;
+    }
+
+
     @Override
     public void accept(ASTVisitor visitor) {
         visitor.visit(this);

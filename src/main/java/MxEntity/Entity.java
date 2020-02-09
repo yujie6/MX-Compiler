@@ -14,6 +14,10 @@ public class Entity {
         return Identifier;
     }
 
+    public void setIdentifier(String identifier) {
+        Identifier = identifier;
+    }
+
     public Scope getScope() {
         return scope;
     }

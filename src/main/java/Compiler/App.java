@@ -27,6 +27,17 @@ public class App {
         return "Hello world.";
     }
 
+    private static Logger GetMXLogger() {
+        Logger logger = Logger.getLogger("MXLogger");
+        logger.setLevel(Level.FINE);
+        logger.setUseParentHandlers(false);
+        ConsoleHandler consoleHandler = new ConsoleHandler();
+        consoleHandler.setFormatter(new LogFormatter());
+        consoleHandler.setLevel(Level.FINE);
+        logger.addHandler(consoleHandler);
+        return logger;
+    }
+
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input, Logger logger) {
         MxLexer lexer = new MxLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -50,15 +61,8 @@ public class App {
     public static void main(String[] args) throws MXError {
         // int[][] a = new int[2][];
         // Setting logger
-        Logger logger = Logger.getLogger("MXLogger");
-        logger.setLevel(Level.FINE);
-        logger.setUseParentHandlers(false);
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setFormatter(new LogFormatter());
-        consoleHandler.setLevel(Level.FINE);
-        logger.addHandler(consoleHandler);
+        Logger logger = GetMXLogger();
         logger.info("Application start on " + args[0]);
-
 
         CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
         if (args.length == 1) {

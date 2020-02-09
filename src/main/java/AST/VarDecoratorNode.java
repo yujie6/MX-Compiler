@@ -5,6 +5,7 @@ import Tools.Location;
 public class VarDecoratorNode extends ASTNode {
     private String Identifier;
     private ExprNode InitValue;
+    private Type InitType;
 
     public VarDecoratorNode(Location location, String identifier, ExprNode initValue) {
         super(location);
@@ -18,6 +19,14 @@ public class VarDecoratorNode extends ASTNode {
 
     public String getIdentifier() {
         return Identifier;
+    }
+
+    public void setInitType(Type initType) {
+        InitType = initType;
+    }
+
+    public Type getInitType() {
+        return InitType;
     }
 
     @Override
