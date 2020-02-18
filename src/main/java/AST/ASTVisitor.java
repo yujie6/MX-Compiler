@@ -1,43 +1,38 @@
 package AST;
 
-public interface ASTVisitor {
-    public void visit(MxProgramNode node);
+public interface ASTVisitor<T> {
+    public T visit(MxProgramNode node);
     /* Declaration */
-    // public void visit(DecNode node);
-    public void visit(FunctionDecNode node);
-    public void visit(VariableDecNode node);
-    public void visit(ClassDecNode node);
-    public void visit(MethodDecNode node);
-
-    public void visit(TypeNode node);
-    public void visit(VarDecoratorNode node);
+    public T visit(FunctionDecNode node);
+    public T visit(VariableDecNode node);
+    public T visit(ClassDecNode node);
+    public T visit(MethodDecNode node);
+    public T visit(TypeNode node);
+    public T visit(VarDecoratorNode node);
 
     /* Statement */
-    // public void visit(StmtNode node);
-    public void visit(IfStmtNode node);
-    public void visit(BreakStmtNode node);
-    public void visit(WhileStmtNode node);
-    public void visit(ContinueStmtNode node);
-    public void visit(ExprStmtNode node);
-    public void visit(ForStmtNode node);
-    public void visit(ReturnStmtNode node);
-    public void visit(VarDecStmtNode node);
-    public void visit(BlockNode node);
-
-    public void visit(ConstNode node);
-
-    public void visit(ArrayCreatorNode node);
-    public void visit(ConstructCreatorNode node);
+    public T visit(IfStmtNode node);
+    public T visit(BreakStmtNode node);
+    public T visit(WhileStmtNode node);
+    public T visit(ContinueStmtNode node);
+    public T visit(ExprStmtNode node);
+    public T visit(ForStmtNode node);
+    public T visit(ReturnStmtNode node);
+    public T visit(VarDecStmtNode node);
+    public T visit(BlockNode node);
+    public T visit(ConstNode node);
+    public T visit(ArrayCreatorNode node);
+    public T visit(ConstructCreatorNode node);
 
     /* Expression */
-    public void visit(BinExprNode node);
-    public void visit(IDExprNode node);
-    public void visit(MemberExprNode node);
-    public void visit(ArrayExprNode node);
-    public void visit(PrefixExprNode node);
-    public void visit(PostfixExprNode node);
-    public void visit(ThisExprNode node);
-    public void visit(CallExprNode node);
+    public T visit(BinExprNode node);
+    public T visit(IDExprNode node);
+    public T visit(MemberExprNode node);
+    public T visit(ArrayExprNode node);
+    public T visit(PrefixExprNode node);
+    public T visit(PostfixExprNode node);
+    public T visit(ThisExprNode node);
+    public T visit(CallExprNode node);
 
-    public void visit(ParameterNode node);
+    public T visit(ParameterNode node);
 }

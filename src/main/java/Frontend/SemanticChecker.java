@@ -64,7 +64,7 @@ public class SemanticChecker implements ASTVisitor {
     }
 
     @Override
-    public void visit(MxProgramNode node) {
+    public Object visit(MxProgramNode node) {
         LocalScope = GlobalScope;
         if (LocalScope.inClass) {
             throw new MXError("Fatal error");
@@ -73,10 +73,11 @@ public class SemanticChecker implements ASTVisitor {
             declaration.accept(this);
         }
         logger.info("Semantic checks successfully, no error detected.");
+        return null;
     }
 
     @Override
-    public void visit(FunctionDecNode node) {
+    public Object visit(FunctionDecNode node) {
         FunctionEntity functionEntity;
         if (!LocalScope.inClass) {
             functionEntity = LocalScope.GetFunction(node.getIdentifier());
@@ -103,10 +104,11 @@ public class SemanticChecker implements ASTVisitor {
         ExitScope();
         logger.fine("Semantic checks on function \'" + node.getIdentifier() + "\' successfully.");
         LocalScope.inFunction = false;
+        return null;
     }
 
     @Override
-    public void visit(VariableDecNode node) {
+    public Object visit(VariableDecNode node) {
         Type DecType = node.getType();
         // check if the type is defined
         if (!isValid(DecType)) {
@@ -136,10 +138,11 @@ public class SemanticChecker implements ASTVisitor {
             }
             LocalScope.defineVariable(mx_var);
         }
+        return null;
     }
 
     @Override
-    public void visit(ClassDecNode node) {
+    public Object visit(ClassDecNode node) {
         ClassEntity classEntity = GlobalScope.GetClass(node.getIdentifier());
         CurrClass = classEntity;
         EnterScope(classEntity);
@@ -155,42 +158,47 @@ public class SemanticChecker implements ASTVisitor {
         LocalScope.inClass = false;
         CurrClass = null;
         logger.fine("Semantic checks on class \'" + node.getIdentifier() + "\' done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(MethodDecNode node) {
+    public Object visit(MethodDecNode node) {
         visit((FunctionDecNode) node);
+        return null;
     }
 
     @Override
-    public void visit(TypeNode node) {
-
+    public Object visit(TypeNode node) {
+        return null;
     }
 
     @Override
-    public void visit(BlockNode node) {
+    public Object visit(BlockNode node) {
         EnterScope(null);
         for (StmtNode statement : node.getStmtList()) {
             statement.accept(this);
         }
         ExitScope();
+        return null;
     }
 
     @Override
-    public void visit(VarDecoratorNode node) {
+    public Object visit(VarDecoratorNode node) {
         if (node.getInitValue() != null) {
             node.getInitValue().accept(this);
             node.setInitType(node.getInitValue().getExprType());
         }
+        return null;
     }
 
     @Override
-    public void visit(ConstNode node) {
+    public Object visit(ConstNode node) {
         node.setExprType(node.getType());
+        return null;
     }
 
     @Override
-    public void visit(ArrayCreatorNode node) {
+    public Object visit(ArrayCreatorNode node) {
         int arrayLevel = node.getExprList().size() + node.getArrayLevel();
         if (node.getExprType().isClass()) {
             node.setExprType(new Type(BaseType.STYPE_CLASS, arrayLevel,
@@ -201,17 +209,19 @@ public class SemanticChecker implements ASTVisitor {
         }
         logger.fine("Semantic checks on array creator for " + node.getExprType().getName() + " at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(ConstructCreatorNode node) {
+    public Object visit(ConstructCreatorNode node) {
         Type newType = node.getExprType();
         node.setExprType(newType);
         logger.info("Use new statement to create object at line " + node.GetLocation().getLine());
+        return null;
     }
 
     @Override
-    public void visit(BinExprNode node) {
+    public Object visit(BinExprNode node) {
         node.getLeftExpr().accept(this);
         node.getRightExpr().accept(this);
         // TODO: may add error handler to detect more errors
@@ -295,10 +305,11 @@ public class SemanticChecker implements ASTVisitor {
                 throw new MXError("Wrong operators.", node.GetLocation());
             }
         }
+        return null;
     }
 
     @Override
-    public void visit(IDExprNode node) {
+    public Object visit(IDExprNode node) {
         // this node can only be NameExpr
         if (node.getExprType() == FunctionType) {
             CurrFunctionCall = GlobalScope.GetFunction(node.getIdentifier());
@@ -311,10 +322,11 @@ public class SemanticChecker implements ASTVisitor {
                     LocalScope.GetVariable(node.getIdentifier()) : GlobalScope.GetVariable(node.getIdentifier());
             node.setExprType(mx_var.getVarType());
         }
+        return null;
     }
 
     @Override
-    public void visit(MemberExprNode node) {
+    public Object visit(MemberExprNode node) {
         // after type checking
         ClassEntity classEntity;
         node.getExpr().accept(this);
@@ -323,11 +335,11 @@ public class SemanticChecker implements ASTVisitor {
         } else {
             if (node.getExpr().getExprType().isString()) {
                 CurrFunctionCall = GlobalScope.GetFunction("string." + node.getMember());
-                return;
+                return null;
             } else if (node.getExpr().getExprType().isArray() && node.getMember().equals("size")) {
                 ClassEntity ArrayEntitry = GlobalScope.GetClass("Array");
                 CurrFunctionCall = ArrayEntitry.getMethod("size");
-                return;
+                return null;
             }
             if (!node.getExpr().getExprType().isClass()) {
                 throw new MXError("This expr has no member access for \'" +
@@ -344,10 +356,11 @@ public class SemanticChecker implements ASTVisitor {
             VariableEntity member = classEntity.getMember(node.getMember());
             node.setExprType(member.getVarType());
         }
+        return null;
     }
 
     @Override
-    public void visit(ArrayExprNode node) {
+    public Object visit(ArrayExprNode node) {
         ExprNode arrayId = node.getArrayId();
         arrayId.accept(this);
         Type OriginalType = arrayId.getExprType();
@@ -362,10 +375,11 @@ public class SemanticChecker implements ASTVisitor {
         node.setExprType(new Type(OriginalType.getBaseType(),
                 OriginalType.getArrayLevel() - 1,
                 OriginalType.getName()));
+        return null;
     }
 
     @Override
-    public void visit(PrefixExprNode node) {
+    public Object visit(PrefixExprNode node) {
         node.getExpr().accept(this);
 
         switch (node.getPrefixOp()) {
@@ -394,10 +408,11 @@ public class SemanticChecker implements ASTVisitor {
                 throw new MXError("Wrong prefix op detected.", node.GetLocation());
             }
         }
+        return null;
     }
 
     @Override
-    public void visit(PostfixExprNode node) {
+    public Object visit(PostfixExprNode node) {
         node.getExpr().accept(this);
         switch (node.getPostfixOp()) {
             case INC:
@@ -414,18 +429,19 @@ public class SemanticChecker implements ASTVisitor {
                         node.GetLocation());
             }
         }
-
+        return null;
     }
 
     @Override
-    public void visit(ThisExprNode node) {
+    public Object visit(ThisExprNode node) {
         if (!LocalScope.inClass) {
             throw new MXError("Using \"this\" out of a class domain.", node.GetLocation());
         }
+        return null;
     }
 
     @Override
-    public void visit(CallExprNode node) {
+    public Object visit(CallExprNode node) {
         node.getObj().setExprType(FunctionType);
         node.getObj().accept(this);
         node.setFunction(CurrFunctionCall);
@@ -434,7 +450,7 @@ public class SemanticChecker implements ASTVisitor {
             if (CurrFunctionCall.getParaListSize() != 0) {
                 throw new MXError("Function call needs parameters", node.GetLocation());
             }
-            return;
+            return null;
         }
         if (ExpectedParas.size() != node.getParameters().size()) {
             throw new MXError("Function call has wrong number of parameters", node.GetLocation());
@@ -455,10 +471,11 @@ public class SemanticChecker implements ASTVisitor {
         logger.fine("Semantic checks on \'" + node.getFunction().getIdentifier() + "\' function call at line "
                 + node.GetLocation().getLine() + " done successfully.");
         // node.getParameters().forEach();
+        return null;
     }
 
     @Override
-    public void visit(IfStmtNode node) {
+    public Object visit(IfStmtNode node) {
         node.getConditionExpr().accept(this);
         if (!node.getConditionExpr().getExprType().isBool()) {
             throw new MXError("If statement's condition is not bool type.", node.GetLocation());
@@ -469,20 +486,22 @@ public class SemanticChecker implements ASTVisitor {
         }
         logger.fine("Semantic checks if statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(BreakStmtNode node) {
+    public Object visit(BreakStmtNode node) {
         // must be in a loop
         if (LocalScope.LoopLevel <= 0) {
             throw new MXError("Continue statement not in a loop");
         }
         logger.fine("Semantic checks break statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(WhileStmtNode node) {
+    public Object visit(WhileStmtNode node) {
         LocalScope.LoopLevel++;
         if (node.getCondition() == null) {
             throw new MXError("While statement has no condition expr.", node.GetLocation());
@@ -496,28 +515,31 @@ public class SemanticChecker implements ASTVisitor {
         LocalScope.LoopLevel--;
         logger.fine("Semantic checks on \'while statement\' at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(ContinueStmtNode node) {
+    public Object visit(ContinueStmtNode node) {
         // must be in a loop
         if (LocalScope.LoopLevel <= 0) {
             throw new MXError("Continue statement not in a loop");
         }
         logger.fine("Semantic checks continue statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(ExprStmtNode node) {
+    public Object visit(ExprStmtNode node) {
         // damn it ++a; (a); (++a); a + a; are all valid statement!!
         // only <array,member,id> can be count as left value
         // a = 123 for example, what  about a = b = 1 ?
         node.getExpr().accept(this);
+        return null;
     }
 
     @Override
-    public void visit(ForStmtNode node) {
+    public Object visit(ForStmtNode node) {
         LocalScope.LoopLevel++;
         if (node.getCondExpr() != null) {
             node.getCondExpr().accept(this);
@@ -535,10 +557,11 @@ public class SemanticChecker implements ASTVisitor {
         LocalScope.LoopLevel--;
         logger.fine("Semantic checks on \'for statement\' at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(ReturnStmtNode node) {
+    public Object visit(ReturnStmtNode node) {
         if (node.getReturnedExpr() != null) node.getReturnedExpr().accept(this);
         if (LocalScope.inFunction = false) {
             throw new MXError("Return statement not in a function");
@@ -550,15 +573,17 @@ public class SemanticChecker implements ASTVisitor {
         hasRetStmt = true;
         logger.fine("Semantic checks return statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
+        return null;
     }
 
     @Override
-    public void visit(VarDecStmtNode node) {
+    public Object visit(VarDecStmtNode node) {
         visit(node.getVariableDecNode());
+        return null;
     }
 
     @Override
-    public void visit(ParameterNode node) {
-
+    public Object visit(ParameterNode node) {
+        return null;
     }
 }

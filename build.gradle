@@ -7,11 +7,8 @@
  */
 
 plugins {
-    // Apply the java plugin to add support for Java
     id 'java'
 	id 'antlr'
-
-    // Apply the application plugin to add support for building a CLI application.
     id 'application'
 }
 
@@ -22,12 +19,27 @@ repositories {
 	jcenter()
 }
 
+String upstreamVersion = '4.5.1'
+
+configurations {
+    jna
+    all*.exclude group: 'org.bytedeco', module: 'javacpp-presets'
+}
+
 dependencies {
 	// antlr package
     antlr "org.antlr:antlr4:4.7.1"
     compile "org.antlr:antlr4-runtime:4.7.1"
+    compile 'org.bytedeco:javacpp:1.4.3'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'llvm', version: '7.0.0-1.4.3'
     // Use JUnit test framework
     testImplementation 'junit:junit:4.12'
+    // Use llvm api
+    jna "org.jna:jna:${upstreamVersion}"
+
+//    implementation files('hibernate.jar', 'libs/spring.jar')
+//    implementation fileTree(dir: 'libs', include: ['*.jar'])
+
 }
 
 application {
@@ -36,7 +48,7 @@ application {
 }
 
 run {
-    args = ["/home/yujie6/Music/Compiler/MX-Compiler/src/test/resources/sema/basic-package/basic-69.mx"]
+    args = ["/home/yujie6/Music/Compiler/MX-Compiler/src/test/resources/sema/basic-package/basic-66.mx"]
     // options.warnings = false
 }
 

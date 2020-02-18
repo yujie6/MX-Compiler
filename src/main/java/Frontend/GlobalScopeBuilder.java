@@ -117,156 +117,162 @@ public class GlobalScopeBuilder implements ASTVisitor {
     }
 
     @Override
-    public void visit(MxProgramNode node) {
+    public Object visit(MxProgramNode node) {
         PreProcess();
         for (DecNode declaration : node.getDecNodeList()) {
             if (!(declaration instanceof VariableDecNode))
                 declaration.accept(this);
         }
         CheckMainEntry();
+        return null;
     }
 
     @Override
-    public void visit(FunctionDecNode node) {
+    public Object visit(FunctionDecNode node) {
         FunctionEntity mx_function = new FunctionEntity(globalScope, node, false, null);
         globalScope.defineFunction(mx_function);
+        return null;
     }
 
     @Override
-    public void visit(VariableDecNode node) {
+    public Object visit(VariableDecNode node) {
         Type DecType = node.getType();
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
             VariableEntity mx_var = new VariableEntity(globalScope, var, DecType);
             globalScope.defineVariable(mx_var);
         }
+        return null;
     }
 
     @Override
-    public void visit(ClassDecNode node) {
+    public Object visit(ClassDecNode node) {
         ClassEntity mx_class = new ClassEntity(globalScope, node);
 //        if (mx_class.getIdentifier().equals("main")) {
 //            throw new MXError("Duplicated name for main.", node.GetLocation());
 //        }
         globalScope.defineClass(mx_class);
+        return null;
     }
 
     @Override
-    public void visit(TypeNode node) {
-
+    public Object visit(MethodDecNode node) {
+        return null;
     }
 
     @Override
-    public void visit(BlockNode node) {
-
+    public Object visit(TypeNode node) {
+        return null;
     }
 
     @Override
-    public void visit(VarDecoratorNode node) {
-
+    public Object visit(VarDecoratorNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ConstNode node) {
-
+    public Object visit(IfStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ArrayCreatorNode node) {
-
+    public Object visit(BreakStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ConstructCreatorNode node) {
-
+    public Object visit(WhileStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(BinExprNode node) {
-
+    public Object visit(ContinueStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(IDExprNode node) {
-
+    public Object visit(ExprStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(MemberExprNode node) {
-
+    public Object visit(ForStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ArrayExprNode node) {
-
+    public Object visit(ReturnStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(PrefixExprNode node) {
-
+    public Object visit(VarDecStmtNode node) {
+        return null;
     }
 
     @Override
-    public void visit(PostfixExprNode node) {
-
+    public Object visit(BlockNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ThisExprNode node) {
-
+    public Object visit(ConstNode node) {
+        return null;
     }
 
     @Override
-    public void visit(CallExprNode node) {
-
+    public Object visit(ArrayCreatorNode node) {
+        return null;
     }
 
     @Override
-    public void visit(IfStmtNode node) {
-
+    public Object visit(ConstructCreatorNode node) {
+        return null;
     }
 
     @Override
-    public void visit(BreakStmtNode node) {
-
+    public Object visit(BinExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(WhileStmtNode node) {
-
+    public Object visit(IDExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ContinueStmtNode node) {
-
+    public Object visit(MemberExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ExprStmtNode node) {
-
+    public Object visit(ArrayExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ForStmtNode node) {
-
+    public Object visit(PrefixExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ReturnStmtNode node) {
-
+    public Object visit(PostfixExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(VarDecStmtNode node) {
-
+    public Object visit(ThisExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(ParameterNode node) {
-
+    public Object visit(CallExprNode node) {
+        return null;
     }
 
     @Override
-    public void visit(MethodDecNode node) {
-
+    public Object visit(ParameterNode node) {
+        return null;
     }
+
+
 }
