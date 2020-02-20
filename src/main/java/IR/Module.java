@@ -38,4 +38,9 @@ public class Module extends Value{
     public ValueSymbolTable getVarSymTab() {
         return VarSymTab;
     }
+
+    @Override
+    public void accept(IRVisitor<IRBaseNode> visitor) {
+        visitor.visit(this);
+    }
 }

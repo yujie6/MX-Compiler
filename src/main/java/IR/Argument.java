@@ -18,4 +18,9 @@ public class Argument extends Value {
         this.Parent = parent;
 
     }
+
+    @Override
+    public void accept(IRVisitor<IRBaseNode> visitor) {
+        visitor.visit(this);
+    }
 }

@@ -1,14 +1,25 @@
 package IR.Types;
-/// The instances of the Type class are immutable: once they are created,
-/// they are never changed.  Also note that only one instance of a particular
-/// type is ever created.  Thus seeing if two types are equal is a matter of
-/// doing a trivial pointer comparison. To enforce that no two equal instances
-/// are created, Type instances can only be created via static factory methods
-/// in class Type and in derived classes.  Once allocated, Types are never
-/// free'd.
+/*
+ * The instances of the Type class are immutable: once they are created,
+ * they are never changed.  Also note that only one instance of a particular
+ * type is ever created.  Thus seeing if two types are equal is a matter of
+ * doing a trivial pointer comparison. To enforce that no two equal instances
+ * are created, Type instances can only be created via static factory methods
+ * in class Type and in derived classes.  Once allocated, Types are never
+ * free'd.
+*/
 
 
-public class Type {
+/*
+ *    Inheritance Graph
+ *                           {---- VoidType                                 { PointerType
+ *         IRBaseType -----{---- FunctionType       {--- SingleValue --- { IntegerType
+ *                         {--- FirstClassType------{
+ *                                                   {---  AggregateType ---{ ArrayType
+ *                                                                           { StructureType
+ */
+
+public abstract class IRBaseType {
     enum TypeID {
         // PrimitiveTypes - make sure LastPrimitiveTyID stays up to date.
         VoidTyID,    ///<  0: type with no size
@@ -33,7 +44,14 @@ public class Type {
         ArrayTyID,       ///< 14: Arrays
         PointerTyID,     ///< 15: Pointers
         VectorTyID       ///< 16: SIMD 'packed' format, or other vector type
-    };
+    }
 
-    private TypeID ID;
+    ;
+
+    protected TypeID BaseTypeName;
+
+    protected int ByteNum;
+
+    public abstract int getBytes();
+
 }

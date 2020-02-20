@@ -17,6 +17,8 @@ package IR;
 /// "well formed".
 
 
+import IR.Instructions.Instruction;
+
 import java.util.ArrayList;
 
 public class BasicBlock extends Value {
@@ -30,5 +32,10 @@ public class BasicBlock extends Value {
 
     public Function getParent() {
         return Parent;
+    }
+
+    @Override
+    public void accept(IRVisitor<IRBaseNode> visitor) {
+        visitor.visit(this);
     }
 }
