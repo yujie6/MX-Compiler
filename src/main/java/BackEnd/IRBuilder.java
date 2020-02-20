@@ -1,14 +1,43 @@
 package IR;
 
 import AST.*;
-import org.bytedeco.javacpp.LLVM;
-import org.bytedeco.javacpp.clang;
+import Frontend.Scope;
 
 public class IRBuilder implements ASTVisitor {
-    LLVM.LLVMContextRef TheContext;
+    private ValueSymbolTable valueSymbolTable;
+    private Module TopModule;
+    private Scope GlobalScope;
+    private Function curFunction;
+    private BasicBlock curBasicBlock, curLoopBlock;
+
+
+    public IRBuilder(Scope globalScope) {
+        TopModule = new Module(null);
+        this.GlobalScope = globalScope;
+
+    }
+
+    public Module getTopModule() {
+        return TopModule;
+    }
+
+    public BasicBlock getCurBasicBlock() {
+        return curBasicBlock;
+    }
+
+    public BasicBlock getCurLoopBlock() {
+        return curLoopBlock;
+    }
+
+    public Function getCurFunction() {
+        return curFunction;
+    }
 
     @Override
     public Object visit(MxProgramNode node) {
+        for (DecNode declaration : node.getDecNodeList()) {
+
+        }
         return null;
     }
 
