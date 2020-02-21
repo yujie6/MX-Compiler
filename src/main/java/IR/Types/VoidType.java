@@ -1,5 +1,8 @@
 package IR.Types;
 
+/**
+ *  The void type does not represent any value and has no size.
+ */
 public class VoidType extends IRBaseType {
 
     public VoidType() {

@@ -1,6 +1,9 @@
 package IR.Instructions;
 
-import IR.Instruction;
+import IR.BasicBlock;
 
 public class UnaryOpInst extends Instruction {
+    public UnaryOpInst(BasicBlock parent) {
+        super(parent);
+    }
 }

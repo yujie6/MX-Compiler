@@ -1,30 +1,53 @@
 package IR;
 
-/// LLVM Basic Block Representation
-///
-/// This represents a single basic block in LLVM. A basic block is simply a
-/// container of instructions that execute sequentially. Basic blocks are Values
-/// because they are referenced by instructions such as branches and switch
-/// tables. The type of a BasicBlock is "Type::LabelTy" because the basic block
-/// represents a label to which a branch can jump.
-///
-/// A well formed basic block is formed of a list of non-terminating
-/// instructions followed by a single terminator instruction. Terminator
-/// instructions may not occur in the middle of basic blocks, and must terminate
-/// the blocks. The BasicBlock class allows malformed basic blocks to occur
-/// because it may be useful in the intermediate stage of constructing or
-/// modifying a program. However, the verifier will ensure that basic blocks are
-/// "well formed".
-
-
 import IR.Instructions.Instruction;
-
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
+import java.util.Set;
+
+/**
+ * This class represents a single entry single exit section of the code, commonly known as a basic block by
+ * the compiler community. The BasicBlock class maintains a list of Instructions, which form the body of the
+ * block. Matching the language definition, the last element of this list of instructions is always a terminator
+ * instruction. In addition to tracking the list of instructions that make up the block, the BasicBlock class
+ * also keeps track of the Function that it is embedded into.
+ *
+ * Note that BasicBlocks themselves are Values, because they are referenced by instructions like branches
+ * and can go in the switch tables. BasicBlocks have type label.
+ */
 
 public class BasicBlock extends Value {
     private Function Parent;
+    private String Identifier;
     private ArrayList<Instruction> InstList;
     private BasicBlock prev, next;
+    private Instruction HeadInst, TailInst;
+
+    private Set<BasicBlock> predecessors;
+    private Set<BasicBlock> successors;
+
+    public BasicBlock(Function parent, String id) {
+        this.Parent = parent;
+        this.Identifier = id;
+        HeadInst = null;
+        TailInst = null;
+        prev = null;
+        next = null;
+        predecessors = new LinkedHashSet<>();
+        successors = new LinkedHashSet<>();
+    }
+
+    public Instruction getHeadInst() {
+        return HeadInst;
+    }
+
+    public Instruction getTailInst() {
+        return TailInst;
+    }
+
+    public String getIdentifier() {
+        return Identifier;
+    }
 
     public void setParent(Function parent) {
         Parent = parent;
@@ -34,8 +57,38 @@ public class BasicBlock extends Value {
         return Parent;
     }
 
+    public boolean isEmpty() {
+        return HeadInst == null && TailInst == null;
+    }
+
+    public void AddInst(Instruction inst) {
+        if (isEmpty()) {
+            HeadInst = inst;
+        } else {
+            TailInst.setNext(inst);
+            inst.setPrev(TailInst);
+        }
+        TailInst = inst;
+    }
+
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
         visitor.visit(this);
+    }
+
+    public BasicBlock getPrev() {
+        return prev;
+    }
+
+    public void setPrev(BasicBlock prev) {
+        this.prev = prev;
+    }
+
+    public BasicBlock getNext() {
+        return next;
+    }
+
+    public void setNext(BasicBlock next) {
+        this.next = next;
     }
 }

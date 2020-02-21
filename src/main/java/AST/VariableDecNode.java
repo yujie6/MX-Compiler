@@ -8,6 +8,7 @@ import java.util.List;
 public class VariableDecNode extends DecNode {
 
     private TypeNode VarType;
+    private boolean global;
     private List<VarDecoratorNode> VarDecoratorList;
 
     public VariableDecNode(Location location,
@@ -39,7 +40,16 @@ public class VariableDecNode extends DecNode {
     }
 
     @Override
-    public void accept(ASTVisitor visitor) {
+    public Object accept(ASTVisitor visitor) {
         visitor.visit(this);
+        return null;
+    }
+
+    public boolean isGlobal() {
+        return global;
+    }
+
+    public void setGlobal(boolean global) {
+        this.global = global;
     }
 }

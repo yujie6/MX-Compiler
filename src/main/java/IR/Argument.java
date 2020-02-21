@@ -7,16 +7,32 @@ package IR;
 /// argument of course represents the value of the actual argument that the
 
 
+import IR.Types.IRBaseType;
+
 public class Argument extends Value {
     private Function Parent;
+    private IRBaseType ArgType;
     private int ArgNo; // index of argument in the function
     public Function getParent() {
         return Parent;
     }
 
-    public Argument(Function parent, int argNo) {
+    public Argument(Function parent, IRBaseType argType, int argNo) {
         this.Parent = parent;
+        this.ArgType = argType;
+        this.ArgNo = argNo;
+    }
 
+    public int getArgNo() {
+        return ArgNo;
+    }
+
+    public void setParent(Function parent) {
+        Parent = parent;
+    }
+
+    public IRBaseType getArgType() {
+        return ArgType;
     }
 
     @Override

@@ -1,9 +1,112 @@
 package IR;
 
-public class Function extends Value
-{
+import IR.Instructions.AllocaInst;
+import IR.Instructions.LoadInst;
+import IR.Instructions.Register;
+import IR.Instructions.ReturnInst;
+import IR.Types.FunctionType;
+import IR.Types.IRBaseType;
+import IR.Types.PointerType;
+
+import java.util.ArrayList;
+
+/**
+ * A function definition contains a list of basic blocks, forming the CFG (Control Flow Graph) for the function.
+ * Each basic block may optionally start with a label (giving the basic block a symbol table entry),
+ * contains a list of instructions, and ends with a terminator instruction (such as a branch or function return).
+ * <p>
+ * The first basic block in a function is special in two ways: it is immediately executed on entrance to the function,
+ * and it is not allowed to have predecessor basic blocks (i.e. there can not be any branches to the entry block
+ * of a function). Because the block can have no predecessors, it also cannot have any PHI nodes.
+ */
+public class Function extends Value {
+
+    private String Identifier;
+    private FunctionType functionType;
+    private ArrayList<Argument> ParameterList;
+    private BasicBlock HeadBlock, TailBlock, RetBlock;
+    private Value RetValue;
+    private ValueSymbolTable varSymTab;
+
+    public Function(String id, IRBaseType returnType, ArrayList<Argument> parameterList) {
+        this.Identifier = id;
+        this.ParameterList = parameterList;
+        ArrayList<IRBaseType> argTypeList = new ArrayList<>();
+        for (Argument argument : parameterList) {
+            argument.setParent(this);
+            argTypeList.add(argument.getArgType());
+        }
+        functionType = new FunctionType(returnType, argTypeList);
+        HeadBlock = null;
+        TailBlock = null;
+        RetBlock = null;
+        varSymTab = new ValueSymbolTable();
+    }
+
+    public String getIdentifier() {
+        return Identifier;
+    }
+
+    public ArrayList<Argument> getParameterList() {
+        return ParameterList;
+    }
+
+    public FunctionType getFunctionType() {
+        return functionType;
+    }
+
+
+    public BasicBlock getHeadBlock() {
+        return HeadBlock;
+    }
+
+    public BasicBlock getTailBlock() {
+        return TailBlock;
+    }
+
+    public boolean isEmpty() {
+        return HeadBlock == null && TailBlock == null;
+    }
+
+    public void AddBlock(BasicBlock basicBlock) {
+        if (HeadBlock == null) {
+            HeadBlock = basicBlock;
+        } else {
+            TailBlock.setNext(basicBlock);
+            basicBlock.setPrev(TailBlock);
+        }
+        TailBlock = basicBlock;
+    }
+
+    public void initialize() {
+        BasicBlock head = new BasicBlock(this, "_head_block");
+        AddBlock(head);
+        RetBlock = new BasicBlock(this, "_ret_block");
+        varSymTab.put(head.getIdentifier(), head);
+        varSymTab.put(RetBlock.getIdentifier(), RetBlock);
+        IRBaseType RetType = functionType.getReturnType();
+        if (RetType.getBaseTypeName() == IRBaseType.TypeID.VoidTyID) {
+            RetBlock.AddInst(new ReturnInst(RetBlock, Module.VOID, null));
+        } else {
+            // Optimization here
+            RetValue = new Register("_RetValueAddr", new PointerType(RetType), null);
+            HeadBlock.AddInst(new AllocaInst(HeadBlock, (Register) RetValue, RetType));
+            Register LoadRetValue = new Register("_load_ret_var", RetType, null);
+            RetBlock.AddInst(new LoadInst(RetBlock, RetType, RetValue, LoadRetValue));
+            RetBlock.AddInst(new ReturnInst(RetBlock, RetType, LoadRetValue));
+        }
+    }
+
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
         visitor.visit(this);
+    }
+
+    public BasicBlock getRetBlock() {
+        return RetBlock;
+    }
+
+    public Value getRetValue() {
+        return RetValue;
     }
 }

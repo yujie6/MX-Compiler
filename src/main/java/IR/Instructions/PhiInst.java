@@ -1,6 +1,10 @@
 package IR.Instructions;
 
-import IR.Instruction;
+
+import IR.BasicBlock;
 
 public class PhiInst extends Instruction {
+    public PhiInst(BasicBlock parent) {
+        super(parent);
+    }
 }

@@ -1,6 +1,11 @@
 package IR.Instructions;
 
-import IR.Instruction;
+import IR.BasicBlock;
+
+;
 
 public class CastInst extends Instruction {
+    public CastInst(BasicBlock parent) {
+        super(parent);
+    }
 }

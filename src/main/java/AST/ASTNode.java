@@ -13,5 +13,5 @@ public abstract class ASTNode {
         return this.location;
     }
 
-    abstract public void accept(ASTVisitor visitor);
+    abstract public Object accept(ASTVisitor visitor);
 }

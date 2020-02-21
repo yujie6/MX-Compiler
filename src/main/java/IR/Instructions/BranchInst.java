@@ -1,6 +1,9 @@
 package IR.Instructions;
 
-import IR.Instruction;
+import IR.BasicBlock;
 
 public class BranchInst extends Instruction {
+    public BranchInst(BasicBlock parent) {
+        super(parent);
+    }
 }

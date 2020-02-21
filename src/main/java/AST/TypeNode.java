@@ -18,8 +18,9 @@ public class TypeNode extends ASTNode {
     }
 
     @Override
-    public void accept(ASTVisitor visitor) {
+    public Object accept(ASTVisitor visitor) {
         visitor.visit(this);
+        return null;
     }
 
 

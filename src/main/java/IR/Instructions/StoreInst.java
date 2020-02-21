@@ -1,6 +1,9 @@
 package IR.Instructions;
 
-import IR.Instruction;
+import IR.BasicBlock;
 
 public class StoreInst extends Instruction {
+    public StoreInst(BasicBlock parent) {
+        super(parent);
+    }
 }

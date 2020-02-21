@@ -5,8 +5,9 @@ package Compiler;
 
 import AST.ASTNode;
 import AST.MxProgramNode;
+import BackEnd.IRBuilder;
 import Frontend.*;
-import IR.IRBuilder;
+
 import Tools.LogFormatter;
 import Tools.MXError;
 import org.antlr.v4.runtime.CharStream;
@@ -83,6 +84,6 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input, logger);
         Scope globalScope = GetGlobalScope(ast, logger);
         (new SemanticChecker(globalScope, logger)).visit(ast);
-        (new IRBuilder()).visit(ast);
+        // (new IRBuilder(globalScope, logger)).visit(ast);
     }
 }

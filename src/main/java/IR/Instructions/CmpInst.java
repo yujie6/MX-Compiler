@@ -1,6 +1,9 @@
 package IR.Instructions;
 
-import IR.Instruction;
+import IR.BasicBlock;
 
 public class CmpInst extends Instruction {
+    public CmpInst(BasicBlock parent) {
+        super(parent);
+    }
 }

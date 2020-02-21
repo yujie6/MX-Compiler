@@ -15,7 +15,8 @@ public class ConstNode extends ExprNode {
     }
 
     @Override
-    public void accept(ASTVisitor visitor) {
+    public Object accept(ASTVisitor visitor) {
         visitor.visit(this);
+        return null;
     }
 }

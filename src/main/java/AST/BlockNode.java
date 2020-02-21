@@ -17,8 +17,9 @@ public class BlockNode extends StmtNode {
     }
 
     @Override
-    public void accept(ASTVisitor visitor) {
+    public Object accept(ASTVisitor visitor) {
         visitor.visit(this);
+        return null;
     }
 
 }

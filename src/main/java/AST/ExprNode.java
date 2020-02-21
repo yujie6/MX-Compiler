@@ -17,5 +17,5 @@ public abstract class ExprNode extends ASTNode {
         ExprType = exprType;
     }
 
-    public abstract void accept(ASTVisitor visitor);
+    public abstract Object accept(ASTVisitor visitor);
 }

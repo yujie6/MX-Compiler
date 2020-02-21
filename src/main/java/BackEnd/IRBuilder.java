@@ -1,20 +1,41 @@
-package IR;
+package BackEnd;
 
 import AST.*;
 import Frontend.Scope;
+import IR.*;
+import IR.Module;
+import IR.Types.IRBaseType;
+
+import java.util.ArrayList;
+import java.util.logging.Logger;
 
 public class IRBuilder implements ASTVisitor {
     private ValueSymbolTable valueSymbolTable;
     private Module TopModule;
     private Scope GlobalScope;
-    private Function curFunction;
+    private Function curFunction, init;
     private BasicBlock curBasicBlock, curLoopBlock;
+    private Logger logger;
 
 
-    public IRBuilder(Scope globalScope) {
+    public IRBuilder(Scope globalScope, Logger logger) {
         TopModule = new Module(null);
         this.GlobalScope = globalScope;
+        this.logger = logger;
+        init = new Function("_entry_block", Module.VOID, new ArrayList<>());
+        TopModule.defineFunction(init);
+        init.initialize();
+    }
 
+    public IRBaseType ConvertTypeFromAST(Type type) {
+        if (type.isBool()) {
+            return Module.I1;
+        } else if (type.isInt()) {
+            return Module.I32;
+        } else if (type.isString()) {
+            return Module.STRING;
+        }
+        return null;
     }
 
     public Module getTopModule() {
@@ -35,9 +56,41 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(MxProgramNode node) {
-        for (DecNode declaration : node.getDecNodeList()) {
 
+
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof ClassDecNode) {
+                for (MethodDecNode method : ((ClassDecNode) declaration).getMethodNodeList()) {
+                    TopModule.defineFunction(method, declaration.getIdentifier());
+                }
+            } else if (declaration instanceof FunctionDecNode) {
+                TopModule.defineFunction((FunctionDecNode) declaration);
+            }
         }
+
+        curBasicBlock = init.getHeadBlock();
+        curFunction = init;
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof VariableDecNode) {
+                declaration.accept(this);
+            }
+        }
+        curBasicBlock = null;
+        curFunction = null;
+
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof ClassDecNode) {
+                declaration.accept(this);
+            }
+        }
+
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof VariableDecNode) {
+                ((VariableDecNode) declaration).setGlobal(true);
+                declaration.accept(this);
+            }
+        }
+
         return null;
     }
 
@@ -48,6 +101,19 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(VariableDecNode node) {
+        IRBaseType type = ConvertTypeFromAST(node.getType());
+        if (node.isGlobal()) {
+            for (VarDecoratorNode subnode : node.getVarDecoratorList()) {
+                GlobalVariable globalVar = new GlobalVariable(type, subnode.getIdentifier(), null);
+                ExprNode initExpr = subnode.getInitValue();
+                if (initExpr != null) {
+                    Value initValue = (Value) initExpr.accept(this);
+                }
+            }
+        } else {
+
+        }
+
         return null;
     }
 

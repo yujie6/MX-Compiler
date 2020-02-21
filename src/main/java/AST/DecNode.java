@@ -14,6 +14,6 @@ public abstract class DecNode extends ASTNode {
         return identifier;
     }
 
-    public abstract void accept(ASTVisitor visitor);
+    public abstract Object accept(ASTVisitor visitor);
 
 }

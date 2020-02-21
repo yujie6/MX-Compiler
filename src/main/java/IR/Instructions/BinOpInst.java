@@ -1,6 +1,10 @@
 package IR.Instructions;
 
-import IR.Instruction;
+
+import IR.BasicBlock;
 
 public class BinOpInst extends Instruction {
+    public BinOpInst(BasicBlock parent) {
+        super(parent);
+    }
 }
