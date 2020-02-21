@@ -12,12 +12,16 @@ package IR.Types;
 
 /*
  *    Inheritance Graph
- *                           {---- VoidType                                 { PointerType
+ *                          {---- VoidType                                { PointerType
  *         IRBaseType -----{---- FunctionType       {--- SingleValue --- { IntegerType
- *                         {--- FirstClassType------{
- *                                                   {---  AggregateType ---{ ArrayType
- *                                                                           { StructureType
+ *                        {--- FirstClassType------{
+ *                                                {---  AggregateType ---{ ArrayType
+ *                                                                      { StructureType
  */
+
+import IR.Value;
+
+import java.util.Objects;
 
 public abstract class IRBaseType {
     public enum TypeID {
@@ -47,7 +51,25 @@ public abstract class IRBaseType {
 
     protected int ByteNum;
 
+    public boolean equals(IRBaseType other) {
+        if (this.BaseTypeName != other.BaseTypeName) {
+            return false;
+        } else if (this.BaseTypeName.equals(TypeID.IntegerTyID)) {
+            return ((IntegerType) this).getBitWidth().equals(
+                    ((IntegerType) other).getBitWidth()
+            );
+        } else if (this.BaseTypeName.equals(TypeID.PointerTyID)) {
+            // TODO optim here
+            return true;
+        } else if (this.BaseTypeName.equals(TypeID.StructTyID)) {
+            return Objects.equals(this, other);
+        }
+        return false;
+    }
+
     public abstract int getBytes();
+
+    public abstract Value getDefaultValue();
 
     public TypeID getBaseTypeName() {
         return BaseTypeName;

@@ -1,5 +1,7 @@
 package IR.Types;
 
+import IR.Value;
+
 /**
  *  The pointer type is used to specify memory locations. Pointers are
  *  commonly used to reference objects in memory.
@@ -27,5 +29,10 @@ public class PointerType extends SingleValueType {
     @Override
     public int getBytes() {
         return 4;
+    }
+
+    @Override
+    public Value getDefaultValue() {
+        return null;
     }
 }

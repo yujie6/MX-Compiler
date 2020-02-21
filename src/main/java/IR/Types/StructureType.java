@@ -1,5 +1,7 @@
 package IR.Types;
 
+import IR.Value;
+
 import java.util.ArrayList;
 
 /**
@@ -31,4 +33,8 @@ public class StructureType extends AggregateType {
     }
 
 
+    @Override
+    public Value getDefaultValue() {
+        return null;
+    }
 }

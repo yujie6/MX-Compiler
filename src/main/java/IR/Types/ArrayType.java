@@ -1,5 +1,7 @@
 package IR.Types;
 
+import IR.Value;
+
 import java.util.ArrayList;
 
 /**
@@ -23,5 +25,10 @@ public class ArrayType extends AggregateType {
 
     public IRBaseType getArrayBaseType() {
         return ArrayBaseType;
+    }
+
+    @Override
+    public Value getDefaultValue() {
+        return null;
     }
 }

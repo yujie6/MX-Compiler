@@ -21,4 +21,12 @@ public class GlobalVariable extends Value {
     public String getIdentifier() {
         return Identifier;
     }
+
+    public void setInitValue(Value initValue) {
+        InitValue = initValue;
+    }
+
+    public Value getInitValue() {
+        return InitValue;
+    }
 }

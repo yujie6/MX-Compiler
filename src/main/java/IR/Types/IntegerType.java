@@ -1,8 +1,16 @@
 package IR.Types;
 
+import IR.Constants.IntConst;
+import IR.Value;
+
 public class IntegerType extends SingleValueType {
 
     private BitWidth bitWidth;
+
+    @Override
+    public Value getDefaultValue() {
+        return new IntConst(this, 0);
+    }
 
     public enum BitWidth {
         i1, i8, i16, i32

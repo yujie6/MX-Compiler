@@ -107,8 +107,8 @@ public class Module extends Value{
 
     }
 
-    public void defineGlobalVar() {
-
+    public void defineGlobalVar(GlobalVariable globalVariable) {
+        GlobalVarMap.put(globalVariable.getIdentifier(), globalVariable);
     }
 
     @Override

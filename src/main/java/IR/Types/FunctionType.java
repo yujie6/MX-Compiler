@@ -1,5 +1,7 @@
 package IR.Types;
 
+import IR.Value;
+
 import java.util.ArrayList;
 
 
@@ -31,5 +33,10 @@ public class FunctionType extends IRBaseType {
     @Override
     public int getBytes() {
         return 0;
+    }
+
+    @Override
+    public Value getDefaultValue() {
+        return null;
     }
 }

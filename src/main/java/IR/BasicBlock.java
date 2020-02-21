@@ -71,6 +71,16 @@ public class BasicBlock extends Value {
         TailInst = inst;
     }
 
+    public void MakeHeadInst(Instruction inst) {
+        if (isEmpty()) {
+            TailInst = inst;
+        } else {
+            HeadInst.setPrev(inst);
+            inst.setNext(HeadInst);
+        }
+        HeadInst = inst;
+    }
+
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
         visitor.visit(this);
