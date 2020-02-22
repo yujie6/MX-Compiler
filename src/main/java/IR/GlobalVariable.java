@@ -8,6 +8,7 @@ public class GlobalVariable extends Value {
     private Value InitValue;
 
     public GlobalVariable(IRBaseType type, String id, Value initValue) {
+        super(ValueType.GLOBAL_VAR);
         this.type = type;
         this.Identifier = id;
         this.InitValue = initValue;

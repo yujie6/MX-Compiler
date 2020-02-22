@@ -8,7 +8,7 @@ public class BranchInst extends Instruction {
 
 
     public BranchInst(BasicBlock parent, Value condition, BasicBlock thenBlock, BasicBlock elseBlock) {
-        super(parent, InstType.Branch);
+        super(parent, InstType.br);
         this.UseList.add(new Use(condition, this));
         this.UseList.add(new Use(thenBlock, this));
         this.UseList.add(new Use(elseBlock, this));

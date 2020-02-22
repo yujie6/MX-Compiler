@@ -9,7 +9,7 @@ public class LoadInst extends Instruction {
 
 
     public LoadInst(BasicBlock parent, IRBaseType type, Value addr) {
-        super(parent, InstType.Load);
+        super(parent, InstType.load);
         this.type = type;
         this.UseList.add(new Use(addr, this));
     }

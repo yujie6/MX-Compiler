@@ -2,7 +2,6 @@ package IR.Instructions;
 
 import IR.BasicBlock;
 import IR.Function;
-import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
 
@@ -14,7 +13,7 @@ public class CallInst extends Instruction {
 
 
     public CallInst(BasicBlock parent, Function function, ArrayList<Value> paras) {
-        super(parent, InstType.Call);
+        super(parent, InstType.call);
         this.UseList.add(new Use(function, this));;
         this.ArgumentList = paras;
         this.type = function.getFunctionType().getReturnType();

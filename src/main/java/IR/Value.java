@@ -26,11 +26,16 @@ public abstract class Value extends IRBaseNode {
 
     public enum ValueType {
         INSTRUCTION,
-        LABEL,
+        ARGUMENT,
         FUNCTION,
         CONSTANT,
         GLOBAL_VAR,
+        BASIC_BLOCK,
         MODULE
+    }
+
+    public Value(ValueType vTy) {
+        this.VTy = vTy;
     }
 
     public IRBaseType getType() {

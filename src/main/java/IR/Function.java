@@ -27,6 +27,7 @@ public class Function extends Value {
     private ValueSymbolTable varSymTab;
 
     public Function(String id, IRBaseType returnType, ArrayList<Argument> parameterList) {
+        super(ValueType.FUNCTION);
         this.Identifier = id;
         this.ParameterList = parameterList;
         ArrayList<IRBaseType> argTypeList = new ArrayList<>();
@@ -66,7 +67,7 @@ public class Function extends Value {
         return HeadBlock == null && TailBlock == null;
     }
 
-    public void AddBlock(BasicBlock basicBlock) {
+    public void AddBlockAtTail(BasicBlock basicBlock) {
         if (HeadBlock == null) {
             HeadBlock = basicBlock;
         } else {
@@ -78,20 +79,20 @@ public class Function extends Value {
 
     public void initialize() {
         BasicBlock head = new BasicBlock(this, "_head_block");
-        AddBlock(head);
+        AddBlockAtTail(head);
         RetBlock = new BasicBlock(this, "_ret_block");
         varSymTab.put(head.getIdentifier(), head);
         varSymTab.put(RetBlock.getIdentifier(), RetBlock);
         IRBaseType RetType = functionType.getReturnType();
         if (RetType.getBaseTypeName() == IRBaseType.TypeID.VoidTyID) {
-            RetBlock.AddInst(new ReturnInst(RetBlock, Module.VOID, null));
+            RetBlock.AddInstAtTail(new ReturnInst(RetBlock, Module.VOID, null));
         } else {
             // Optimization here
             AllocaInst RetAddr = new AllocaInst(HeadBlock, RetType);
-            HeadBlock.AddInst(RetAddr);
+            HeadBlock.AddInstAtTail(RetAddr);
             LoadInst LoadedValue = new LoadInst(RetBlock, RetType, RetAddr);
-            RetBlock.AddInst(LoadedValue);
-            RetBlock.AddInst(new ReturnInst(RetBlock, RetType, LoadedValue));
+            RetBlock.AddInstAtTail(LoadedValue);
+            RetBlock.AddInstAtTail(new ReturnInst(RetBlock, RetType, LoadedValue));
         }
     }
 

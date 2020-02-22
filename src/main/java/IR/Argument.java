@@ -18,6 +18,7 @@ public class Argument extends Value {
     }
 
     public Argument(Function parent, IRBaseType argType, int argNo) {
+        super(ValueType.ARGUMENT);
         this.Parent = parent;
         this.ArgType = argType;
         this.ArgNo = argNo;

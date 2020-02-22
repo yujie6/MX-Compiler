@@ -2,10 +2,11 @@ package IR;
 
 import AST.FunctionDecNode;
 import AST.MethodDecNode;
-import IR.Types.IntegerType;
-import IR.Types.PointerType;
-import IR.Types.StructureType;
-import IR.Types.VoidType;
+import AST.ParameterNode;
+import BackEnd.IRBuilder;
+import IR.Instructions.AllocaInst;
+import IR.Instructions.StoreInst;
+import IR.Types.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,14 +42,13 @@ public class Module extends Value{
 
 
     public Module(ValueSymbolTable varSymTab) {
+        super(ValueType.MODULE);
         this.VarSymTab = varSymTab;
         GlobalVarMap = new HashMap<>();
         FunctionMap = new HashMap<>();
         ClassMap = new HashMap<>();
 
         PreProcess();
-
-
     }
 
     private void PreProcess() {
@@ -73,6 +73,12 @@ public class Module extends Value{
         toString_paras.add(new Argument(null, I32, 0));
         Function _toString = new Function("toString", STRING, toString_paras);
         FunctionMap.put(_toString.getIdentifier(), _toString);
+        // String add
+        ArrayList<Argument> StringAdd_paras = new ArrayList<>();
+        StringAdd_paras.add(new Argument(null, STRING, 0));
+        StringAdd_paras.add(new Argument(null, STRING, 1));
+        Function _StringAdd = new Function("toString", STRING, toString_paras);
+        FunctionMap.put(_StringAdd.getIdentifier(), _StringAdd);
     }
 
     public HashMap<String, Function> getFunctionMap() {
@@ -96,11 +102,40 @@ public class Module extends Value{
     }
 
     public void defineFunction(MethodDecNode methodDecNode, String ClassName) {
-
+        // TODO Deal with method (first para is this)
     }
 
-    public void defineFunction(FunctionDecNode methodDecNode) {
+    public void defineFunction(FunctionDecNode FuncDecNode) {
+        String FuncName = FuncDecNode.getIdentifier();
+        IRBaseType RetType = IRBuilder.ConvertTypeFromAST(FuncDecNode.getReturnType().getType() );
+        ArrayList<Argument> args = new ArrayList<>();
+        int id = 0;
+        for (ParameterNode para : FuncDecNode.getParaDecList()) {
+            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id);
+            args.add(arg);
+            id += 1;
+        }
+        Function function = new Function(FuncName, RetType, args);
+        function.initialize();
+        BasicBlock head = function.getHeadBlock();
+        // Allocate address for all the arguments
+        ArrayList<AllocaInst> AllocaList = new ArrayList<>();
+        ArrayList<StoreInst> StoreList = new ArrayList<>();
+        for (Argument arg : function.getParameterList()) {
+            AllocaInst ArgAddr = new AllocaInst(head, arg.type);
+            AllocaList.add(ArgAddr);
+            StoreInst storeInst = new StoreInst(head, arg, ArgAddr);
+            StoreList.add(storeInst);
+        }
 
+        for (StoreInst st : StoreList) {
+            head.AddInstAtTop(st);
+        }
+        for (AllocaInst al : AllocaList) {
+            head.AddInstAtTop(al);
+        }
+
+        FunctionMap.put(FuncName, function);
     }
 
     public void defineClass() {

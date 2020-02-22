@@ -5,7 +5,7 @@ import IR.Types.IRBaseType;
 
 public class GetPtrInst extends Instruction {
     public GetPtrInst(BasicBlock parent, IRBaseType type) {
-        super(parent, InstType.GetPtr);
+        super(parent, InstType.getelementptr);
         this.type = type;
 
     }

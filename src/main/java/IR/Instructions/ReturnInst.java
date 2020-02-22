@@ -9,8 +9,8 @@ public class ReturnInst extends Instruction {
     private IRBaseType RetType;
 
     public ReturnInst(BasicBlock parent, IRBaseType retType, Value retValue) {
-        super(parent, InstType.Return);
-        this.instType = InstType.Return;
+        super(parent, InstType.ret);
+        this.Opcode = InstType.ret;
         this.RetType = retType;
         this.UseList.add(new Use(retValue, this));
     }

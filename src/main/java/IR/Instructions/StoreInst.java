@@ -7,7 +7,7 @@ import IR.Value;
 public class StoreInst extends Instruction {
 
     public StoreInst(BasicBlock parent, Value storeValue, Value storeDest) {
-        super(parent, InstType.Store);
+        super(parent, InstType.store);
         this.UseList.add(new Use(storeValue, this));
         this.UseList.add(new Use(storeDest, this));
         this.type = null; // should be ?

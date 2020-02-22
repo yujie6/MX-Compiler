@@ -27,6 +27,7 @@ public class BasicBlock extends Value {
     private Set<BasicBlock> successors;
 
     public BasicBlock(Function parent, String id) {
+        super(ValueType.BASIC_BLOCK);
         this.Parent = parent;
         this.Identifier = id;
         HeadInst = null;
@@ -61,7 +62,7 @@ public class BasicBlock extends Value {
         return HeadInst == null && TailInst == null;
     }
 
-    public void AddInst(Instruction inst) {
+    public void AddInstAtTail(Instruction inst) {
         if (isEmpty()) {
             HeadInst = inst;
         } else {
@@ -71,7 +72,7 @@ public class BasicBlock extends Value {
         TailInst = inst;
     }
 
-    public void MakeHeadInst(Instruction inst) {
+    public void AddInstAtTop(Instruction inst) {
         if (isEmpty()) {
             TailInst = inst;
         } else {

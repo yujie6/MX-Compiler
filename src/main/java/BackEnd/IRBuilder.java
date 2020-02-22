@@ -6,9 +6,8 @@ import IR.*;
 import IR.Instructions.*;
 import IR.Module;
 import IR.Types.IRBaseType;
-import IR.Types.PointerType;
+import MxEntity.FunctionEntity;
 import Tools.Operators;
-import com.antlr.MxParser;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -31,7 +30,7 @@ public class IRBuilder implements ASTVisitor {
         init.initialize();
     }
 
-    public IRBaseType ConvertTypeFromAST(Type type) {
+    public static IRBaseType ConvertTypeFromAST(Type type) {
         if (type.isBool()) {
             return Module.I1;
         } else if (type.isInt()) {
@@ -107,12 +106,12 @@ public class IRBuilder implements ASTVisitor {
         for (StmtNode stmt : node.getFuncBlock().getStmtList()) {
             stmt.accept(this);
         }
-        curBasicBlock.AddInst(new BranchInst(curBasicBlock, null, function.getRetBlock(), null));
-        function.AddBlock(function.getRetBlock());
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, function.getRetBlock(), null));
+        function.AddBlockAtTail(function.getRetBlock());
         if (FuncName.equals("main")) {
             // call init at main's top block
             CallInst call = new CallInst(curBasicBlock, init, new ArrayList<>());
-            curFunction.getHeadBlock().MakeHeadInst(call);
+            curFunction.getHeadBlock().AddInstAtTop(call);
         }
 
         curFunction = null;
@@ -131,7 +130,7 @@ public class IRBuilder implements ASTVisitor {
                 if (initExpr != null) {
                     initValue = (Value) initExpr.accept(this);
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
-                        curBasicBlock.AddInst(new StoreInst(curBasicBlock, initValue, globalVar));
+                        curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, globalVar));
                     }
                 } else {
                     initValue = type.getDefaultValue();
@@ -145,13 +144,13 @@ public class IRBuilder implements ASTVisitor {
 
                 BasicBlock head = curFunction.getHeadBlock();
                 AllocaInst AllocaAddr = new AllocaInst(curBasicBlock, type);
-                head.AddInst(AllocaAddr);
+                head.AddInstAtTail(AllocaAddr);
                 ExprNode initExpr = subnode.getInitValue();
                 Value initValue;
                 if (initExpr != null) {
                     initValue = (Value) initExpr.accept(this);
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
-                        curBasicBlock.AddInst(new StoreInst(curBasicBlock, initValue, AllocaAddr));
+                        curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                     }
                 } else {
                     initValue = type.getDefaultValue();
@@ -189,25 +188,25 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock MergeBlock = new BasicBlock(curFunction, "IfMergeBlock");
         Value condition = (Value) node.getConditionExpr().accept(this);
         if (node.isHasElse()) {
-            curBasicBlock.AddInst(new BranchInst(curBasicBlock, condition, ThenBlock, ElseBlock));
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condition, ThenBlock, ElseBlock));
         } else {
-            curBasicBlock.AddInst(new BranchInst(curBasicBlock, condition, ThenBlock, MergeBlock));
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condition, ThenBlock, MergeBlock));
         }
 
         curBasicBlock = ThenBlock;
         node.getThenStmt().accept(this);
-        curBasicBlock.AddInst(new BranchInst(curBasicBlock, null, MergeBlock, null));
-        curFunction.AddBlock(curBasicBlock);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+        curFunction.AddBlockAtTail(curBasicBlock);
 
         if (node.isHasElse()) {
             curBasicBlock = ElseBlock;
             node.getElseStmt().accept(this);
-            curBasicBlock.AddInst(new BranchInst(curBasicBlock, null, MergeBlock, null));
-            curFunction.AddBlock(curBasicBlock);
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+            curFunction.AddBlockAtTail(curBasicBlock);
         }
 
         curBasicBlock = MergeBlock;
-        curFunction.AddBlock(MergeBlock);
+        curFunction.AddBlockAtTail(MergeBlock);
 
         // TODO: put block (or label) at symbol table
 
@@ -236,6 +235,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ForStmtNode node) {
+
         return null;
     }
 
@@ -278,8 +278,8 @@ public class IRBuilder implements ASTVisitor {
         switch (bop) {
             case ADD: {
                 if (LHS.getType().equals(Module.I32)) {
-                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, bop, LHS, RHS);
-                    curBasicBlock.AddInst(instance); // TODO store to symbol table
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance); // TODO store to symbol table
                     return instance;
                 } else if (LHS.getType().equals(Module.STRING)) {
                     // str add, need function call
@@ -288,45 +288,138 @@ public class IRBuilder implements ASTVisitor {
                     paras.add(LHS);
                     paras.add(RHS);
                     CallInst instance = new CallInst(curBasicBlock, function, paras);
-                    curBasicBlock.AddInst(instance); // TODO
+                    curBasicBlock.AddInstAtTail(instance); // TODO
                     return instance;
                 }
                 break;
             }
-            case SUB:
+            case SUB: {
+                // only integer sub
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use sub on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case MUL:
+            }
+            case MUL: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use mul on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case DIV:
+            }
+            case DIV: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use div on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.div, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case MOD:
+            }
+            case MOD: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use mod on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.srem, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case SHL:
+            }
+            case SHL: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use left shift on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shl, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case SHR:
+            }
+            case SHR: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use right shift on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shr, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case GREATER_EQUAL:
-                break;
+            }
             case LESS_EQUAL:
-                break;
             case GREATER:
-                break;
             case LESS:
-                break;
             case EQUAL:
-                break;
             case NEQUAL:
+            case GREATER_EQUAL: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use ge on non integer type.");
+                } else {
+                    CmpInst instance = new CmpInst(curBasicBlock, Module.I1, bop, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case BITWISE_AND:
+            }
+
+            case BITWISE_AND: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use bitwise and on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.and, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case BITWISE_OR:
+            }
+            case BITWISE_OR: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use bitwise or on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.or, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case BITWISE_XOR:
+            }
+            case BITWISE_XOR: {
+                if (!LHS.getType().equals(Module.I32)) {
+                    logger.warning("Use bitwise xor on non integer type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.xor, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case LOGIC_AND:
+            }
+            case LOGIC_AND: {
+                if (!LHS.getType().equals(Module.I1)) {
+                    logger.warning("Use logic and on non bool type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I1, Instruction.InstType.and, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
-            case LOGIC_OR:
+            }
+            case LOGIC_OR: {
+                if (!LHS.getType().equals(Module.I1)) {
+                    logger.warning("Use logic or on non bool type.");
+                } else {
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I1, Instruction.InstType.or, LHS, RHS);
+                    curBasicBlock.AddInstAtTail(instance);
+                    return instance;
+                }
                 break;
+            }
             case ASSIGN:
                 break;
             case DEFAULT:
@@ -368,6 +461,20 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(CallExprNode node) {
+        FunctionEntity mx_func = node.getFunction();
+        if (mx_func.isMethod()) {
+
+        } else {
+            Function CalledFunc = TopModule.getFunctionMap().get(mx_func.getIdentifier());
+            ArrayList<Value> args = new ArrayList<>();
+            for (ExprNode expr: node.getParameters() ) {
+                Value arg = (Value) expr.accept(this);
+                args.add(arg);
+            }
+            CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
+            curBasicBlock.AddInstAtTail(instance);
+            return instance;
+        }
         return null;
     }
 

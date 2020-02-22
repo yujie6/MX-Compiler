@@ -9,7 +9,7 @@ public class CastInst extends Instruction {
     private IRBaseType OriginType, DestType;
 
     public CastInst(BasicBlock parent, IRBaseType fromType, IRBaseType toType) {
-        super(parent, InstType.Cast);
+        super(parent, InstType.bitcast);
         this.OriginType = fromType;
         this.DestType = toType;
     }
