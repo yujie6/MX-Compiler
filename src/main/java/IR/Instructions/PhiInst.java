@@ -5,6 +5,6 @@ import IR.BasicBlock;
 
 public class PhiInst extends Instruction {
     public PhiInst(BasicBlock parent) {
-        super(parent);
+        super(parent, InstType.Phi);
     }
 }

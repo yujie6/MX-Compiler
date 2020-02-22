@@ -2,11 +2,9 @@ package IR;
 
 import IR.Instructions.AllocaInst;
 import IR.Instructions.LoadInst;
-import IR.Instructions.Register;
 import IR.Instructions.ReturnInst;
 import IR.Types.FunctionType;
 import IR.Types.IRBaseType;
-import IR.Types.PointerType;
 
 import java.util.ArrayList;
 
@@ -89,11 +87,11 @@ public class Function extends Value {
             RetBlock.AddInst(new ReturnInst(RetBlock, Module.VOID, null));
         } else {
             // Optimization here
-            RetValue = new Register("_RetValueAddr", new PointerType(RetType), null);
-            HeadBlock.AddInst(new AllocaInst(HeadBlock, (Register) RetValue, RetType));
-            Register LoadRetValue = new Register("_load_ret_var", RetType, null);
-            RetBlock.AddInst(new LoadInst(RetBlock, RetType, RetValue, LoadRetValue));
-            RetBlock.AddInst(new ReturnInst(RetBlock, RetType, LoadRetValue));
+            AllocaInst RetAddr = new AllocaInst(HeadBlock, RetType);
+            HeadBlock.AddInst(RetAddr);
+            LoadInst LoadedValue = new LoadInst(RetBlock, RetType, RetAddr);
+            RetBlock.AddInst(LoadedValue);
+            RetBlock.AddInst(new ReturnInst(RetBlock, RetType, LoadedValue));
         }
     }
 

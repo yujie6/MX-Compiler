@@ -5,16 +5,18 @@ import IR.User;
 
 public abstract class Instruction extends User {
     protected BasicBlock Parent;
-    protected InstType Opcode;
+    protected InstType instType;
     protected Instruction prev, next;
 
     public enum InstType {
-        Alloca, Add, Minus, Branch, Call, Equals, Load, Store, Phi, Return
+        Alloca, BinOp, Branch, Call, Equals, Load, Store, Phi, Return, Cast,
+        Cmp, GetPtr, UnaOp
     }
 
-    public Instruction(BasicBlock parent) {
+    public Instruction(BasicBlock parent, InstType instType) {
         this.Parent = parent;
         this.VTy = ValueType.INSTRUCTION;
+        this.instType = instType;
     }
 
     public BasicBlock getParent() {
@@ -22,7 +24,7 @@ public abstract class Instruction extends User {
     }
 
     public boolean isTerminalInst() {
-        return Opcode == InstType.Return || Opcode == InstType.Branch;
+        return instType == InstType.Return || instType == InstType.Branch;
     }
 
     public void setNext(Instruction next) {

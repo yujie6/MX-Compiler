@@ -1,19 +1,18 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
-import IR.Function;
 import IR.Types.IRBaseType;
+import IR.Use;
 import IR.Value;
 
 public class ReturnInst extends Instruction {
     private IRBaseType RetType;
-    private Value RetValue;
 
     public ReturnInst(BasicBlock parent, IRBaseType retType, Value retValue) {
-        super(parent);
-        this.Opcode = InstType.Return;
+        super(parent, InstType.Return);
+        this.instType = InstType.Return;
         this.RetType = retType;
-        this.RetValue = retValue;
+        this.UseList.add(new Use(retValue, this));
     }
 
     public IRBaseType getRetType() {
@@ -21,6 +20,6 @@ public class ReturnInst extends Instruction {
     }
 
     public Value getRetValue() {
-        return RetValue;
+        return UseList.get(0).getVal();
     }
 }

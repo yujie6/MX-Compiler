@@ -9,7 +9,15 @@ package IR;
  * use-def information in LLVM.
  */
 
+import java.util.ArrayList;
+
 public class User extends Value {
+
+    public ArrayList<Use> UseList;
+
+    public ArrayList<Use> getUseList() {
+        return UseList;
+    }
 
 
     @Override

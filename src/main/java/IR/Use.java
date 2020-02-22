@@ -18,6 +18,10 @@ public class Use {
     private Use prev, next;
     private User user;
 
+    public Use(Value var, User user) {
+        this.user = user;
+        this.Val = var;
+    }
 
     public Use getPrev() {
         return prev;
@@ -25,5 +29,13 @@ public class Use {
 
     public Use getNext() {
         return next;
+    }
+
+    public Value getVal() {
+        return Val;
+    }
+
+    public User getUser() {
+        return user;
     }
 }

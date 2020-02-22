@@ -4,10 +4,9 @@ import IR.BasicBlock;
 import IR.Types.IRBaseType;
 
 public class AllocaInst extends Instruction {
-    private Register Instance;
 
-    public AllocaInst(BasicBlock block, Register instance, IRBaseType type) {
-        super(block);;
+    public AllocaInst(BasicBlock block, IRBaseType type) {
+        super(block, InstType.Alloca);;
         this.type = type;
     }
 

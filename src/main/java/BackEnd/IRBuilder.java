@@ -8,6 +8,7 @@ import IR.Module;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 import Tools.Operators;
+import com.antlr.MxParser;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -110,7 +111,8 @@ public class IRBuilder implements ASTVisitor {
         function.AddBlock(function.getRetBlock());
         if (FuncName.equals("main")) {
             // call init at main's top block
-            curFunction.getHeadBlock().MakeHeadInst(new CallInst(curBasicBlock, init, new ArrayList<>()));
+            CallInst call = new CallInst(curBasicBlock, init, new ArrayList<>());
+            curFunction.getHeadBlock().MakeHeadInst(call);
         }
 
         curFunction = null;
@@ -140,15 +142,16 @@ public class IRBuilder implements ASTVisitor {
         } else {
             // Local Variable
             for (VarDecoratorNode subnode : node.getVarDecoratorList()) {
-                Register allocaAddr = new Register(subnode.getIdentifier(), new PointerType(type), null);
+
                 BasicBlock head = curFunction.getHeadBlock();
-                head.AddInst(new AllocaInst(curBasicBlock, allocaAddr, type));
+                AllocaInst AllocaAddr = new AllocaInst(curBasicBlock, type);
+                head.AddInst(AllocaAddr);
                 ExprNode initExpr = subnode.getInitValue();
                 Value initValue;
                 if (initExpr != null) {
                     initValue = (Value) initExpr.accept(this);
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
-                        curBasicBlock.AddInst(new StoreInst(curBasicBlock, initValue, allocaAddr));
+                        curBasicBlock.AddInst(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                     }
                 } else {
                     initValue = type.getDefaultValue();
@@ -275,8 +278,8 @@ public class IRBuilder implements ASTVisitor {
         switch (bop) {
             case ADD: {
                 if (LHS.getType().equals(Module.I32)) {
-                    Register instance = new Register("_add_int", Module.I32, null);
-                    curBasicBlock.AddInst(new BinOpInst(curBasicBlock)); // TODO store to symbol table
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, bop, LHS, RHS);
+                    curBasicBlock.AddInst(instance); // TODO store to symbol table
                     return instance;
                 } else if (LHS.getType().equals(Module.STRING)) {
                     // str add, need function call
@@ -284,10 +287,8 @@ public class IRBuilder implements ASTVisitor {
                     ArrayList<Value> paras = new ArrayList<>();
                     paras.add(LHS);
                     paras.add(RHS);
-
-                    Register instance = new Register("_string_add", Module.STRING, null);
-
-                    curBasicBlock.AddInst(new CallInst(curBasicBlock, function, paras)); // TODO
+                    CallInst instance = new CallInst(curBasicBlock, function, paras);
+                    curBasicBlock.AddInst(instance); // TODO
                     return instance;
                 }
                 break;
