@@ -68,6 +68,7 @@ public class BasicBlock extends Value {
     }
 
     public void AddInstAtTail(Instruction inst) {
+        if (inst == null) return;
         if (isEmpty()) {
             HeadInst = inst;
         } else {

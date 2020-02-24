@@ -7,12 +7,13 @@ import IR.Instructions.*;
 import IR.Module;
 import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
-import IR.Types.PointerType;
 import IR.Types.StructureType;
 import MxEntity.FunctionEntity;
 import Tools.Operators;
 
+import java.awt.image.TileObserver;
 import java.util.ArrayList;
+import java.util.Stack;
 import java.util.logging.Logger;
 
 public class IRBuilder implements ASTVisitor {
@@ -23,11 +24,15 @@ public class IRBuilder implements ASTVisitor {
     private BasicBlock curBasicBlock, curLoopBlock;
     public Logger logger;
 
+    private Stack<BasicBlock> CondStackForBreak;
+    private Stack<BasicBlock> LoopStackForContinue;
 
     public IRBuilder(Scope globalScope, Logger logger) {
         TopModule = new Module(null, logger);
         this.GlobalScope = globalScope;
         this.logger = logger;
+        CondStackForBreak = new Stack<>();
+        LoopStackForContinue = new Stack<>();
         init = new Function("_entry_block", Module.VOID, new ArrayList<>());
         TopModule.defineFunction(init);
         init.initialize();
@@ -244,6 +249,9 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock ElseBlock = (node.isHasElse()) ? new BasicBlock(curFunction, "ElseBlock") : null;
         BasicBlock MergeBlock = new BasicBlock(curFunction, "IfMergeBlock");
         Value condition = (Value) node.getConditionExpr().accept(this);
+        if ( !condition.getType().getBaseTypeName().equals(IRBaseType.TypeID.IntegerTyID) ){
+            logger.severe("Condition is not boolean type");
+        }
         if (node.isHasElse()) {
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condition, ThenBlock, ElseBlock));
         } else {
@@ -272,42 +280,129 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(BreakStmtNode node) {
+        curBasicBlock.AddInstAtTail(new BranchInst(
+                curBasicBlock, null, CondStackForBreak.peek(), null
+        ));
         return null;
     }
 
     @Override
     public Object visit(WhileStmtNode node) {
+        BasicBlock CondBlock = new BasicBlock(curFunction, "WhileCondition");
+        BasicBlock LoopBody = new BasicBlock(curFunction, "WhileLoopBody");
+        BasicBlock MergeBlock = new BasicBlock(curFunction, "WhileMergeBlock");
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+        curBasicBlock = CondBlock;
+        Instruction cond = (Instruction) node.getCondition().accept(this);
+        // TODO: check cast's correctness
+
+        curBasicBlock.AddInstAtTail(cond);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, cond, LoopBody, MergeBlock));
+        LoopStackForContinue.push(LoopBody);
+        CondStackForBreak.push(CondBlock);
+        curBasicBlock = LoopBody;
+        node.getLoopStmt().accept(this);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+        curBasicBlock = MergeBlock;
+
+        LoopStackForContinue.pop();
+        CondStackForBreak.pop();
+        curFunction.AddBlockAtTail(CondBlock);
+        curFunction.AddBlockAtTail(LoopBody);
+        curFunction.AddBlockAtTail(MergeBlock);
+
+        TopModule.defineLabel(CondBlock);
+        TopModule.defineLabel(LoopBody);
+        TopModule.defineLabel(MergeBlock);
+
         return null;
     }
 
     @Override
     public Object visit(ContinueStmtNode node) {
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null,
+                LoopStackForContinue.peek(), null));
         return null;
     }
 
     @Override
     public Object visit(ExprStmtNode node) {
+        node.getExpr().accept(this);
         return null;
     }
 
     @Override
     public Object visit(ForStmtNode node) {
+        BasicBlock LoopBody = new BasicBlock(curFunction, "ForLoopBody");
+        BasicBlock UpdateBlock = new BasicBlock(curFunction, "ForUpdate");
+        BasicBlock CondBlock = new BasicBlock(curFunction, "ForCondBlock");
+        BasicBlock MergeBlock= new BasicBlock(curFunction, "ForMergeBlock");
+
+        if (node.getInitExpr() != null) {
+            Instruction initInst = (Instruction) node.getInitExpr().accept(this);
+            curBasicBlock.AddInstAtTail(initInst);
+        }
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+
+        curBasicBlock = CondBlock;
+
+        Instruction condInst = (Instruction) node.getCondExpr().accept(this);
+        curBasicBlock.AddInstAtTail(condInst);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condInst, LoopBody, MergeBlock));
+        LoopStackForContinue.push(LoopBody);
+        CondStackForBreak.push(CondBlock);
+
+        curBasicBlock = LoopBody;
+        node.getLoopBlcok().accept(this);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+
+        LoopStackForContinue.pop();
+        CondStackForBreak.pop();
+
+        curBasicBlock = UpdateBlock;
+        Instruction updateInst = (Instruction) node.getUpdateExpr().accept(this);
+        // could only be assign expr
+        curBasicBlock.AddInstAtTail(updateInst);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+
+        curBasicBlock = MergeBlock;
+
+        curFunction.AddBlockAtTail(LoopBody);
+        curFunction.AddBlockAtTail(UpdateBlock);
+        curFunction.AddBlockAtTail(CondBlock);
+        curFunction.AddBlockAtTail(MergeBlock);
+        TopModule.defineLabel(LoopBody);
+        TopModule.defineLabel(UpdateBlock);
+        TopModule.defineLabel(CondBlock);
+        TopModule.defineLabel(MergeBlock);
+
 
         return null;
     }
 
     @Override
     public Object visit(ReturnStmtNode node) {
+        if ( node.getReturnedExpr() != null) {
+            Instruction exprInst = (Instruction) node.getReturnedExpr().accept(this);
+            curBasicBlock.AddInstAtTail(exprInst);
+            curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, exprInst, curFunction.getRetValue()));
+        }
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null,
+                curFunction.getRetBlock(), null));
         return null;
     }
 
     @Override
     public Object visit(VarDecStmtNode node) {
+        node.getVariableDecNode().accept(this);
         return null;
     }
 
     @Override
     public Object visit(BlockNode node) {
+        for (StmtNode stmt : node.getStmtList() ) {
+            stmt.accept(this);
+        }
         return null;
     }
 

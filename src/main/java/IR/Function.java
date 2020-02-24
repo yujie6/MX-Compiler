@@ -89,6 +89,7 @@ public class Function extends Value {
         } else {
             // Optimization here
             AllocaInst RetAddr = new AllocaInst(HeadBlock, RetType);
+            RetValue = RetAddr;
             HeadBlock.AddInstAtTail(RetAddr);
             LoadInst LoadedValue = new LoadInst(RetBlock, RetType, RetAddr);
             RetBlock.AddInstAtTail(LoadedValue);
@@ -107,5 +108,9 @@ public class Function extends Value {
 
     public Value getRetValue() {
         return RetValue;
+    }
+
+    public void setRetValue(Value retValue) {
+        RetValue = retValue;
     }
 }
