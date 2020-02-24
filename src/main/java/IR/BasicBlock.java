@@ -23,6 +23,9 @@ public class BasicBlock extends Value {
     private BasicBlock prev, next;
     private Instruction HeadInst, TailInst;
 
+    private static int BlockNum = 1;
+    private String Label;
+
     private Set<BasicBlock> predecessors;
     private Set<BasicBlock> successors;
 
@@ -36,6 +39,8 @@ public class BasicBlock extends Value {
         next = null;
         predecessors = new LinkedHashSet<>();
         successors = new LinkedHashSet<>();
+        Label = String.valueOf(BlockNum);
+        BlockNum += 1;
     }
 
     public Instruction getHeadInst() {
@@ -101,5 +106,9 @@ public class BasicBlock extends Value {
 
     public void setNext(BasicBlock next) {
         this.next = next;
+    }
+
+    public String getLabel() {
+        return Label;
     }
 }

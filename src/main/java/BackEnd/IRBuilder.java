@@ -5,7 +5,10 @@ import Frontend.Scope;
 import IR.*;
 import IR.Instructions.*;
 import IR.Module;
+import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
+import IR.Types.PointerType;
+import IR.Types.StructureType;
 import MxEntity.FunctionEntity;
 import Tools.Operators;
 
@@ -18,11 +21,11 @@ public class IRBuilder implements ASTVisitor {
     private Scope GlobalScope;
     private Function curFunction, init;
     private BasicBlock curBasicBlock, curLoopBlock;
-    private Logger logger;
+    public Logger logger;
 
 
     public IRBuilder(Scope globalScope, Logger logger) {
-        TopModule = new Module(null);
+        TopModule = new Module(null, logger);
         this.GlobalScope = globalScope;
         this.logger = logger;
         init = new Function("_entry_block", Module.VOID, new ArrayList<>());
@@ -37,9 +40,17 @@ public class IRBuilder implements ASTVisitor {
             return Module.I32;
         } else if (type.isString()) {
             return Module.STRING;
+        } else if (type.isClass()) {
+            return new StructureType(type.getName(), null);
+        } else if (type.isArray()) {
+            return new ArrayType(0, ConvertTypeFromAST(
+                    new Type(type.getBaseType(), type.getArrayLevel(), type.getName())
+            ));
         }
         return null;
     }
+
+
 
     public Module getTopModule() {
         return TopModule;
@@ -60,6 +71,15 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public Object visit(MxProgramNode node) {
 
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof ClassDecNode) {
+                ((ClassDecNode) declaration).setAcceptStage(0);
+                declaration.accept(this);
+            }
+        }
+        // Stage 0: put class in ClassMap
+        TopModule.RefreshClassMapping();
+
 
         for (DecNode declaration : node.getDecNodeList()) {
             if (declaration instanceof ClassDecNode) {
@@ -75,6 +95,7 @@ public class IRBuilder implements ASTVisitor {
         curFunction = init;
         for (DecNode declaration : node.getDecNodeList()) {
             if (declaration instanceof VariableDecNode) {
+                ((VariableDecNode) declaration).setGlobal(true);
                 declaration.accept(this);
             }
         }
@@ -83,13 +104,13 @@ public class IRBuilder implements ASTVisitor {
 
         for (DecNode declaration : node.getDecNodeList()) {
             if (declaration instanceof ClassDecNode) {
+                ((ClassDecNode) declaration).setAcceptStage(1);
                 declaration.accept(this);
             }
         }
 
         for (DecNode declaration : node.getDecNodeList()) {
-            if (declaration instanceof VariableDecNode) {
-                ((VariableDecNode) declaration).setGlobal(true);
+            if (declaration instanceof FunctionDecNode) {
                 declaration.accept(this);
             }
         }
@@ -131,6 +152,7 @@ public class IRBuilder implements ASTVisitor {
                     initValue = (Value) initExpr.accept(this);
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
                         curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, globalVar));
+                        // init global var at init's first block
                     }
                 } else {
                     initValue = type.getDefaultValue();
@@ -163,11 +185,46 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ClassDecNode node) {
+        if (node.getAcceptStage() == 0) {
+            ArrayList<IRBaseType> MemberList = new ArrayList<>();
+            for (VariableDecNode subnode : node.getVarNodeList()) {
+                IRBaseType memberType = ConvertTypeFromAST(subnode.getType());
+                assert memberType != null;
+//                if (memberType.getBaseTypeName() == IRBaseType.TypeID.StructTyID) {
+//                    memberType = new PointerType(memberType);
+//                }
+                for (VarDecoratorNode var : subnode.getVarDecoratorList()) {
+                    MemberList.add(memberType);
+                }
+            }
+            StructureType curClass = new StructureType(node.getIdentifier(), MemberList);
+            TopModule.defineClass(node.getIdentifier(), curClass);
+        } else if (node.getAcceptStage() == 1) {
+
+            for (VariableDecNode subnode : node.getVarNodeList()) {
+                subnode.accept(this);
+            }
+
+            for (MethodDecNode method : node.getMethodNodeList()) {
+                method.accept(this);
+            }
+        }
         return null;
     }
 
     @Override
     public Object visit(MethodDecNode node) {
+        String methodName = node.getIdentifier();
+        assert TopModule.getFunctionMap().containsKey(methodName);
+        Function method = TopModule.getFunctionMap().get(methodName);
+        curFunction = method;
+        curBasicBlock = method.getHeadBlock();
+        node.getFuncBlock().accept(this);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, method.getRetBlock(), null));
+        method.AddBlockAtTail(method.getRetBlock());
+
+        curFunction = null;
+        curBasicBlock = null;
         return null;
     }
 

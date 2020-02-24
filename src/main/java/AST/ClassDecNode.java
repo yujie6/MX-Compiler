@@ -7,6 +7,7 @@ public class ClassDecNode extends DecNode {
 
     private List<VariableDecNode> VarNodeList;
     private List<MethodDecNode> MethodNodeList;
+    private int AcceptStage; // used for IR builder
 
     public ClassDecNode(Location location,
                         String id,
@@ -30,5 +31,13 @@ public class ClassDecNode extends DecNode {
     public Object accept(ASTVisitor visitor) {
         visitor.visit(this);
         return null;
+    }
+
+    public int getAcceptStage() {
+        return AcceptStage;
+    }
+
+    public void setAcceptStage(int acceptStage) {
+        AcceptStage = acceptStage;
     }
 }

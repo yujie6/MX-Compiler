@@ -84,6 +84,7 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input, logger);
         Scope globalScope = GetGlobalScope(ast, logger);
         (new SemanticChecker(globalScope, logger)).visit(ast);
-        // (new IRBuilder(globalScope, logger)).visit(ast);
+        IRBuilder irBuilder = new IRBuilder(globalScope, logger);
+        // irBuilder.visit(ast);
     }
 }

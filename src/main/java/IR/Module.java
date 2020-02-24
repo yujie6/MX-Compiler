@@ -10,6 +10,7 @@ import IR.Types.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.logging.Logger;
 
 /**
  * LLVM programs are composed of Module’s, each of which is a translation unit of the input programs.
@@ -28,10 +29,12 @@ public class Module extends Value{
     private HashMap<String, GlobalVariable> GlobalVarMap;
     private HashMap<String, Function> FunctionMap;
     private HashMap<String, StructureType> ClassMap;
+    private HashMap<String, BasicBlock> LabelMap;
     private ValueSymbolTable VarSymTab;
     private String TargetTriple;
     private String SourceFileName;
     private String ModuleID;
+    private Logger logger;
 
     public static final VoidType VOID = new VoidType();
     public static final IntegerType I1 = new IntegerType(IntegerType.BitWidth.i1);
@@ -41,14 +44,26 @@ public class Module extends Value{
     public static final PointerType STRING = new PointerType(I8);
 
 
-    public Module(ValueSymbolTable varSymTab) {
+    public Module(ValueSymbolTable varSymTab, Logger logger) {
         super(ValueType.MODULE);
         this.VarSymTab = varSymTab;
+        this.logger = logger;
         GlobalVarMap = new HashMap<>();
         FunctionMap = new HashMap<>();
         ClassMap = new HashMap<>();
 
         PreProcess();
+    }
+
+    public void RefreshClassMapping() {
+        for (StructureType structureType : ClassMap.values()) {
+            structureType.getMemberList().forEach(memberType->{
+                if (memberType.getBaseTypeName().equals(IRBaseType.TypeID.StructTyID)) {
+                    String className = ((StructureType) memberType).getIdentifier();
+                    memberType = ClassMap.get(className);
+                }
+            });
+        }
     }
 
     private void PreProcess() {
@@ -97,12 +112,51 @@ public class Module extends Value{
         return VarSymTab;
     }
 
+    public void defineLabel(BasicBlock basicBlock) { LabelMap.put(basicBlock.getLabel(), basicBlock); }
+
     public void defineFunction(Function func) {
         FunctionMap.put(func.getIdentifier(), func);
     }
 
     public void defineFunction(MethodDecNode methodDecNode, String ClassName) {
         // TODO Deal with method (first para is this)
+        String methodName = ClassName + '.' + methodDecNode.getIdentifier();
+        IRBaseType RetType;
+        if (methodDecNode.isConstructMethod()) {
+            RetType = ClassMap.get(ClassName);
+        } else {
+            RetType = IRBuilder.ConvertTypeFromAST(methodDecNode.getReturnType().getType());
+        }
+        ArrayList<Argument> args = new ArrayList<>();
+        int id = 1;
+        Argument pointerThis = new Argument(null, new PointerType(ClassMap.get(ClassName)), 0);
+        args.add(pointerThis);
+        for (ParameterNode para : methodDecNode.getParaDecList()) {
+            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id);
+            args.add(arg);
+            id += 1;
+        }
+        Function method = new Function(methodName, RetType, args);
+        method.initialize();
+        BasicBlock head = method.getHeadBlock();
+        ArrayList<AllocaInst> AllocaList = new ArrayList<>();
+        ArrayList<StoreInst> StoreList = new ArrayList<>();
+
+        for (Argument arg : method.getParameterList()) {
+            AllocaInst ArgAddr = new AllocaInst(head, arg.type);
+            AllocaList.add(ArgAddr);
+            StoreInst storeInst = new StoreInst(head, arg, ArgAddr);
+            StoreList.add(storeInst);
+        }
+
+        for (StoreInst st : StoreList) {
+            head.AddInstAtTop(st);
+        }
+        for (AllocaInst al : AllocaList) {
+            head.AddInstAtTop(al);
+        }
+        FunctionMap.put(methodName, method);
+        logger.info("IR Module, initialize method: " + methodName);
     }
 
     public void defineFunction(FunctionDecNode FuncDecNode) {
@@ -138,8 +192,8 @@ public class Module extends Value{
         FunctionMap.put(FuncName, function);
     }
 
-    public void defineClass() {
-
+    public void defineClass(String name, StructureType structureType) {
+        ClassMap.put(name, structureType);
     }
 
     public void defineGlobalVar(GlobalVariable globalVariable) {
@@ -149,5 +203,9 @@ public class Module extends Value{
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
         visitor.visit(this);
+    }
+
+    public HashMap<String, BasicBlock> getLabelMap() {
+        return LabelMap;
     }
 }

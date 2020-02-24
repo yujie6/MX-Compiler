@@ -1,5 +1,6 @@
 package IR.Types;
 
+import BackEnd.IRBuilder;
 import IR.Value;
 
 import java.util.ArrayList;
@@ -17,9 +18,11 @@ import java.util.ArrayList;
 
 public class StructureType extends AggregateType {
     private ArrayList<IRBaseType> MemberList;
+    private String Identifier;
 
-    public StructureType(ArrayList<IRBaseType> typeList) {
+    public StructureType(String id, ArrayList<IRBaseType> typeList) {
         this.BaseTypeName = TypeID.StructTyID;
+        this.Identifier = id;
         this.MemberList = typeList;
         int sum = 0;
         for (IRBaseType typeMember : MemberList) {
@@ -32,6 +35,13 @@ public class StructureType extends AggregateType {
         return MemberList;
     }
 
+    public void AddMemberType(IRBaseType memberType) {
+        this.MemberList.add(memberType);
+    }
+
+    public String getIdentifier() {
+        return Identifier;
+    }
 
     @Override
     public Value getDefaultValue() {
