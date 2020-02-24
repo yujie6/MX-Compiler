@@ -20,4 +20,9 @@ public class StoreInst extends Instruction {
     public Value getStoreValue() {
         return this.UseList.get(1).getVal();
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

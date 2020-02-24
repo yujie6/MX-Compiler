@@ -35,4 +35,9 @@ public class PointerType extends SingleValueType {
     public Value getDefaultValue() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return PtrBaseType.toString() + "*";
+    }
 }

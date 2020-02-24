@@ -16,4 +16,9 @@ public class ValueSymbolTable {
     public Value get(String id) {
         return valueHashMap.get(id);
     }
+
+    public boolean contains(String key) {
+        return valueHashMap.containsKey(key);
+    }
+
 }

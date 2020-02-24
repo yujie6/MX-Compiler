@@ -20,4 +20,9 @@ public class VoidType extends IRBaseType {
     public Value getDefaultValue() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return "void";
+    }
 }

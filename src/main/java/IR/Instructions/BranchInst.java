@@ -27,4 +27,9 @@ public class BranchInst extends Instruction {
     public Value getCondition() {
         return this.UseList.get(0).getVal();
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

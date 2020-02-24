@@ -3,14 +3,17 @@ package BackEnd;
 import AST.*;
 import Frontend.Scope;
 import IR.*;
+import IR.Constants.*;
 import IR.Instructions.*;
 import IR.Module;
 import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
+import IR.Types.PointerType;
 import IR.Types.StructureType;
 import MxEntity.FunctionEntity;
 import Tools.Operators;
 
+import javax.print.DocFlavor;
 import java.awt.image.TileObserver;
 import java.util.ArrayList;
 import java.util.Stack;
@@ -36,6 +39,7 @@ public class IRBuilder implements ASTVisitor {
         init = new Function("_entry_block", Module.VOID, new ArrayList<>());
         TopModule.defineFunction(init);
         init.initialize();
+        logger.info("IRBuilder construction complete.");
     }
 
     public static IRBaseType ConvertTypeFromAST(Type type) {
@@ -120,7 +124,9 @@ public class IRBuilder implements ASTVisitor {
             }
         }
 
-        return null;
+        logger.fine("IR build complete with no errors!");
+
+        return TopModule;
     }
 
     @Override
@@ -171,6 +177,7 @@ public class IRBuilder implements ASTVisitor {
 
                 BasicBlock head = curFunction.getHeadBlock();
                 AllocaInst AllocaAddr = new AllocaInst(curBasicBlock, type);
+                curFunction.getVarSymTab().put(subnode.getIdentifier(), AllocaAddr);
                 head.AddInstAtTail(AllocaAddr);
                 ExprNode initExpr = subnode.getInitValue();
                 Value initValue;
@@ -181,6 +188,7 @@ public class IRBuilder implements ASTVisitor {
                     }
                 } else {
                     initValue = type.getDefaultValue();
+                    curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                 }
             }
         }
@@ -408,7 +416,18 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ConstNode node) {
-        return null;
+        IRBaseType constType = ConvertTypeFromAST(node.getType());
+        Constant constant = null;
+        if (constType.equals(Module.STRING)) {
+            constant = new StringConst( ((StringConstNode) node).getValue());
+        } else if (constType.equals(Module.I32)) {
+            constant = new IntConst( ((IntConstNode) node).getValue() );
+        } else if (constType.equals(Module.I1)) {
+            constant = new BoolConst(((BoolConstNode)node).getValue());
+        } else if (constType.getBaseTypeName().equals(IRBaseType.TypeID.ArrayTyID)) {
+            // constant = new ArrayConst();
+        }
+        return constant;
     }
 
     @Override
@@ -572,8 +591,10 @@ public class IRBuilder implements ASTVisitor {
                 }
                 break;
             }
-            case ASSIGN:
+            case ASSIGN: {
+                curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RHS, LHS));
                 break;
+            }
             case DEFAULT:
                 break;
         }
@@ -583,7 +604,18 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(IDExprNode node) {
-        return null;
+        Value VarAddr;
+        if (curFunction.getVarSymTab().contains(node.getIdentifier())) {
+            VarAddr = curFunction.getVarSymTab().get(node.getIdentifier());
+        } else {
+            VarAddr = TopModule.getGlobalVarMap().get(node.getIdentifier());
+        }
+        if (!(VarAddr instanceof AllocaInst)) {
+            logger.warning("Variable definition error, not storing an address.");
+        }
+        Instruction loadResult = new LoadInst(curBasicBlock, ((AllocaInst) VarAddr).getBaseType(), VarAddr);
+        curBasicBlock.AddInstAtTail(loadResult);
+        return loadResult;
     }
 
     @Override

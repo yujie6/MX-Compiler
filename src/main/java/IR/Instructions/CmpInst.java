@@ -9,6 +9,11 @@ import Tools.Operators;
 public class CmpInst extends Instruction {
     private CmpOperation SubOpcode;
 
+    @Override
+    public String toString() {
+        return null;
+    }
+
     enum CmpOperation {
         eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
     }

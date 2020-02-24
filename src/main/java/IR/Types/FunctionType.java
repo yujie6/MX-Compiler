@@ -15,6 +15,7 @@ public class FunctionType extends IRBaseType {
 
     private IRBaseType ReturnType;
     private ArrayList<IRBaseType> ArgumentTypeList;
+    private String Identifiler;
 
     public FunctionType(IRBaseType returnType, ArrayList<IRBaseType> argumentTypeList) {
         this.BaseTypeName = TypeID.FunctionTyID;
@@ -38,5 +39,19 @@ public class FunctionType extends IRBaseType {
     @Override
     public Value getDefaultValue() {
         return null;
+    }
+
+    @Override
+    public String toString() {
+        String ans = ReturnType.toString() + " @" + this.Identifiler + "(";
+        for (IRBaseType argType : ArgumentTypeList) {
+            ans = ans + argType.toString() + ", ";
+        }
+        ans += ")";
+        return ans;
+    }
+
+    public void setIdentifiler(String identifiler) {
+        Identifiler = identifiler;
     }
 }

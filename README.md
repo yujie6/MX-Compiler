@@ -13,4 +13,5 @@ to scan all the methods for class.
 * Catch exception from Parser, e.g. `class int{}` will throw an error
 * Improve error handler, collect as much errors as possible.
 * Improve grammar file for "for-init"
-* Building LLVM IR
+* Debug LLVM IR builder
+* Complete IRPrinter

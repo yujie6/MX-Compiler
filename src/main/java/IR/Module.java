@@ -8,6 +8,7 @@ import IR.Instructions.AllocaInst;
 import IR.Instructions.StoreInst;
 import IR.Types.*;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.logging.Logger;
@@ -201,7 +202,7 @@ public class Module extends Value{
     }
 
     @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
+    public void accept(IRVisitor<IRBaseNode> visitor) throws IOException {
         visitor.visit(this);
     }
 

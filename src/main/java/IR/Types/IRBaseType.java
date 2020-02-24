@@ -20,6 +20,7 @@ package IR.Types;
  */
 
 import IR.Value;
+import com.ibm.icu.impl.CacheBase;
 
 import java.util.Objects;
 
@@ -70,6 +71,8 @@ public abstract class IRBaseType {
     public abstract int getBytes();
 
     public abstract Value getDefaultValue();
+
+    public abstract String toString();
 
     public TypeID getBaseTypeName() {
         return BaseTypeName;

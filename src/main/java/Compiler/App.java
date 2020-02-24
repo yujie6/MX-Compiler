@@ -6,8 +6,11 @@ package Compiler;
 import AST.ASTNode;
 import AST.MxProgramNode;
 import BackEnd.IRBuilder;
+import BackEnd.IRPrinter;
 import Frontend.*;
 
+import IR.GlobalVariable;
+import IR.Module;
 import Tools.LogFormatter;
 import Tools.MXError;
 import org.antlr.v4.runtime.CharStream;
@@ -25,6 +28,9 @@ import java.util.logging.Logger;
 
 
 public class App {
+
+    static Logger logger;
+
     public String getGreeting() {
         return "Hello world.";
     }
@@ -40,7 +46,7 @@ public class App {
         return logger;
     }
 
-    private static MxProgramNode GetAbstractSyntaxTree(CharStream input, Logger logger) {
+    private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
         MxLexer lexer = new MxLexer(input);
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         MxParser parser = new MxParser(tokens);
@@ -53,17 +59,29 @@ public class App {
         return ast;
     }
 
-    private static Scope GetGlobalScope(MxProgramNode ast, Logger logger) {
+    private static Scope GetGlobalScope(MxProgramNode ast) {
         GlobalScopeBuilder gsbuilder = new GlobalScopeBuilder(logger);
         gsbuilder.visit(ast);
         logger.info("GlobalScope build smoothly");
         return gsbuilder.getGlobalScope();
     }
 
-    public static void main(String[] args) throws MXError {
+    private static Module GetIRModule(MxProgramNode ast, Scope globalScope) {
+        (new SemanticChecker(globalScope, logger)).visit(ast);
+        IRBuilder irBuilder = new IRBuilder(globalScope, logger);
+        return (Module) irBuilder.visit(ast);
+    }
+
+    private static void PrintLLVMIR(Module irModule) throws IOException {
+        IRPrinter printer = new IRPrinter(logger, "Basic1");
+        printer.setPrintMode(1);
+        printer.Print(irModule);
+    }
+
+    public static void main(String[] args) throws MXError, IOException {
         // int[][] a = new int[2][];
         // Setting logger
-        Logger logger = GetMXLogger();
+        logger = GetMXLogger();
         logger.info("Application start on " + args[0]);
 
         CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
@@ -81,10 +99,10 @@ public class App {
             input = CharStreams.fromString("(3 + 65) / 3 - 56");
         }
 
-        MxProgramNode ast = GetAbstractSyntaxTree(input, logger);
-        Scope globalScope = GetGlobalScope(ast, logger);
-        (new SemanticChecker(globalScope, logger)).visit(ast);
-        IRBuilder irBuilder = new IRBuilder(globalScope, logger);
-        // irBuilder.visit(ast);
+        MxProgramNode ast = GetAbstractSyntaxTree(input);
+        Scope globalScope = GetGlobalScope(ast);
+        Module LLVMTopModule = GetIRModule(ast, globalScope);
+        PrintLLVMIR(LLVMTopModule);
+
     }
 }

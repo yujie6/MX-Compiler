@@ -1,5 +1,6 @@
 package IR.Constants;
 
+import IR.Types.IRBaseType;
 import IR.User;
 
 /**
@@ -10,4 +11,8 @@ import IR.User;
 
 public class Constant extends User {
 
+    public Constant(IRBaseType type) {
+        super(ValueType.CONSTANT);
+        this.type = type;
+    }
 }

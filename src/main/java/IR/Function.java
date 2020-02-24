@@ -7,6 +7,7 @@ import IR.Types.FunctionType;
 import IR.Types.IRBaseType;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * A function definition contains a list of basic blocks, forming the CFG (Control Flow Graph) for the function.
@@ -36,9 +37,11 @@ public class Function extends Value {
             argTypeList.add(argument.getArgType());
         }
         functionType = new FunctionType(returnType, argTypeList);
+        functionType.setIdentifiler(id);
         HeadBlock = null;
         TailBlock = null;
         RetBlock = null;
+
         varSymTab = new ValueSymbolTable();
     }
 
@@ -61,6 +64,10 @@ public class Function extends Value {
 
     public BasicBlock getTailBlock() {
         return TailBlock;
+    }
+
+    public ValueSymbolTable getVarSymTab() {
+        return varSymTab;
     }
 
     public boolean isEmpty() {
@@ -113,4 +120,5 @@ public class Function extends Value {
     public void setRetValue(Value retValue) {
         RetValue = retValue;
     }
+
 }

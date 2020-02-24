@@ -17,4 +17,9 @@ public class LoadInst extends Instruction {
     public Value getLoadAddr() {
         return UseList.get(0).getVal();
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

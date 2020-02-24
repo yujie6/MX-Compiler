@@ -29,8 +29,7 @@ public class ClassDecNode extends DecNode {
 
     @Override
     public Object accept(ASTVisitor visitor) {
-        visitor.visit(this);
-        return null;
+        return visitor.visit(this);
     }
 
     public int getAcceptStage() {

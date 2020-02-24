@@ -47,4 +47,9 @@ public class StructureType extends AggregateType {
     public Value getDefaultValue() {
         return null;
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

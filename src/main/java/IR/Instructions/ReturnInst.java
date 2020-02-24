@@ -22,4 +22,9 @@ public class ReturnInst extends Instruction {
     public Value getRetValue() {
         return UseList.get(0).getVal();
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

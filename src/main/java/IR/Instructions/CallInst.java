@@ -29,4 +29,9 @@ public class CallInst extends Instruction {
     public ArrayList<Value> getArgumentList() {
         return ArgumentList;
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

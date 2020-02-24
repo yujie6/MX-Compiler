@@ -23,4 +23,13 @@ public class BinOpInst extends Instruction {
     public Value getRHS() {
         return UseList.get(1).getVal();
     }
+
+    @Override
+    public String toString() {
+        String ans = this.RegisterID + " = " + this.getOpcode();
+        ans += type.toString();
+        // TODO: handle LHS is a value problem
+
+        return ans;
+    }
 }

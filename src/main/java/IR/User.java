@@ -17,6 +17,7 @@ public class User extends Value {
 
     public User(ValueType vTy) {
         super(vTy);
+        UseList = new ArrayList<>();
     }
 
     public ArrayList<Use> getUseList() {

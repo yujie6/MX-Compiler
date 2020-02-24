@@ -4,9 +4,11 @@ import IR.BasicBlock;
 import IR.User;
 
 public abstract class Instruction extends User {
+    static protected int regNum = 1;
     protected BasicBlock Parent;
     protected InstType Opcode;
     protected Instruction prev, next;
+    protected String RegisterID;
 
     public enum InstType {
         alloca, br, call, load, store, phi, ret, bitcast,
@@ -18,10 +20,14 @@ public abstract class Instruction extends User {
         super(ValueType.INSTRUCTION);
         this.Parent = parent;
         this.Opcode = instType;
+        this.RegisterID = "%" + String.valueOf(regNum);
+        if (instType.equals(InstType.br) || instType.equals(InstType.store)) {
+            regNum += 1;
+        }
     }
 
-    public InstType getOpcode() {
-        return Opcode;
+    public String getOpcode() {
+        return Opcode.toString();
     }
 
     public BasicBlock getParent() {
@@ -47,4 +53,6 @@ public abstract class Instruction extends User {
     public Instruction getPrev() {
         return prev;
     }
+
+    public abstract String toString();
 }

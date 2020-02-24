@@ -9,4 +9,9 @@ public class GetPtrInst extends Instruction {
         this.type = type;
 
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }

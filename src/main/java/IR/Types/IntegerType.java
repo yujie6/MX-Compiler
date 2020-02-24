@@ -9,7 +9,12 @@ public class IntegerType extends SingleValueType {
 
     @Override
     public Value getDefaultValue() {
-        return new IntConst(this, 0);
+        return new IntConst( 0);
+    }
+
+    @Override
+    public String toString() {
+        return bitWidth.toString();
     }
 
     public enum BitWidth {

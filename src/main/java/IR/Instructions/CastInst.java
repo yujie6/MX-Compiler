@@ -21,4 +21,9 @@ public class CastInst extends Instruction {
     public IRBaseType getDestType() {
         return DestType;
     }
+
+    @Override
+    public String toString() {
+        return null;
+    }
 }
