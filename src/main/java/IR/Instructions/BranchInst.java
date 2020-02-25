@@ -28,8 +28,23 @@ public class BranchInst extends Instruction {
         return this.UseList.get(0).getVal();
     }
 
+    public String getCondLabel() {
+        return ((Instruction)getCondition() ).RegisterID;
+    }
+
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder("br ");
+        if (getCondition() != null) {
+            assert getElseBlock() != null;
+            ans.append(getCondition().getType().toString()).append(" ");
+            ans.append(getCondLabel()).append(", label ");
+            ans.append(getThenBlock().getLabel()).append(", label ");
+            ans.append(getElseBlock().getLabel());
+        } else {
+            ans.append("label %").append(getThenBlock().getLabel());
+        }
+        ans.append("\n");
+        return ans.toString();
     }
 }

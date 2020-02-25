@@ -32,6 +32,17 @@ public class CallInst extends Instruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder(RegisterID + " = call @");
+        ans.append(getCalledFunction().getIdentifier()).append("(");
+        if (!ArgumentList.isEmpty()) {
+            Value var = ArgumentList.get(0);
+            ans.append(var.getType().toString()).append(" ").append(((Instruction) var).RegisterID);
+            for (int i = 1; i < ArgumentList.size(); i++) {
+                var = ArgumentList.get(i);
+                ans.append(", ").append(var.getType().toString()).append(" ").append(((Instruction) var).RegisterID);
+            }
+        }
+        ans.append(")\n");
+        return ans.toString();
     }
 }

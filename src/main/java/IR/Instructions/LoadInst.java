@@ -20,6 +20,11 @@ public class LoadInst extends Instruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder(RegisterID);
+        ans.append(" = ").append("load ").append(type.toString());
+        ans.append(", ").append(getLoadAddr().getType().toString()).append(" ");
+        ans.append(  ((Instruction) getLoadAddr()).RegisterID );
+        ans.append(", align 4\n");
+        return ans.toString();
     }
 }

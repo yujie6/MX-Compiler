@@ -26,10 +26,10 @@ public class BinOpInst extends Instruction {
 
     @Override
     public String toString() {
-        String ans = this.RegisterID + " = " + this.getOpcode();
-        ans += type.toString();
-        // TODO: handle LHS is a value problem
-
-        return ans;
+        StringBuilder ans = new StringBuilder(RegisterID + " = " + this.getOpcode());
+        ans.append(" ").append(type.toString()).append(" ");
+        ans.append( ((Instruction) getLHS()).RegisterID).append(", ");
+        ans.append(( (Instruction) getRHS()).RegisterID).append("\n");
+        return ans.toString();
     }
 }

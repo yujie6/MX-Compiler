@@ -1,28 +1,47 @@
 package IR.Instructions;
 
+import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.Constants.Constant;
 import IR.Use;
 import IR.Value;
+import Tools.MXError;
 
 public class StoreInst extends Instruction {
 
+    boolean StoreConst;
+
     public StoreInst(BasicBlock parent, Value storeValue, Value storeDest) {
         super(parent, InstType.store);
+        this.StoreConst = (storeValue instanceof Constant);
+        if (storeValue == null) {
+            throw new MXError("fuck ");
+        }
         this.UseList.add(new Use(storeValue, this));
         this.UseList.add(new Use(storeDest, this));
         this.type = null; // should be ?
     }
 
     public Value getStoreDest() {
-        return this.UseList.get(0).getVal();
+        return this.UseList.get(1).getVal();
     }
 
     public Value getStoreValue() {
-        return this.UseList.get(1).getVal();
+        return this.UseList.get(0).getVal();
     }
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder("store ");
+        ans.append(getStoreValue().getType().toString()).append(" ");
+        if (StoreConst) {
+            ans.append( ((Constant) getStoreValue()).getValue() ).append(", ");
+        } else {
+            ans.append(((Instruction) getStoreValue()).RegisterID).append(", ");
+        }
+        ans.append(getStoreDest().getType().toString()).append(" ");
+        ans.append( ((Instruction) getStoreDest()).RegisterID  );
+        ans.append(", align 4\n");
+        return ans.toString();
     }
 }

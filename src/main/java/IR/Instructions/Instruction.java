@@ -20,8 +20,9 @@ public abstract class Instruction extends User {
         super(ValueType.INSTRUCTION);
         this.Parent = parent;
         this.Opcode = instType;
-        this.RegisterID = "%" + String.valueOf(regNum);
-        if (instType.equals(InstType.br) || instType.equals(InstType.store)) {
+
+        if (   !(instType.equals(InstType.br) || instType.equals(InstType.store))   ) {
+            this.RegisterID = "%" + regNum;
             regNum += 1;
         }
     }

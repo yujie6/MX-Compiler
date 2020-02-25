@@ -23,8 +23,17 @@ public class ReturnInst extends Instruction {
         return UseList.get(0).getVal();
     }
 
+    private String getRetRegID() {
+        return ((Instruction)getRetValue()).RegisterID;
+    }
+
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder("ret ");
+        ans.append(getRetType().toString()).append(" ");
+        if (!getRetType().toString().equals("void")) {
+            ans.append(getRetRegID());
+        }
+        return ans.toString();
     }
 }

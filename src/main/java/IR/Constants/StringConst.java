@@ -13,4 +13,9 @@ public class StringConst extends Constant {
     public String getConstValue() {
         return constValue;
     }
+
+    @Override
+    public Object getValue() {
+        return constValue;
+    }
 }

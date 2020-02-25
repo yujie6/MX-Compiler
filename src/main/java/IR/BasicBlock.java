@@ -3,6 +3,7 @@ package IR;
 import IR.Instructions.Instruction;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 /**
@@ -19,7 +20,7 @@ import java.util.Set;
 public class BasicBlock extends Value {
     private Function Parent;
     private String Identifier;
-    private ArrayList<Instruction> InstList;
+    private LinkedList<Instruction> InstList;
     private BasicBlock prev, next;
     private Instruction HeadInst, TailInst;
 
@@ -39,6 +40,7 @@ public class BasicBlock extends Value {
         next = null;
         predecessors = new LinkedHashSet<>();
         successors = new LinkedHashSet<>();
+        InstList = new LinkedList<>();
         Label = String.valueOf(BlockNum);
         BlockNum += 1;
     }
@@ -67,6 +69,10 @@ public class BasicBlock extends Value {
         return HeadInst == null && TailInst == null;
     }
 
+    public LinkedList<Instruction> getInstList() {
+        return InstList;
+    }
+
     public void AddInstAtTail(Instruction inst) {
         if (inst == null) return;
         if (isEmpty()) {
@@ -76,6 +82,7 @@ public class BasicBlock extends Value {
             inst.setPrev(TailInst);
         }
         TailInst = inst;
+        InstList.addLast(inst);
     }
 
     public void AddInstAtTop(Instruction inst) {
@@ -86,6 +93,7 @@ public class BasicBlock extends Value {
             inst.setNext(HeadInst);
         }
         HeadInst = inst;
+        InstList.addFirst(inst);
     }
 
     @Override

@@ -16,9 +16,15 @@ import java.util.logging.Logger;
 public class IRPrinter implements IRVisitor {
     private int PrintMode;
     private Logger logger;
+    private Function curFunction;
+    private BasicBlock curBasicBlock;
+
+
     private FileWriter writer;
     private String filename;
     private BufferedWriter bufw;
+
+
     private int indentLevel;
     private String [] _indentMap = {"", "\t", "\t\t", "\t\t\t"};
 
@@ -52,13 +58,17 @@ public class IRPrinter implements IRVisitor {
 
     @Override
     public Object visit(BasicBlock node) {
-        Instruction inst = node.getHeadInst();
+
+        curBasicBlock = node;
+
         WriteLLVM(node.getLabel() + ":\n");
         this.indentLevel += 1;
-        while (inst != node.getTailInst()) {
+
+        for (Instruction inst : node.getInstList() ) {
             WriteLLVM(inst.toString());
-            inst = inst.getNext();
         }
+
+        curBasicBlock = null;
         WriteLLVM("\n");
         this.indentLevel -= 1;
         return null;
@@ -73,7 +83,7 @@ public class IRPrinter implements IRVisitor {
     public Object visit(Function node) {
         WriteLLVM("define dso_local ");
         WriteLLVM(node.getFunctionType().toString() + "{ \n" ) ;
-
+        curFunction = node;
         BasicBlock head = node.getHeadBlock();
 
         while (head != node.getTailBlock()) {
@@ -81,7 +91,8 @@ public class IRPrinter implements IRVisitor {
             head = head.getNext();
         }
 
-
+        visit(node.getRetBlock());
+        curFunction = null;
         WriteLLVM("}\n");
         return null;
     }
@@ -93,9 +104,10 @@ public class IRPrinter implements IRVisitor {
         } else {
             logger.info("Print IR to std out.");
         }
-        WriteLLVM("; Module ID = '" + filename + "'\n");
-        WriteLLVM("source_filename = " + filename + "\n");
-        WriteLLVM("target datalayout = \"e-m:e-i64:64-f80:128-n8:16:32:64-S128\"\n");
+        WriteLLVM("; Module ID = '" + node.ModuleID + "'\n");
+        WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
+        WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
+        WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n");
 
 
         for ( Function func : node.getFunctionMap().values() ) {

@@ -10,7 +10,8 @@ public class IntConst extends Constant {
         this.ConstValue = value;
     }
 
-    public int getConstValue() {
-        return ConstValue;
+    @Override
+    public Object getValue() {
+        return String.valueOf(ConstValue);
     }
 }

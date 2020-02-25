@@ -32,9 +32,10 @@ public class Module extends Value{
     private HashMap<String, StructureType> ClassMap;
     private HashMap<String, BasicBlock> LabelMap;
     private ValueSymbolTable VarSymTab;
-    private String TargetTriple;
-    private String SourceFileName;
-    private String ModuleID;
+    public String TargetTriple;
+    public String SourceFileName;
+    public String ModuleID;
+    public String TargetDataLayout;
     private Logger logger;
 
     public static final VoidType VOID = new VoidType();
@@ -52,8 +53,12 @@ public class Module extends Value{
         GlobalVarMap = new HashMap<>();
         FunctionMap = new HashMap<>();
         ClassMap = new HashMap<>();
+        TargetTriple = "x86_64-pc-linux-gnu";
+        TargetDataLayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128";
+        ModuleID = "Basic1";
+        SourceFileName = "Basic1.cpp";
 
-        PreProcess();
+        // PreProcess();
     }
 
     public void RefreshClassMapping() {
@@ -73,28 +78,33 @@ public class Module extends Value{
         print_paras.add(new Argument(null, STRING, 0));
         // TODO: set parent
         Function _print = new Function("print", VOID, print_paras);
+        _print.initialize();
         FunctionMap.put(_print.getIdentifier(), _print);
         // println(string str) -> end with '/n'
         ArrayList<Argument> println_paras = new ArrayList<>();
         println_paras.add(new Argument(null, STRING, 0));
         Function _println = new Function("println", VOID, println_paras);
+        _println.initialize();
         FunctionMap.put(_println.getIdentifier(), _println);
         // printlnInt(int n) -> end with '/n'
         ArrayList<Argument> printlnInt_paras = new ArrayList<>();
         printlnInt_paras.add(new Argument(null, I32, 0));
         Function _printlnInt = new Function("printlnInt", VOID, printlnInt_paras);
         FunctionMap.put(_printlnInt.getIdentifier(), _printlnInt);
+        _printlnInt.initialize();
         // toString(int i)
         ArrayList<Argument> toString_paras = new ArrayList<>();
         toString_paras.add(new Argument(null, I32, 0));
         Function _toString = new Function("toString", STRING, toString_paras);
         FunctionMap.put(_toString.getIdentifier(), _toString);
+        _toString.initialize();
         // String add
         ArrayList<Argument> StringAdd_paras = new ArrayList<>();
         StringAdd_paras.add(new Argument(null, STRING, 0));
         StringAdd_paras.add(new Argument(null, STRING, 1));
         Function _StringAdd = new Function("toString", STRING, toString_paras);
         FunctionMap.put(_StringAdd.getIdentifier(), _StringAdd);
+        _StringAdd.initialize();
     }
 
     public HashMap<String, Function> getFunctionMap() {

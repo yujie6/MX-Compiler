@@ -1,5 +1,6 @@
 package IR.Types;
 
+import IR.Argument;
 import IR.Value;
 
 import java.util.ArrayList;
@@ -43,12 +44,15 @@ public class FunctionType extends IRBaseType {
 
     @Override
     public String toString() {
-        String ans = ReturnType.toString() + " @" + this.Identifiler + "(";
-        for (IRBaseType argType : ArgumentTypeList) {
-            ans = ans + argType.toString() + ", ";
+        StringBuilder ans = new StringBuilder(ReturnType.toString() + " @" + this.Identifiler + "(");
+        if (ArgumentTypeList.size() != 0) {
+            ans.append(ArgumentTypeList.get(0).toString());
+            for (int i = 1; i < ArgumentTypeList.size(); i++) {
+                ans.append(", ").append(ArgumentTypeList.get(i).toString());
+            }
         }
-        ans += ")";
-        return ans;
+        ans.append(")");
+        return ans.toString();
     }
 
     public void setIdentifiler(String identifiler) {

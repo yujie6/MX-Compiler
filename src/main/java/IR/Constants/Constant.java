@@ -9,10 +9,12 @@ import IR.User;
  * subclass, which represents the address of a global variable or function.
  */
 
-public class Constant extends User {
+public abstract class Constant extends User {
 
     public Constant(IRBaseType type) {
         super(ValueType.CONSTANT);
         this.type = type;
     }
+
+    public abstract Object getValue();
 }
