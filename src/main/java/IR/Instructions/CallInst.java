@@ -22,6 +22,10 @@ public class CallInst extends Instruction {
         }
     }
 
+    public boolean isVoid() {
+        return this.type.toString().equals("void");
+    }
+
     public Function getCalledFunction() {
         return (Function) this.UseList.get(0).getVal();
     }
@@ -32,7 +36,12 @@ public class CallInst extends Instruction {
 
     @Override
     public String toString() {
-        StringBuilder ans = new StringBuilder(RegisterID + " = call @");
+        StringBuilder ans = new StringBuilder();
+        if (isVoid()) {
+            ans.append("call void @");
+        } else {
+            ans.append( RegisterID).append(" = call ").append(this.type.toString()).append(" @");
+        }
         ans.append(getCalledFunction().getIdentifier()).append("(");
         if (!ArgumentList.isEmpty()) {
             Value var = ArgumentList.get(0);

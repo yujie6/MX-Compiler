@@ -4,6 +4,7 @@ import IR.Argument;
 import IR.BasicBlock;
 import IR.Function;
 import IR.IRVisitor;
+import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
 
@@ -15,18 +16,17 @@ import java.util.logging.Logger;
 
 public class IRPrinter implements IRVisitor {
     private int PrintMode;
+    private boolean isAssignLabel;
     private Logger logger;
     private Function curFunction;
     private BasicBlock curBasicBlock;
-
+    private int ValueID;
 
     private FileWriter writer;
-    private String filename;
     private BufferedWriter bufw;
 
-
     private int indentLevel;
-    private String [] _indentMap = {"", "\t", "\t\t", "\t\t\t"};
+    private String[] _indentMap = {"", "\t", "\t\t", "\t\t\t"};
 
     private void WriteLLVM(String str) {
         if (str == null) return;
@@ -44,33 +44,51 @@ public class IRPrinter implements IRVisitor {
 
     public IRPrinter(Logger logger, String filename) throws IOException {
         this.logger = logger;
-        this.filename = filename;
+        ;
         writer = new FileWriter("/tmp/" + filename + ".ll");
         this.bufw = new BufferedWriter(writer);
         this.indentLevel = 0;
-
+        this.ValueID = 0;
     }
 
     public void Print(Module node) throws IOException {
+        isAssignLabel = true;
+        visit(node);
+        isAssignLabel = false;
         visit(node);
         bufw.flush();
     }
 
     @Override
     public Object visit(BasicBlock node) {
+        if (isAssignLabel) {
 
-        curBasicBlock = node;
+            for (Instruction inst : node.getInstList()) {
+                // br store and call void has no register
+                if (inst.getRegisterID() != null) {
+                    if (inst instanceof CallInst) {
+                        if (!((CallInst) inst).isVoid()) {
+                            inst.setRegisterID("%" + ValueID);
+                            ValueID += 1;
+                        }
+                    } else {
+                        inst.setRegisterID("%" + ValueID);
+                        ValueID += 1;
+                    }
+                }
+            }
+        } else {
+            curBasicBlock = node;
+            WriteLLVM(node.getLabel() + ":\n");
+            this.indentLevel += 1;
+            for (Instruction inst : node.getInstList()) {
+                WriteLLVM(inst.toString());
+            }
 
-        WriteLLVM(node.getLabel() + ":\n");
-        this.indentLevel += 1;
-
-        for (Instruction inst : node.getInstList() ) {
-            WriteLLVM(inst.toString());
+            curBasicBlock = null;
+            WriteLLVM("\n");
+            this.indentLevel -= 1;
         }
-
-        curBasicBlock = null;
-        WriteLLVM("\n");
-        this.indentLevel -= 1;
         return null;
     }
 
@@ -81,19 +99,36 @@ public class IRPrinter implements IRVisitor {
 
     @Override
     public Object visit(Function node) {
-        WriteLLVM("define dso_local ");
-        WriteLLVM(node.getFunctionType().toString() + "{ \n" ) ;
-        curFunction = node;
-        BasicBlock head = node.getHeadBlock();
+        this.ValueID = 0;
+        if (isAssignLabel) {
+            BasicBlock head = node.getHeadBlock();
+            while (head != node.getTailBlock()) {
+                if (head.getInstList().size() != 0) {
+                    head.setLabel(String.valueOf(ValueID));
+                    ValueID += 1;
+                    visit(head);
+                }
+                head = head.getNext();
+            }
+            node.getRetBlock().setLabel(String.valueOf(ValueID));
+            ValueID += 1;
+            visit(node.getRetBlock());
+        } else {
 
-        while (head != node.getTailBlock()) {
-            visit(head);
-            head = head.getNext();
+            WriteLLVM("define dso_local ");
+            WriteLLVM(node.getFunctionType().toString() + "{ \n");
+            curFunction = node;
+            BasicBlock head = node.getHeadBlock();
+            while (head != node.getTailBlock()) {
+                if (head.getInstList().size() != 0) {
+                    visit(head);
+                }
+                head = head.getNext();
+            }
+            visit(node.getRetBlock());
+            curFunction = null;
+            WriteLLVM("}\n");
         }
-
-        visit(node.getRetBlock());
-        curFunction = null;
-        WriteLLVM("}\n");
         return null;
     }
 
@@ -104,13 +139,14 @@ public class IRPrinter implements IRVisitor {
         } else {
             logger.info("Print IR to std out.");
         }
-        WriteLLVM("; Module ID = '" + node.ModuleID + "'\n");
-        WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
-        WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
-        WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n");
+        if (!isAssignLabel) {
+            WriteLLVM("; Module ID = '" + node.ModuleID + "'\n");
+            WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
+            WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
+            WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n");
+        }
 
-
-        for ( Function func : node.getFunctionMap().values() ) {
+        for (Function func : node.getFunctionMap().values()) {
             visit(func);
         }
 

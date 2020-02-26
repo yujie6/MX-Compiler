@@ -120,4 +120,8 @@ public class BasicBlock extends Value {
     public String getLabel() {
         return Label;
     }
+
+    public void setLabel(String label) {
+        Label = label;
+    }
 }

@@ -1,4 +1,10 @@
 # Learning LLVM
+
+## Current Objectives
+1. Test basic function without class.
+2. Add class.
+3. Test everything
+
 ## Instruction
 * Binary Operations
     * `nuw` and `nsw` stand for 

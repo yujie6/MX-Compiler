@@ -55,5 +55,13 @@ public abstract class Instruction extends User {
         return prev;
     }
 
+    public void setRegisterID(String registerID) {
+        RegisterID = registerID;
+    }
+
+    public String getRegisterID() {
+        return RegisterID;
+    }
+
     public abstract String toString();
 }
