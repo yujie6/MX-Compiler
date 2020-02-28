@@ -11,6 +11,7 @@ import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 import IR.Types.StructureType;
 import MxEntity.FunctionEntity;
+import Tools.MXLogger;
 import Tools.Operators;
 
 import javax.print.DocFlavor;
@@ -25,12 +26,12 @@ public class IRBuilder implements ASTVisitor {
     private Scope GlobalScope;
     private Function curFunction, init;
     private BasicBlock curBasicBlock, curLoopBlock;
-    public Logger logger;
+    public MXLogger logger;
 
     private Stack<BasicBlock> CondStackForBreak;
     private Stack<BasicBlock> LoopStackForContinue;
 
-    public IRBuilder(Scope globalScope, Logger logger) {
+    public IRBuilder(Scope globalScope, MXLogger logger) {
         TopModule = new Module(null, logger);
         this.GlobalScope = globalScope;
         this.logger = logger;
@@ -258,7 +259,7 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock MergeBlock = new BasicBlock(curFunction, "IfMergeBlock");
         Value condition = (Value) node.getConditionExpr().accept(this);
         if (!condition.getType().getBaseTypeName().equals(IRBaseType.TypeID.IntegerTyID)) {
-            logger.severe("Condition is not boolean type");
+            logger.severe("Condition is not boolean type", node.GetLocation());
         }
         if (node.isHasElse()) {
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condition, ThenBlock, ElseBlock));
@@ -422,7 +423,7 @@ public class IRBuilder implements ASTVisitor {
             // constant = new ArrayConst();
         }
         if (constant == null) {
-            logger.severe("Constant processing error;");
+            logger.severe("Constant processing error;", node.GetLocation());
         }
         return constant;
     }
@@ -466,7 +467,7 @@ public class IRBuilder implements ASTVisitor {
             case SUB: {
                 // only integer sub
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use sub on non integer type.");
+                    logger.warning("Use sub on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -476,7 +477,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case MUL: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use mul on non integer type.");
+                    logger.warning("Use mul on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -486,7 +487,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case DIV: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use div on non integer type.");
+                    logger.warning("Use div on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.div, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -496,7 +497,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case MOD: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use mod on non integer type.");
+                    logger.warning("Use mod on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.srem, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -506,7 +507,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case SHL: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use left shift on non integer type.");
+                    logger.warning("Use left shift on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shl, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -516,7 +517,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case SHR: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use right shift on non integer type.");
+                    logger.warning("Use right shift on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shr, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -531,7 +532,7 @@ public class IRBuilder implements ASTVisitor {
             case NEQUAL:
             case GREATER_EQUAL: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use ge on non integer type.");
+                    logger.warning("Use ge on non integer type.", node.GetLocation());
                 } else {
                     CmpInst instance = new CmpInst(curBasicBlock, Module.I1, bop, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -542,7 +543,7 @@ public class IRBuilder implements ASTVisitor {
 
             case BITWISE_AND: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use bitwise and on non integer type.");
+                    logger.warning("Use bitwise and on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.and, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -552,7 +553,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case BITWISE_OR: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use bitwise or on non integer type.");
+                    logger.warning("Use bitwise or on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.or, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -562,7 +563,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case BITWISE_XOR: {
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use bitwise xor on non integer type.");
+                    logger.warning("Use bitwise xor on non integer type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.xor, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -572,7 +573,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case LOGIC_AND: {
                 if (!LHS.getType().equals(Module.I1)) {
-                    logger.warning("Use logic and on non bool type.");
+                    logger.warning("Use logic and on non bool type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I1, Instruction.InstType.and, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -582,7 +583,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case LOGIC_OR: {
                 if (!LHS.getType().equals(Module.I1)) {
-                    logger.warning("Use logic or on non bool type.");
+                    logger.warning("Use logic or on non bool type.", node.GetLocation());
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I1, Instruction.InstType.or, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -615,7 +616,7 @@ public class IRBuilder implements ASTVisitor {
             VarAddr = TopModule.getGlobalVarMap().get(node.getIdentifier());
         }
         if (!(VarAddr instanceof AllocaInst)) {
-            logger.warning("Variable definition error, not storing an address.");
+            logger.warning("Variable definition error, not storing an address.", node.GetLocation());
         }
 
         if (!isLeftValue) {

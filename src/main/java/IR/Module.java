@@ -7,6 +7,7 @@ import BackEnd.IRBuilder;
 import IR.Instructions.AllocaInst;
 import IR.Instructions.StoreInst;
 import IR.Types.*;
+import Tools.MXLogger;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -36,7 +37,7 @@ public class Module extends Value{
     public String SourceFileName;
     public String ModuleID;
     public String TargetDataLayout;
-    private Logger logger;
+    private MXLogger logger;
 
     public static final VoidType VOID = new VoidType();
     public static final IntegerType I1 = new IntegerType(IntegerType.BitWidth.i1);
@@ -46,7 +47,7 @@ public class Module extends Value{
     public static final PointerType STRING = new PointerType(I8);
 
 
-    public Module(ValueSymbolTable varSymTab, Logger logger) {
+    public Module(ValueSymbolTable varSymTab, MXLogger logger) {
         super(ValueType.MODULE);
         this.VarSymTab = varSymTab;
         this.logger = logger;

@@ -13,6 +13,7 @@ import IR.GlobalVariable;
 import IR.Module;
 import Tools.LogFormatter;
 import Tools.MXError;
+import Tools.MXLogger;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -22,6 +23,7 @@ import com.antlr.MxParser;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Scanner;
 import java.util.logging.ConsoleHandler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -29,21 +31,10 @@ import java.util.logging.Logger;
 
 public class App {
 
-    static Logger logger;
+    static MXLogger logger;
 
     public String getGreeting() {
         return "Hello world.";
-    }
-
-    private static Logger GetMXLogger() {
-        Logger logger = Logger.getLogger("MXLogger");
-        logger.setLevel(Level.FINE);
-        logger.setUseParentHandlers(false);
-        ConsoleHandler consoleHandler = new ConsoleHandler();
-        consoleHandler.setFormatter(new LogFormatter());
-        consoleHandler.setLevel(Level.FINE);
-        logger.addHandler(consoleHandler);
-        return logger;
     }
 
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
@@ -67,9 +58,12 @@ public class App {
     }
 
     private static Module GetIRModule(MxProgramNode ast, Scope globalScope) {
-        (new SemanticChecker(globalScope, logger)).visit(ast);
         IRBuilder irBuilder = new IRBuilder(globalScope, logger);
         return (Module) irBuilder.visit(ast);
+    }
+
+    private static void SemanticCheck(Scope globalScope, MxProgramNode ast) {
+        (new SemanticChecker(globalScope, logger)).visit(ast);
     }
 
     private static void PrintLLVMIR(Module irModule) throws IOException {
@@ -79,13 +73,10 @@ public class App {
     }
 
     public static void main(String[] args) throws MXError, IOException {
-        // int[][] a = new int[2][];
-        // Setting logger
-        logger = GetMXLogger();
-        logger.info("Application start on " + args[0]);
-
-        CharStream input = CharStreams.fromString("(3 + 65) / 3 - 56");;
+        logger = new MXLogger();
+        CharStream input = null;
         if (args.length == 1) {
+            logger.info("Application start on " + args[0]);
             String fileName = String.valueOf(args[0]);
             try {
                 input = CharStreams.fromFileName(fileName);
@@ -93,16 +84,16 @@ public class App {
                 System.err.println("Read File Failed.\n");
             }
         } else {
-            // InputStream is = System.in;
-            // input = CharStreams.fromStream(is);
-            logger.info("Use default test text.");
-            input = CharStreams.fromString("(3 + 65) / 3 - 56");
+            InputStream is = System.in;
+            input = CharStreams.fromStream(is);
+            logger.info("Use stdin as input.");
         }
 
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
-        Module LLVMTopModule = GetIRModule(ast, globalScope);
-        PrintLLVMIR(LLVMTopModule);
+        SemanticCheck(globalScope, ast);
+        // Module LLVMTopModule = GetIRModule(ast, globalScope);
+        //PrintLLVMIR(LLVMTopModule);
 
     }
 }

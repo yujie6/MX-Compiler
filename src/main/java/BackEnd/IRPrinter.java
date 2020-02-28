@@ -7,6 +7,7 @@ import IR.IRVisitor;
 import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
+import Tools.MXLogger;
 
 import java.io.BufferedWriter;
 import java.io.FileWriter;
@@ -17,7 +18,7 @@ import java.util.logging.Logger;
 public class IRPrinter implements IRVisitor {
     private int PrintMode;
     private boolean isAssignLabel;
-    private Logger logger;
+    private MXLogger logger;
     private Function curFunction;
     private BasicBlock curBasicBlock;
     private int ValueID;
@@ -42,7 +43,7 @@ public class IRPrinter implements IRVisitor {
         }
     }
 
-    public IRPrinter(Logger logger, String filename) throws IOException {
+    public IRPrinter(MXLogger logger, String filename) throws IOException {
         this.logger = logger;
         ;
         writer = new FileWriter("/tmp/" + filename + ".ll");

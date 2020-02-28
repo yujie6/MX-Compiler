@@ -3,6 +3,7 @@ package Frontend;
 import AST.*;
 import MxEntity.*;
 import Tools.MXError;
+import Tools.MXLogger;
 
 import java.util.ArrayList;
 import java.util.logging.Logger;
@@ -14,9 +15,9 @@ public class GlobalScopeBuilder implements ASTVisitor {
     final private Type IntType;
     final private Type StringType;
     final private Type VoidType;
-    private Logger logger;
+    private MXLogger logger;
 
-    public GlobalScopeBuilder(Logger logger) {
+    public GlobalScopeBuilder(MXLogger logger) {
         FunctionType = new Type(BaseType.STYPE_FUNC);
         BoolType = new Type(BaseType.DTYPE_BOOL);
         StringType = new Type(BaseType.DTYPE_STRING);
@@ -122,6 +123,12 @@ public class GlobalScopeBuilder implements ASTVisitor {
         for (DecNode declaration : node.getDecNodeList()) {
             if (!(declaration instanceof VariableDecNode))
                 declaration.accept(this);
+        }
+
+        for (DecNode decNode : node.getDecNodeList() ) {
+            if (decNode instanceof VariableDecNode) {
+                decNode.accept(this);
+            }
         }
         CheckMainEntry();
         return null;

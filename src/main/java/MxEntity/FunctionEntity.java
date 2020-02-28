@@ -2,6 +2,7 @@ package MxEntity;
 
 import AST.*;
 import Frontend.Scope;
+import Frontend.SemanticChecker;
 
 import java.util.ArrayList;
 
@@ -36,14 +37,20 @@ public class FunctionEntity extends Entity {
             if (((MethodDecNode) node).isConstructMethod()) {
                 ReturnType = new ClassType(ClassName);
             }
+            else ReturnType = node.getReturnType().getType();
         }
-        ReturnType = node.getReturnType().getType();
+        else ReturnType = node.getReturnType().getType();
+
         this.scope.setFuncRetType(ReturnType);
         this.scope.inFunction = true;
         this.ParaListSize = node.getParaDecList().size();
         ParaList = new ArrayList<>();
         for (ParameterNode para : node.getParaDecList()) {
             VariableEntity mx_var = new VariableEntity(father, para);
+            if (scope.hasVariable(mx_var.getIdentifier())) {
+                SemanticChecker.logger.severe("Two function parameter cannot have the same name.",
+                        node.GetLocation());
+            }
             scope.defineVariable(mx_var);
             ParaList.add(mx_var);
         }

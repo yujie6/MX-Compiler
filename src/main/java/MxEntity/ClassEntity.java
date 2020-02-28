@@ -2,6 +2,7 @@ package MxEntity;
 
 import AST.*;
 import Frontend.Scope;
+import Frontend.SemanticChecker;
 
 public class ClassEntity extends Entity {
 
@@ -18,9 +19,12 @@ public class ClassEntity extends Entity {
             Type DecType = var_list.getType();
             for (VarDecoratorNode var : var_list.getVarDecoratorList()) {
                 VariableEntity mx_var = new VariableEntity(scope, var, DecType);
-                // mx_var.setIdentifier(node.getIdentifier() + '.' + var.getIdentifier());
-                mx_var.setIdentifier(var.getIdentifier());
+                mx_var.setIdentifier(node.getIdentifier() + '.' + var.getIdentifier());
                 mx_var.setScopeLevel(2);
+                if (scope.hasVariable(node.getIdentifier() + '.' + var.getIdentifier())) {
+                    SemanticChecker.logger.severe("The member " + var.getIdentifier() + " has " +
+                            "been defined twice in the class '" + node.getIdentifier() + "'.", node.GetLocation());
+                }
                 scope.defineVariable(mx_var);
             }
         }
@@ -43,8 +47,16 @@ public class ClassEntity extends Entity {
         return scope.GetFunction(getIdentifier() + '.' + name);
     }
 
+    public boolean hasMember(String name) {
+        return scope.hasVariable(getIdentifier() + '.' + name);
+    }
+
+    public boolean hasMethod(String name) {
+        return scope.hasFunction(getIdentifier() + '.' + name);
+    }
+
     public VariableEntity getMember(String name) {
-        return scope.GetVariable(name);
+        return scope.GetVariable(getIdentifier() + '.' + name);
     }
 
 

@@ -49,10 +49,6 @@ public class Scope {
     }
 
     public void defineVariable(VariableEntity mx_variable) {
-        if (VarMap.containsKey(mx_variable.getIdentifier())) {
-            throw new MXError("The variable " + mx_variable.getIdentifier() +
-                    " has been defined twice");
-        }
         VarMap.put(mx_variable.getIdentifier(), mx_variable);
     }
 
@@ -104,6 +100,7 @@ public class Scope {
 
     public FunctionEntity GetFunction(String name) {
         if (!FuncMap.containsKey(name)) {
+            //SemanticChecker.logger.severe();
             throw new MXError("The function " + name +
                     " is not defined.");
         }

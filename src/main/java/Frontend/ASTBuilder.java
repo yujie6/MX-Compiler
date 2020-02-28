@@ -3,6 +3,7 @@ package Frontend;
 import AST.*;
 import Tools.Location;
 import Tools.MXError;
+import Tools.MXLogger;
 import Tools.Operators;
 import com.antlr.MxBaseVisitor;
 import com.antlr.MxParser;
@@ -14,8 +15,8 @@ import java.util.List;
 import java.util.logging.Logger;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
-    private Logger logger;
-    public ASTBuilder(Logger logger) {
+    private MXLogger logger;
+    public ASTBuilder(MXLogger logger) {
         this.logger = logger;
     }
 

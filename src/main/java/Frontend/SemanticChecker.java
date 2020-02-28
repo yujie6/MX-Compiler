@@ -22,7 +22,7 @@ public class SemanticChecker implements ASTVisitor {
     final private Type BoolType;
     final private Type IntType;
     final private Type StringType;
-    private Logger logger;
+    static public MXLogger logger;
 
 
     private Scope GlobalScope, LocalScope;
@@ -30,9 +30,9 @@ public class SemanticChecker implements ASTVisitor {
 
     private FunctionEntity CurrFunctionCall;
     private ClassEntity CurrClass;
-    private boolean hasRetStmt;
+    private boolean hasRetStmt, inConstructMethod;
 
-    public SemanticChecker(Scope gs, Logger logger) {
+    public SemanticChecker(Scope gs, MXLogger logger) {
         FunctionType = new Type(BaseType.STYPE_FUNC);
         BoolType = new Type(BaseType.DTYPE_BOOL);
         StringType = new Type(BaseType.DTYPE_STRING);
@@ -70,9 +70,20 @@ public class SemanticChecker implements ASTVisitor {
             throw new MXError("Fatal error");
         }
         for (DecNode declaration : node.getDecNodeList()) {
-            declaration.accept(this);
+            if (declaration instanceof ClassDecNode)
+                declaration.accept(this);
         }
-        logger.info("Semantic checks successfully, no error detected.");
+
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof FunctionDecNode)
+                declaration.accept(this);
+        }
+
+
+        if (logger.getErrorNum() > 0) {
+            System.err.println("Compiler ended with " + logger.getErrorNum() + " semantic errors.");
+            System.exit(1);
+        } else logger.info("Semantic checks successfully, no error detected.");
         return null;
     }
 
@@ -86,7 +97,14 @@ public class SemanticChecker implements ASTVisitor {
         }
         EnterScope(functionEntity);
         LocalScope.inFunction = true;
-        LocalScope.setFuncRetType(node.getReturnType().getType());
+        if (node instanceof MethodDecNode) {
+            inConstructMethod = ((MethodDecNode )node).isConstructMethod();
+        } else {
+            inConstructMethod = false;
+        }
+
+
+        LocalScope.setFuncRetType(functionEntity.getReturnType());
         if (!isValid(LocalScope.getFuncRetType())) {
             throw new MXError(String.format("The class or type %s is not defined.",
                     node.getReturnType().getType().getName()), node.GetLocation());
@@ -97,12 +115,12 @@ public class SemanticChecker implements ASTVisitor {
         }
         if (functionEntity.getReturnType().getBaseType() != BaseType.RTYPE_VOID) {
             if (!hasRetStmt && !functionEntity.isMethod()) {
-                throw new MXError("Return statement for function \'" + node.getIdentifier() +
-                        "\' does not exist.", node.GetLocation());
+                logger.warning("Return statement for function '" + node.getIdentifier() +
+                        "' does not exist.", node.GetLocation());
             }
         }
         ExitScope();
-        logger.fine("Semantic checks on function \'" + node.getIdentifier() + "\' successfully.");
+        logger.fine("Semantic checks on function '" + node.getIdentifier() + "' successfully.");
         LocalScope.inFunction = false;
         return null;
     }
@@ -117,12 +135,16 @@ public class SemanticChecker implements ASTVisitor {
             }
         }
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
+            if (GlobalScope.hasClass(var.getIdentifier())) {
+                logger.severe("Variable name and class name for '"+
+                        var.getIdentifier() +"' is dumplicated", node.GetLocation());
+            }
             VariableEntity mx_var = new VariableEntity(LocalScope, var, DecType);
             visit(var);
             if (var.getInitValue() != null) {
                 if (!DecType.equals(var.getInitType())) {
-                    throw new MXError("Value initialization for \'" + var.getIdentifier() +
-                            "\' type mismatch.", node.GetLocation());
+                    throw new MXError("Value initialization for '" + var.getIdentifier() +
+                            "' type mismatch.", node.GetLocation());
                 }
             }
             mx_var.setScopeLevel(EnteredScope.size());
@@ -131,7 +153,7 @@ public class SemanticChecker implements ASTVisitor {
                 // check if last scope have this var
                 VariableEntity exist_var = LocalScope.GetVariable(mx_var.getIdentifier());
                 if (mx_var.getScopeLevel() == exist_var.getScopeLevel()) {
-                    throw new MXError(String.format("Variable %s has been defined twice in the same scope"
+                    logger.severe(String.format("Variable %s has been defined twice in the same scope"
                             , mx_var.getIdentifier()), node.GetLocation());
                 }
 
@@ -157,7 +179,7 @@ public class SemanticChecker implements ASTVisitor {
         ExitScope();
         LocalScope.inClass = false;
         CurrClass = null;
-        logger.fine("Semantic checks on class \'" + node.getIdentifier() + "\' done successfully.");
+        logger.fine("Semantic checks on class '" + node.getIdentifier() + "' done successfully.");
         return null;
     }
 
@@ -226,7 +248,7 @@ public class SemanticChecker implements ASTVisitor {
         node.getRightExpr().accept(this);
         // TODO: may add error handler to detect more errors
         if (node.getLeftExpr() instanceof ThisExprNode) {
-            throw new MXError("\'this\' can not be left value.", node.GetLocation());
+            throw new MXError("'this' can not be left value.", node.GetLocation());
         }
         if (!node.getLeftExpr().getExprType().equals(node.getRightExpr().getExprType())) {
             throw new MXError("Expr type mismatch.", node.GetLocation());
@@ -312,14 +334,41 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(IDExprNode node) {
         // this node can only be NameExpr
         if (node.getExprType() == FunctionType) {
-            CurrFunctionCall = GlobalScope.GetFunction(node.getIdentifier());
-        } else if (node.getExprType() == null) {
-            if (!GlobalScope.hasVariable(node.getIdentifier()) && !LocalScope.hasVariable(node.getIdentifier())) {
-                throw new MXError("Variable \'" + node.getIdentifier() +
-                        "\' not defined!", node.GetLocation());
+            if (LocalScope.inClass && CurrClass.hasMethod(node.getIdentifier())) {
+                CurrFunctionCall = CurrClass.getMethod(node.getIdentifier());
+            } else {
+                if (GlobalScope.hasFunction(node.getIdentifier())) {
+                    CurrFunctionCall = GlobalScope.GetFunction(node.getIdentifier());
+                } else {
+                    SemanticChecker.logger.severe("The function " + node.getIdentifier() + " is not" +
+                            "defined", node.GetLocation());
+                }
             }
-            VariableEntity mx_var = LocalScope.hasVariable(node.getIdentifier()) ?
-                    LocalScope.GetVariable(node.getIdentifier()) : GlobalScope.GetVariable(node.getIdentifier());
+        } else if (node.getExprType() == null) {
+            VariableEntity mx_var = null;
+            /*
+             * Searching for variable:
+             * 1. Local Scope
+             * 2. Class member
+             * 3. Global Scope
+             */
+            if (LocalScope.hasVariable(node.getIdentifier())) {
+                mx_var = LocalScope.GetVariable(node.getIdentifier());
+            } else if (LocalScope.inClass) {
+                if (CurrClass.hasMember(node.getIdentifier())) {
+                    mx_var = CurrClass.getMember(node.getIdentifier());
+                }
+            } else {
+                if (GlobalScope.hasVariable(node.getIdentifier())) {
+                    mx_var = GlobalScope.GetVariable(node.getIdentifier());
+                } else {
+                    logger.severe("Variable '" + node.getIdentifier() +
+                            "' not defined!", node.GetLocation());
+                    System.err.println("Compiler encountered fatal error.");
+                    System.exit(1);
+                }
+            }
+
             node.setExprType(mx_var.getVarType());
         }
         return null;
@@ -342,8 +391,8 @@ public class SemanticChecker implements ASTVisitor {
                 return null;
             }
             if (!node.getExpr().getExprType().isClass()) {
-                throw new MXError("This expr has no member access for \'" +
-                        node.getMember() + "\'.", node.GetLocation());
+                throw new MXError("This expr has no member access for '" +
+                        node.getMember() + "'.", node.GetLocation());
             }
             String ClassName = node.getExpr().getExprType().getName();
             classEntity = GlobalScope.GetClass(ClassName);
@@ -435,8 +484,9 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public Object visit(ThisExprNode node) {
         if (!LocalScope.inClass) {
-            throw new MXError("Using \"this\" out of a class domain.", node.GetLocation());
+            logger.severe("Using \"this\" out of a class domain.", node.GetLocation());
         }
+        node.setExprType(new ClassType(CurrClass.getIdentifier()));
         return null;
     }
 
@@ -468,7 +518,7 @@ public class SemanticChecker implements ASTVisitor {
             }
         }
         node.setExprType(node.getFunction().getReturnType());
-        logger.fine("Semantic checks on \'" + node.getFunction().getIdentifier() + "\' function call at line "
+        logger.fine("Semantic checks on '" + node.getFunction().getIdentifier() + "' function call at line "
                 + node.GetLocation().getLine() + " done successfully.");
         // node.getParameters().forEach();
         return null;
@@ -478,7 +528,7 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(IfStmtNode node) {
         node.getConditionExpr().accept(this);
         if (!node.getConditionExpr().getExprType().isBool()) {
-            throw new MXError("If statement's condition is not bool type.", node.GetLocation());
+            logger.severe("If statement's condition is not bool type." , node.GetLocation() );
         }
         node.getThenStmt().accept(this);
         if (node.isHasElse()) {
@@ -513,7 +563,7 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopStmt().accept(this);
         LocalScope.LoopLevel--;
-        logger.fine("Semantic checks on \'while statement\' at line "
+        logger.fine("Semantic checks on 'while statement' at line "
                 + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
@@ -555,7 +605,7 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopBlcok().accept(this);
         LocalScope.LoopLevel--;
-        logger.fine("Semantic checks on \'for statement\' at line "
+        logger.fine("Semantic checks on 'for statement' at line "
                 + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
@@ -564,12 +614,14 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(ReturnStmtNode node) {
         if (node.getReturnedExpr() != null) node.getReturnedExpr().accept(this);
         if (LocalScope.inFunction = false) {
-            throw new MXError("Return statement not in a function");
+            logger.severe("Return statement not in a function", node.GetLocation());
         }
         Type RetType = node.getRetType();
-        if (!LocalScope.getFuncRetType().equals(RetType)) {
+
+        if (!inConstructMethod && !LocalScope.getFuncRetType().equals(RetType)) {
             throw new MXError("Return type mismatch.", node.GetLocation());
         }
+
         hasRetStmt = true;
         logger.fine("Semantic checks return statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
