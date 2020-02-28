@@ -42,7 +42,7 @@ public class SemanticChecker implements ASTVisitor {
         this.logger = logger;
     }
 
-    boolean isValid(Type type) {
+    public boolean isValid(Type type) {
         if (type.isClass()) {
             return GlobalScope.hasClass(type.getName());
         }

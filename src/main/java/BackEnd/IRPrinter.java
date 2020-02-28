@@ -134,9 +134,9 @@ public class IRPrinter implements IRVisitor {
 
     @Override
     public Object visit(Module node) {
-        if (PrintMode == 1) {
+        if (PrintMode == 1 && isAssignLabel) {
             logger.info("Print IR to disk.");
-        } else {
+        } else if (PrintMode == 0 && isAssignLabel){
             logger.info("Print IR to std out.");
         }
         if (!isAssignLabel) {

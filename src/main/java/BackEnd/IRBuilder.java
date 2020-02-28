@@ -639,11 +639,49 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(PrefixExprNode node) {
+        Value expr = (Value) node.getExpr().accept(this);
+        switch (node.getPrefixOp()) {
+
+            case INC:
+                break;
+            case DEC:
+                break;
+            case POS:
+                break;
+            case NEG:
+                break;
+            case LOGIC_NOT: {
+                break;
+            }
+            case BITWISE_NOT:
+                break;
+            case DEFAULT:
+                break;
+        }
         return null;
     }
 
     @Override
     public Object visit(PostfixExprNode node) {
+        Value expr = (Value) node.accept(this);
+        switch (node.getPostfixOp()) {
+            case INC: {
+                // require value
+                Instruction res = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, expr,
+                        new IntConst(1));
+
+                // require addr
+                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                curBasicBlock.AddInstAtTail(res);
+                curBasicBlock.AddInstAtTail(st);
+                break;
+            }
+            case DEC: {
+                break;
+            }
+            case DEFAULT:
+                break;
+        }
         return null;
     }
 
