@@ -35,4 +35,6 @@ public interface ASTVisitor<T> {
     public T visit(CallExprNode node);
 
     public T visit(ParameterNode node);
+
+    public T visit(SemiStmtNode node);
 }

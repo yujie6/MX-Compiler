@@ -1,4 +1,4 @@
-// Generated from /home/yujie6/Music/Compiler/MX-Compiler/src/main/antlr/LexerRules.g4 by ANTLR 4.8
+// Generated from /home/yujie6/Documents/Compiler/MX-Compiler/src/main/antlr/LexerRules.g4 by ANTLR 4.8
 import org.antlr.v4.runtime.Lexer;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.Token;

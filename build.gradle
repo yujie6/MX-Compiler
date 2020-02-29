@@ -45,7 +45,7 @@ application {
 }
 
 run {
-    args "/home/yujie6/Documents/Compiler/MX-Compiler/src/test/resources/sema/array-package/array-1.mx"
+    args "/home/yujie6/Documents/Compiler/MX-Compiler/src/test/resources/sema/basic-package/basic-67.mx"
     // options.warnings = false
 }
 

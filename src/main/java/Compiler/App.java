@@ -14,6 +14,8 @@ import IR.Module;
 import Tools.LogFormatter;
 import Tools.MXError;
 import Tools.MXLogger;
+import Tools.SyntaxErrorListener;
+import org.antlr.v4.runtime.ANTLRErrorListener;
 import org.antlr.v4.runtime.CharStream;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
@@ -39,9 +41,24 @@ public class App {
 
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
         MxLexer lexer = new MxLexer(input);
+        lexer.removeErrorListeners();
+        lexer.addErrorListener(new SyntaxErrorListener(logger));
+
         CommonTokenStream tokens = new CommonTokenStream(lexer);
+        if (logger.getErrorNum() > 0) {
+            System.err.println(logger.getErrorNum() + " errors in lexing.");
+            System.exit(1);
+        }
+
         MxParser parser = new MxParser(tokens);
+        parser.removeErrorListeners();
+        parser.addErrorListener(new SyntaxErrorListener(logger));
         ParseTree tree = parser.mxProgram();
+
+        if (logger.getErrorNum() > 0) {
+            System.err.println(logger.getErrorNum() + " errors while parsing.");
+            System.exit(1);
+        }
 
         ASTBuilder astBuilder = new ASTBuilder(logger);
         MxProgramNode ast = (MxProgramNode) astBuilder.visit(tree);

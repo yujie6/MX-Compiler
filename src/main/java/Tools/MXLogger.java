@@ -55,4 +55,5 @@ public class MXLogger {
     public int getErrorNum() {
         return errorNum;
     }
+
 }

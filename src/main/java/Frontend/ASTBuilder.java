@@ -12,7 +12,6 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.logging.Logger;
 
 public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     private MXLogger logger;
@@ -188,17 +187,33 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     }
 
     @Override
+    public ASTNode visitSemiStmt(MxParser.SemiStmtContext ctx) {
+        return new SemiStmtNode(new Location(ctx));
+    }
+
+    @Override
     public ASTNode visitIfStmt(MxParser.IfStmtContext ctx) {
         Location location = new Location(ctx);
         ExprNode expr = (ExprNode) visit(ctx.expression());
         List<MxParser.StatementContext> ThenElseStmt = ctx.statement();
-        StmtNode elsestmt, thenstmt = (StmtNode) visit(ThenElseStmt.get(0));
+        StmtNode elseStmt = null, thenStmt = (StmtNode) visit(ThenElseStmt.get(0));
+        boolean hasElse = false;
         if (ThenElseStmt.size() == 2) {
-            elsestmt = (StmtNode) visit(ThenElseStmt.get(1));
-            return new IfStmtNode(location, expr, thenstmt, elsestmt, true);
-        } else {
-            return new IfStmtNode(location, expr, thenstmt, null, false);
+            elseStmt = (StmtNode) visit(ThenElseStmt.get(1));
+            hasElse = true;
         }
+        // else then must be block
+        if (!(thenStmt instanceof BlockNode)) {
+            ArrayList<StmtNode> stmtNodeArrayList = new ArrayList<>();
+            stmtNodeArrayList.add(thenStmt);
+            thenStmt = new BlockNode(thenStmt.GetLocation(), stmtNodeArrayList);
+        }
+        if (hasElse && !(elseStmt instanceof BlockNode)) {
+            ArrayList<StmtNode> stmtNodeArrayList = new ArrayList<>();
+            stmtNodeArrayList.add(elseStmt);
+            elseStmt = new BlockNode(elseStmt.GetLocation(), stmtNodeArrayList);
+        }
+        return new IfStmtNode(location, expr, thenStmt, elseStmt, hasElse);
     }
 
     @Override
@@ -206,17 +221,39 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         Location location = new Location(ctx);
         ExprNode expr = (ExprNode) visit(ctx.expression());
         StmtNode loopstmt = (StmtNode) visit(ctx.statement());
+        if (loopstmt == null) {
+            logger.severe("Fatal error occur.", new Location(ctx));
+            System.exit(1);
+        }
+        if (!(loopstmt instanceof BlockNode)) {
+            ArrayList<StmtNode> stmtNodeArrayList = new ArrayList<>();
+            stmtNodeArrayList.add(loopstmt);
+            loopstmt = new BlockNode(loopstmt.GetLocation(), stmtNodeArrayList);
+        }
+
         return new WhileStmtNode(location, expr, loopstmt);
     }
 
     @Override
     public ASTNode visitForStmt(MxParser.ForStmtContext ctx) {
         StmtNode loopstmt = (StmtNode) visit(ctx.statement());
+        // ensure that loop stmt is a block node
+        if (loopstmt == null) {
+            logger.severe("Fatal error occur.", new Location(ctx));
+            System.exit(1);
+        }
+        if (!(loopstmt instanceof BlockNode)) {
+            ArrayList<StmtNode> stmtNodeArrayList = new ArrayList<>();
+            stmtNodeArrayList.add(loopstmt);
+            loopstmt = new BlockNode(loopstmt.GetLocation(), stmtNodeArrayList);
+        }
+
         MxParser.ForControlContext forexprs = ctx.forControl();
         ExprNode initExpr=null,  condExpr=null, updateExpr=null;
         if (forexprs.forinit != null) initExpr = (ExprNode) visit(forexprs.forinit);
         if (forexprs.forcond != null) condExpr = (ExprNode) visit(forexprs.forcond);
         if (forexprs.forUpdate != null) updateExpr = (ExprNode) visit(forexprs.forUpdate);
+
         return new ForStmtNode(new Location(ctx), initExpr, condExpr, updateExpr, loopstmt);
     }
 
@@ -423,10 +460,22 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
     public ASTNode visitArrayCreator(MxParser.ArrayCreatorContext ctx) {
         TypeNode type = (TypeNode) visit(ctx.nonArrayTypeNode());
         List<ExprNode> exprNodeList = new ArrayList<>();
-        for (MxParser.ExpressionContext expr : ctx.expression()) {
-            exprNodeList.add((ExprNode) visit(expr));
+
+        // Deciding if the shape is correctly specified.
+        boolean isEnd = false;
+        for (MxParser.ArraySizeContext subctx: ctx.arraySize()) {
+            if (subctx.expression() != null ) {
+                if (isEnd) {
+                    logger.severe("The shape of multidimensional array must be specified from left to right",
+                            new Location(ctx));
+                }
+                exprNodeList.add((ExprNode) visit(subctx.expression()));
+            } else {
+                isEnd = true;
+            }
         }
-        int arrayLevel = (ctx.getChildCount() - 1 - ctx.expression().size()) / 2;
+
+        int arrayLevel = ctx.arraySize().size();
         return new ArrayCreatorNode(new Location(ctx), type, exprNodeList, arrayLevel);
     }
 

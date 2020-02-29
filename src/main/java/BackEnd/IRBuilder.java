@@ -714,4 +714,9 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(ParameterNode node) {
         return null;
     }
+
+    @Override
+    public Object visit(SemiStmtNode node) {
+        return null;
+    }
 }

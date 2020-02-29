@@ -139,7 +139,12 @@ public class SemanticChecker implements ASTVisitor {
                 logger.severe("Variable name and class name for '" +
                         var.getIdentifier() + "' is duplicated", node.GetLocation());
             }
+
             VariableEntity mx_var = new VariableEntity(LocalScope, var, DecType);
+            if (mx_var.getIdentifier().startsWith("_")) {
+                logger.severe("_ cannot be the first symbol of identifier", node.GetLocation());
+            }
+
             visit(var);
             if (var.getInitValue() != null) {
                 if (!DecType.equals(var.getInitType())) {
@@ -222,6 +227,12 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public Object visit(ArrayCreatorNode node) {
         int arrayLevel = node.getArrayLevel();
+        for (ExprNode expr : node.getExprList() ) {
+            expr.accept(this);
+            if (!expr.getExprType().isInt()) {
+                logger.severe("The size of array can only be int type.", node.GetLocation());
+            }
+        }
         if (node.getExprType().isClass()) {
             node.setExprType(new Type(BaseType.STYPE_CLASS, arrayLevel,
                     node.getExprType().getName()));
@@ -621,7 +632,9 @@ public class SemanticChecker implements ASTVisitor {
         }
         Type RetType = node.getRetType();
         if (inConstructMethod) {
-            logger.severe("Cannot return any value in a constructor.", node.GetLocation());
+            if (node.getReturnedExpr() != null) {
+                logger.severe("Cannot return any value in a constructor.", node.GetLocation());
+            }
         } else if (!LocalScope.getFuncRetType().equals(RetType)) {
             logger.severe("Return type mismatch.", node.GetLocation());
         }
@@ -640,6 +653,11 @@ public class SemanticChecker implements ASTVisitor {
 
     @Override
     public Object visit(ParameterNode node) {
+        return null;
+    }
+
+    @Override
+    public Object visit(SemiStmtNode node) {
         return null;
     }
 }

@@ -137,6 +137,10 @@ public class GlobalScopeBuilder implements ASTVisitor {
     @Override
     public Object visit(FunctionDecNode node) {
         FunctionEntity mx_function = new FunctionEntity(globalScope, node, false, null);
+        if (!mx_function.isMethod() && globalScope.hasClass(mx_function.getIdentifier())) {
+            logger.severe("Duplicate name '" + mx_function.getIdentifier() + "' as a function.",
+                    node.GetLocation());
+        }
         globalScope.defineFunction(mx_function);
         return null;
     }
@@ -146,6 +150,13 @@ public class GlobalScopeBuilder implements ASTVisitor {
         Type DecType = node.getType();
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
             VariableEntity mx_var = new VariableEntity(globalScope, var, DecType);
+            if (mx_var.getIdentifier().startsWith("_")) {
+                logger.severe("_ cannot be the first symbol of identifier.", node.GetLocation());
+            }
+            if (globalScope.hasVariable(mx_var.getIdentifier())) {
+                logger.severe("The global variable '" + mx_var.getIdentifier() + "' has been defined" +
+                        "twice.", node.GetLocation());
+            }
             globalScope.defineVariable(mx_var);
         }
         return null;
@@ -154,9 +165,13 @@ public class GlobalScopeBuilder implements ASTVisitor {
     @Override
     public Object visit(ClassDecNode node) {
         ClassEntity mx_class = new ClassEntity(globalScope, node);
-//        if (mx_class.getIdentifier().equals("main")) {
-//            throw new MXError("Duplicated name for main.", node.GetLocation());
-//        }
+        if (mx_class.getIdentifier().equals("main")) {
+            logger.severe("Duplicated name for main.", node.GetLocation());
+        }
+        if (globalScope.hasFunction(mx_class.getIdentifier())) {
+            logger.severe("Duplicate name '" + mx_class.getIdentifier() + "' as a class.",
+                    node.GetLocation());
+        }
         globalScope.defineClass(mx_class);
         return null;
     }
@@ -278,6 +293,11 @@ public class GlobalScopeBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ParameterNode node) {
+        return null;
+    }
+
+    @Override
+    public Object visit(SemiStmtNode node) {
         return null;
     }
 

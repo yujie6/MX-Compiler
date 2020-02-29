@@ -112,8 +112,11 @@ literal
     | NULL_LITERAL
     ;
 
+arraySize:
+    '[' (expression)?']';
+
 creator
-    : nonArrayTypeNode ('[' expression']')+ ('['']')* #arrayCreator
+    : nonArrayTypeNode arraySize arraySize* #arrayCreator
       | nonArrayTypeNode ('(' ')' )?  #constructorCreator
     ;
     // should have some parameters for the constructor
