@@ -1,17 +1,27 @@
 # MX-Compiler
 A compiler from scratch for Mx*(a c-and-java-like language)
+to riscv32.
 
-To run the project:
+To run the project
 ```bash
-./gradlew run
+./gradlew installDist
+./build/install/Compiler/bin/Compiler inputfile
 ```
+More command line options:
+
+    usage: MX-Compiler
+     -g,--debug <arg>    set level of debug information
+     -h,--help           print this message
+     -i,--input <arg>    input file path
+     -o,--output <arg>   output file
+    
+    debug option	description
+    -g 0		no debug information
+    -g 1		only warning information
+    -g 2		with minimal information
+    -g 3		with detail information
 
 ### Current Objectives
-* Debug `basic test [36,42,52,53,57,67]`
-* Rebuild GlobalScopeBuilder, perhaps need one more AST traversal 
-to scan all the methods for class.
-* Catch exception from Parser, e.g. `class int{}` will throw an error
-* Improve error handler, collect as much errors as possible.
-* Improve grammar file for "for-init"
 * Debug LLVM IR builder
-* Complete IRPrinter
+* Add phi node for logic and, or
+* Basic optimization
