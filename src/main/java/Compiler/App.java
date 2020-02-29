@@ -62,7 +62,7 @@ public class App {
 
         ASTBuilder astBuilder = new ASTBuilder(logger);
         MxProgramNode ast = (MxProgramNode) astBuilder.visit(tree);
-        System.out.println(tree.toStringTree(parser));
+        // System.out.println(tree.toStringTree(parser));
         logger.info("AST build successfully.");
         return ast;
     }
@@ -90,7 +90,7 @@ public class App {
     }
 
     public static void main(String[] args) throws MXError, IOException {
-        logger = new MXLogger();
+        logger = new MXLogger(Level.INFO);
         CharStream input = null;
         if (args.length == 1) {
             logger.info("Application start on " + args[0]);

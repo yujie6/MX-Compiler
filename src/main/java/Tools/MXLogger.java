@@ -11,13 +11,13 @@ public class MXLogger {
     private int warningNum;
     private Logger logger;
 
-    public MXLogger() {
+    public MXLogger(Level level) {
         logger = Logger.getLogger("MxLogger");
-        logger.setLevel(Level.FINE);
+        logger.setLevel(level);
         logger.setUseParentHandlers(false);
         ConsoleHandler consoleHandler = new ConsoleHandler();
         consoleHandler.setFormatter(new LogFormatter());
-        consoleHandler.setLevel(Level.FINE);
+        consoleHandler.setLevel(level);
         logger.addHandler(consoleHandler);
 
         errorNum = 0;

@@ -67,7 +67,8 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(MxProgramNode node) {
         LocalScope = GlobalScope;
         if (LocalScope.inClass) {
-            throw new MXError("Fatal error");
+            logger.severe("Fatal error", node.GetLocation());
+            System.exit(1);
         }
         for (DecNode declaration : node.getDecNodeList()) {
             if (declaration instanceof ClassDecNode)
@@ -106,7 +107,7 @@ public class SemanticChecker implements ASTVisitor {
 
         LocalScope.setFuncRetType(functionEntity.getReturnType());
         if (!isValid(LocalScope.getFuncRetType())) {
-            throw new MXError(String.format("The class or type %s is not defined.",
+            logger.severe(String.format("The class or type %s is not defined.",
                     node.getReturnType().getType().getName()), node.GetLocation());
         }
         hasRetStmt = false;
@@ -131,7 +132,7 @@ public class SemanticChecker implements ASTVisitor {
         // check if the type is defined
         if (!isValid(DecType)) {
             if (!LocalScope.hasClass(DecType.getName())) {
-                throw new MXError("Invalid class: " + DecType.getName(), node.GetLocation());
+                logger.severe("Invalid class: " + DecType.getName(), node.GetLocation());
             }
         }
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
@@ -227,7 +228,7 @@ public class SemanticChecker implements ASTVisitor {
     @Override
     public Object visit(ArrayCreatorNode node) {
         int arrayLevel = node.getArrayLevel();
-        for (ExprNode expr : node.getExprList() ) {
+        for (ExprNode expr : node.getExprList()) {
             expr.accept(this);
             if (!expr.getExprType().isInt()) {
                 logger.severe("The size of array can only be int type.", node.GetLocation());
@@ -257,21 +258,22 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(BinExprNode node) {
         node.getLeftExpr().accept(this);
         node.getRightExpr().accept(this);
-        // TODO: may add error handler to detect more errors
+
         if (node.getLeftExpr() instanceof ThisExprNode) {
-            throw new MXError("'this' can not be left value.", node.GetLocation());
+            logger.severe("'this' can not be left value.", node.GetLocation());
         }
         if (!node.getLeftExpr().getExprType().equals(node.getRightExpr().getExprType())) {
-            throw new MXError("Expr type mismatch.", node.GetLocation());
+            logger.severe("Expr type mismatch.", node.GetLocation());
         }
 
         switch (node.getBop()) {
             case ASSIGN: {
                 // Assign statement: check left value (Array/member/id)
                 ExprNode LHS = node.getLeftExpr();
+                // TODO could be simplified by LHS.isLeftValue
                 if (!(LHS instanceof MemberExprNode || LHS instanceof IDExprNode ||
                         LHS instanceof ArrayExprNode)) {
-                    throw new MXError("Assign statement has wrong left value.", node.GetLocation());
+                    logger.severe("Assign statement has wrong left value.", node.GetLocation());
                 }
                 node.setExprType(node.getLeftExpr().getExprType());
                 break;
@@ -282,7 +284,7 @@ public class SemanticChecker implements ASTVisitor {
             case LESS: {
                 if (!node.getLeftExpr().getExprType().isInt()
                         && !node.getRightExpr().getExprType().isString()) {
-                    throw new MXError("Operator <,>,<=,>= can only be used by integers or string",
+                    logger.severe("Operator <,>,<=,>= can only be used by integers or string",
                             node.GetLocation());
                 }
                 node.setExprType(BoolType);
@@ -293,8 +295,9 @@ public class SemanticChecker implements ASTVisitor {
                 if (!node.getLeftExpr().getExprType().isBool() &&
                         !node.getLeftExpr().getExprType().isInt() &&
                         !node.getLeftExpr().getExprType().isString() &&
-                        !node.getLeftExpr().getExprType().isNull()) {
-                    throw new MXError("Operators ==,!= does not support this type.",
+                        !node.getLeftExpr().getExprType().isNull() &&
+                        !node.getRightExpr().getExprType().isNull()) {
+                    logger.severe("Operators ==,!= does not support this type.",
                             node.GetLocation());
                 }
                 node.setExprType(BoolType);
@@ -304,7 +307,7 @@ public class SemanticChecker implements ASTVisitor {
             case LOGIC_OR:
             case LOGIC_AND: {
                 if (!node.getLeftExpr().getExprType().isBool()) {
-                    throw new MXError("Operators ||,&& only support bool type.", node.GetLocation());
+                    logger.severe("Operators ||,&& only support bool type.", node.GetLocation());
                 }
                 node.setExprType(BoolType);
                 break;
@@ -320,7 +323,7 @@ public class SemanticChecker implements ASTVisitor {
             case MOD:
             case SUB: {
                 if (!node.getLeftExpr().getExprType().isInt()) {
-                    throw new MXError("Operators used on wrong type, expect int.", node.GetLocation());
+                    logger.severe("Operators used on wrong type, expect int.", node.GetLocation());
                 }
                 node.setExprType(IntType);
                 break;
@@ -329,13 +332,13 @@ public class SemanticChecker implements ASTVisitor {
             case ADD: {
                 if (!node.getLeftExpr().getExprType().isInt() &&
                         !node.getLeftExpr().getExprType().isString()) {
-                    throw new MXError("Only int and string support + operator.", node.GetLocation());
+                    logger.severe("Only int and string support + operator.", node.GetLocation());
                 }
                 node.setExprType(node.getLeftExpr().getExprType());
                 break;
             }
             default: {
-                throw new MXError("Wrong operators.", node.GetLocation());
+                logger.severe("Wrong operators.", node.GetLocation());
             }
         }
         return null;
@@ -351,8 +354,8 @@ public class SemanticChecker implements ASTVisitor {
                 if (GlobalScope.hasFunction(node.getIdentifier())) {
                     CurrFunctionCall = GlobalScope.GetFunction(node.getIdentifier());
                 } else {
-                    SemanticChecker.logger.severe("The function " + node.getIdentifier() + " is not" +
-                            "defined", node.GetLocation());
+                    SemanticChecker.logger.severe("The function " + node.getIdentifier() + " is not defined."
+                            , node.GetLocation());
                 }
             }
         } else if (node.getExprType() == null) {
@@ -368,7 +371,11 @@ public class SemanticChecker implements ASTVisitor {
             } else if (LocalScope.inClass && CurrClass.hasMember(node.getIdentifier())) {
                 mx_var = CurrClass.getMember(node.getIdentifier());
             } else if (GlobalScope.hasVariable(node.getIdentifier())) {
-                    mx_var = GlobalScope.GetVariable(node.getIdentifier());
+                mx_var = GlobalScope.GetVariable(node.getIdentifier());
+                if (node.GetLocation().getLine() < mx_var.getLocation().getLine()) {
+                    logger.severe("Global Variable " + mx_var.getIdentifier() + " use before defined.",
+                            node.GetLocation());
+                }
             } else {
                 mx_var = null;
             }
@@ -379,6 +386,7 @@ public class SemanticChecker implements ASTVisitor {
                 System.exit(1);
             }
             node.setExprType(mx_var.getVarType());
+            node.setLeftValue(true);
         }
         return null;
     }
@@ -400,7 +408,7 @@ public class SemanticChecker implements ASTVisitor {
                 return null;
             }
             if (!node.getExpr().getExprType().isClass()) {
-                throw new MXError("This expr has no member access for '" +
+                logger.severe("This expr has no member access for '" +
                         node.getMember() + "'.", node.GetLocation());
             }
             String ClassName = node.getExpr().getExprType().getName();
@@ -418,6 +426,7 @@ public class SemanticChecker implements ASTVisitor {
         } else {
             VariableEntity member = classEntity.getMember(node.getMember());
             node.setExprType(member.getVarType());
+            node.setLeftValue(true);
         }
         return null;
     }
@@ -428,16 +437,17 @@ public class SemanticChecker implements ASTVisitor {
         arrayId.accept(this);
         Type OriginalType = arrayId.getExprType();
         if (!OriginalType.isArray()) {
-            throw new MXError("This ID has no array access!", node.GetLocation());
+            logger.severe("This ID has no array access!", node.GetLocation());
         }
         node.getOffset().accept(this);
         Type offsetType = node.getOffset().getExprType();
         if (!offsetType.isInt() || offsetType.isArray()) {
-            throw new MXError("Offset of array must be int.", node.GetLocation());
+            logger.severe("Offset of array must be int.", node.GetLocation());
         }
         node.setExprType(new Type(OriginalType.getBaseType(),
                 OriginalType.getArrayLevel() - 1,
                 OriginalType.getName()));
+        node.setLeftValue(true);
         return null;
     }
 
@@ -447,12 +457,19 @@ public class SemanticChecker implements ASTVisitor {
 
         switch (node.getPrefixOp()) {
             case DEC:
+            case INC: {
+                if (!node.getExpr().getExprType().isInt()) {
+                    logger.severe("Prefix operation ++,-- could only be used for int",
+                            node.GetLocation());
+                }
+                node.setExprType(IntType);
+                node.setLeftValue(true);
+            }
             case BITWISE_NOT:
-            case INC:
             case POS:
             case NEG: {
                 if (!node.getExpr().getExprType().isInt()) {
-                    throw new MXError("Prefix op ++,--,+,- could only be used for int",
+                    logger.severe("Prefix operation +,-,~ could only be used for int",
                             node.GetLocation());
                 }
                 node.setExprType(IntType);
@@ -461,14 +478,14 @@ public class SemanticChecker implements ASTVisitor {
 
             case LOGIC_NOT: {
                 if (!node.getExpr().getExprType().isBool()) {
-                    throw new MXError("Logic not can only be used for bool value.",
+                    logger.severe("Logic not can only be used for bool value.",
                             node.GetLocation());
                 }
                 node.setExprType(BoolType);
                 break;
             }
             case DEFAULT: {
-                throw new MXError("Wrong prefix op detected.", node.GetLocation());
+                logger.severe("Wrong prefix op detected.", node.GetLocation());
             }
         }
         return null;
@@ -480,15 +497,19 @@ public class SemanticChecker implements ASTVisitor {
         switch (node.getPostfixOp()) {
             case INC:
             case DEC: {
+                if (!node.getExpr().isLeftValue()) {
+                    logger.severe("Only lvalue could use postfix ++,--.", node.GetLocation());
+                }
                 if (!node.getExpr().getExprType().isInt()) {
-                    throw new MXError("Postfix op ++,-- could only be used for int.",
+                    logger.severe("Postfix op ++,-- could only be used for int.",
                             node.GetLocation());
                 }
                 node.setExprType(IntType);
+                node.setLeftValue(false);
                 break;
             }
             case DEFAULT: {
-                throw new MXError("Unknown error for postfix op detected",
+                logger.severe("Unknown error for postfix op detected",
                         node.GetLocation());
             }
         }
@@ -512,12 +533,12 @@ public class SemanticChecker implements ASTVisitor {
         ArrayList<VariableEntity> ExpectedParas = CurrFunctionCall.getParaList();
         if (node.getParameters() == null) {
             if (CurrFunctionCall.getParaListSize() != 0) {
-                throw new MXError("Function call needs parameters", node.GetLocation());
+                logger.severe("Function call needs parameters", node.GetLocation());
             }
             return null;
         }
         if (ExpectedParas.size() != node.getParameters().size()) {
-            throw new MXError("Function call has wrong number of parameters", node.GetLocation());
+            logger.severe("Function call has wrong number of parameters", node.GetLocation());
         }
         if (ExpectedParas.size() != 0) {
             for (int i = 0; i < ExpectedParas.size(); i++) {
@@ -526,7 +547,7 @@ public class SemanticChecker implements ASTVisitor {
                 para_i.accept(this);
                 // TODO: Another problem is that we cannot compare the type directly
                 if (!ExpectedType.equals(para_i.getExprType())) {
-                    throw new MXError(String.format("Function call has wrong parameter type for the %d th parameter", i)
+                    logger.severe(String.format("Function call has wrong parameter type for the %d th parameter", i)
                             , node.GetLocation());
                 }
             }
@@ -557,7 +578,7 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(BreakStmtNode node) {
         // must be in a loop
         if (LocalScope.LoopLevel <= 0) {
-            throw new MXError("Continue statement not in a loop");
+            logger.severe("Continue statement not in a loop", node.GetLocation());
         }
         logger.fine("Semantic checks break statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
@@ -568,11 +589,11 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(WhileStmtNode node) {
         LocalScope.LoopLevel++;
         if (node.getCondition() == null) {
-            throw new MXError("While statement has no condition expr.", node.GetLocation());
+            logger.severe("While statement has no condition expr.", node.GetLocation());
         } else {
             node.getCondition().accept(this);
             if (!node.getCondition().getExprType().isBool()) {
-                throw new MXError("While statement condition is not bool.", node.GetLocation());
+                logger.severe("While statement condition is not bool.", node.GetLocation());
             }
         }
         node.getLoopStmt().accept(this);
@@ -586,7 +607,7 @@ public class SemanticChecker implements ASTVisitor {
     public Object visit(ContinueStmtNode node) {
         // must be in a loop
         if (LocalScope.LoopLevel <= 0) {
-            throw new MXError("Continue statement not in a loop");
+            logger.severe("Continue statement not in a loop", node.GetLocation());
         }
         logger.fine("Semantic checks continue statement at line "
                 + node.GetLocation().getLine() + " done successfully.");
@@ -608,7 +629,7 @@ public class SemanticChecker implements ASTVisitor {
         if (node.getCondExpr() != null) {
             node.getCondExpr().accept(this);
             if (!node.getCondExpr().getExprType().isBool()) {
-                throw new MXError("For condition type error.", node.GetLocation());
+                logger.severe("For condition type error.", node.GetLocation());
             }
         }
         if (node.getInitExpr() != null) {

@@ -91,6 +91,12 @@ public class GlobalScopeBuilder implements ASTVisitor {
         FunctionEntity mx_printlnInt = new FunctionEntity("printlnInt", VoidType, null, false,
                 globalScope, printlnInt_para);
         globalScope.defineFunction(mx_printlnInt);
+        // printlnInt(int n) -> end with nothing
+        ArrayList<VariableEntity> printInt_para = new ArrayList<>();
+        printInt_para.add(new VariableEntity("n", IntType));
+        FunctionEntity mx_printInt = new FunctionEntity("printInt", VoidType, null, false,
+                globalScope, printInt_para);
+        globalScope.defineFunction(mx_printInt);
         // getString()
         ArrayList<VariableEntity> getString_para = new ArrayList<>();
         FunctionEntity mx_getString = new FunctionEntity("getString", StringType, null, false,
