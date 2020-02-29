@@ -15,7 +15,7 @@ public class GlobalScopeBuilder implements ASTVisitor {
     final private Type IntType;
     final private Type StringType;
     final private Type VoidType;
-    private MXLogger logger;
+    public static MXLogger logger;
 
     public GlobalScopeBuilder(MXLogger logger) {
         FunctionType = new Type(BaseType.STYPE_FUNC);
@@ -24,7 +24,7 @@ public class GlobalScopeBuilder implements ASTVisitor {
         IntType = new Type(BaseType.DTYPE_INT);
         VoidType = new Type(BaseType.RTYPE_VOID);
         globalScope = new Scope();
-        this.logger = logger;
+        GlobalScopeBuilder.logger = logger;
     }
 
     private void CheckMainEntry() {
@@ -109,7 +109,7 @@ public class GlobalScopeBuilder implements ASTVisitor {
         globalScope.defineFunction(mx_toString);
         // Array size()
         ArrayList<VariableEntity> size_para = new ArrayList<>();
-        FunctionEntity mx_size = new FunctionEntity("size", IntType, "Array", true,
+        FunctionEntity mx_size = new FunctionEntity("size", IntType, "__Array", true,
                 globalScope, size_para);
         globalScope.defineFunction(mx_size);
         // Array class

@@ -426,8 +426,7 @@ public class ASTBuilder extends MxBaseVisitor<ASTNode> {
         for (MxParser.ExpressionContext expr : ctx.expression()) {
             exprNodeList.add((ExprNode) visit(expr));
         }
-        int arrayLevel = (ctx.getChildCount() - 1 - ctx.expression().size()) / 2
-                + ctx.expression().size();
+        int arrayLevel = (ctx.getChildCount() - 1 - ctx.expression().size()) / 2;
         return new ArrayCreatorNode(new Location(ctx), type, exprNodeList, arrayLevel);
     }
 

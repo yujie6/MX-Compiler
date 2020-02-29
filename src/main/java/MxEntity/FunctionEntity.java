@@ -1,6 +1,7 @@
 package MxEntity;
 
 import AST.*;
+import Frontend.GlobalScopeBuilder;
 import Frontend.Scope;
 import Frontend.SemanticChecker;
 
@@ -35,9 +36,18 @@ public class FunctionEntity extends Entity {
         } else this.ClassName = null;
         if (node instanceof MethodDecNode) {
             if (((MethodDecNode) node).isConstructMethod()) {
+                if (!node.getIdentifier().equals(ClassName) ) {
+                    GlobalScopeBuilder.logger.severe("Construct method should has the same name as class name.",
+                            node.GetLocation());
+                }
                 ReturnType = new ClassType(ClassName);
             }
-            else ReturnType = node.getReturnType().getType();
+            else {
+                if (node.getIdentifier().equals(ClassName)) {
+                    GlobalScopeBuilder.logger.severe("Constructor type error.", node.GetLocation());
+                }
+                ReturnType = node.getReturnType().getType();
+            }
         }
         else ReturnType = node.getReturnType().getType();
 

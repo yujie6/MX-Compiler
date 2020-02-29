@@ -58,7 +58,8 @@ public class Type
 
     public boolean equals(Type other) {
         if (isArray()) {
-            return other.isArray() ||
+
+            return (other.isArray() && arrayLevel == other.arrayLevel) ||
                     other.baseType == BaseType.DTYPE_NULL;
         }
         if (isClass()) {

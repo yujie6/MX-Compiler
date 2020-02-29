@@ -10,6 +10,13 @@ public class ArrayTypeNode extends TypeNode {
         this.ArrayLevel = arrayLevel;
     }
 
+    @Override
+    public Type getType() {
+        Type arrayType =  new Type(super.getType());
+        arrayType.arrayLevel = ArrayLevel;
+        return arrayType;
+    }
+
     public int getArrayLevel() {
         return ArrayLevel;
     }

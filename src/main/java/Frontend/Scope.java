@@ -34,6 +34,11 @@ public class Scope {
         this.FuncRetType = new Type(other.FuncRetType);
     }
 
+    @Override
+    public Scope clone() {
+        return new Scope(this);
+    }
+
     public void clear() {
         VarMap.clear();
         FuncMap.clear();
