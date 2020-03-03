@@ -11,6 +11,11 @@ public class IntConst extends Constant {
     }
 
     @Override
+    public String toString() {
+        return String.valueOf(ConstValue);
+    }
+
+    @Override
     public Object getValue() {
         return String.valueOf(ConstValue);
     }

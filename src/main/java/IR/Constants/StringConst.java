@@ -15,6 +15,11 @@ public class StringConst extends Constant {
     }
 
     @Override
+    public String toString() {
+        return constValue;
+    }
+
+    @Override
     public Object getValue() {
         return constValue;
     }

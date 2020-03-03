@@ -190,8 +190,8 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
-        // Module LLVMTopModule = GetIRModule(ast, globalScope);
-        //PrintLLVMIR(LLVMTopModule);
+        Module LLVMTopModule = GetIRModule(ast, globalScope);
+        PrintLLVMIR(LLVMTopModule);
 
     }
 }

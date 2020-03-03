@@ -1,6 +1,7 @@
 package IR;
 
 import IR.Types.IRBaseType;
+import IR.Types.PointerType;
 
 public class GlobalVariable extends Value {
 
@@ -17,6 +18,18 @@ public class GlobalVariable extends Value {
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
 
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder ans = new StringBuilder("@");
+        ans.append(Identifier).append(" = ");
+        ans.append("dso_local global ").append(type.toString());
+        ans.append(" ").append(InitValue.toString()); // init value shall be const
+        ans.append(" , align ");
+        int align = (type instanceof PointerType) ? 8 : 4;
+        ans.append(String.valueOf(align)).append("\n");
+        return ans.toString();
     }
 
     public String getIdentifier() {

@@ -1,7 +1,10 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
+import IR.Constants.Constant;
+import IR.GlobalVariable;
 import IR.User;
+import IR.Value;
 
 public abstract class Instruction extends User {
     static protected int regNum = 1;
@@ -24,6 +27,16 @@ public abstract class Instruction extends User {
         if (   !(instType.equals(InstType.br) || instType.equals(InstType.store))   ) {
             this.RegisterID = "%" + regNum;
             regNum += 1;
+        }
+    }
+
+    public String getRightValueLabel(Value rightValue) {
+        if (rightValue instanceof Constant) {
+            return rightValue.toString();
+        } else if (rightValue instanceof GlobalVariable) {
+            return "@" + ((GlobalVariable) rightValue).getIdentifier();
+        } else {
+            return ((Instruction) rightValue).getRegisterID();
         }
     }
 

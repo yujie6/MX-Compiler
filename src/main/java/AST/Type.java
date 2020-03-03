@@ -1,10 +1,13 @@
 package AST;
 
+import java.util.ArrayList;
+
 public class Type
 {
     private BaseType baseType;
     private String name;
     protected int arrayLevel;
+    private ArrayList<Integer> arraySize;
 
     public Type (Type other) {
         if (other != null) {

@@ -59,7 +59,7 @@ public class Module extends Value{
         ModuleID = "Basic1";
         SourceFileName = "Basic1.cpp";
 
-        // PreProcess();
+        PreProcess();
     }
 
     public void RefreshClassMapping() {
@@ -74,38 +74,43 @@ public class Module extends Value{
     }
 
     private void PreProcess() {
+        // Add external function to map, these functions only need to print
+        // something like `declare i32 @printf(i8*, ...) #2`
         // print(string str)
         ArrayList<Argument> print_paras = new ArrayList<>();
         print_paras.add(new Argument(null, STRING, 0));
-        // TODO: set parent
-        Function _print = new Function("print", VOID, print_paras);
-        _print.initialize();
+        Function _print = new Function("print", VOID, print_paras, true);
         FunctionMap.put(_print.getIdentifier(), _print);
         // println(string str) -> end with '/n'
         ArrayList<Argument> println_paras = new ArrayList<>();
         println_paras.add(new Argument(null, STRING, 0));
-        Function _println = new Function("println", VOID, println_paras);
-        _println.initialize();
+        Function _println = new Function("println", VOID, println_paras, true);
         FunctionMap.put(_println.getIdentifier(), _println);
         // printlnInt(int n) -> end with '/n'
         ArrayList<Argument> printlnInt_paras = new ArrayList<>();
         printlnInt_paras.add(new Argument(null, I32, 0));
-        Function _printlnInt = new Function("printlnInt", VOID, printlnInt_paras);
+        Function _printlnInt = new Function("printlnInt", VOID, printlnInt_paras, true);
         FunctionMap.put(_printlnInt.getIdentifier(), _printlnInt);
-        _printlnInt.initialize();
         // toString(int i)
         ArrayList<Argument> toString_paras = new ArrayList<>();
         toString_paras.add(new Argument(null, I32, 0));
-        Function _toString = new Function("toString", STRING, toString_paras);
+        Function _toString = new Function("toString", STRING, toString_paras, true);
         FunctionMap.put(_toString.getIdentifier(), _toString);
-        _toString.initialize();
         // String add
         ArrayList<Argument> StringAdd_paras = new ArrayList<>();
         StringAdd_paras.add(new Argument(null, STRING, 0));
         StringAdd_paras.add(new Argument(null, STRING, 1));
-        Function _StringAdd = new Function("toString", STRING, toString_paras);
+        Function _StringAdd = new Function("_string_add", STRING, StringAdd_paras, true);
         FunctionMap.put(_StringAdd.getIdentifier(), _StringAdd);
-        _StringAdd.initialize();
+        // getInt()
+        ArrayList<Argument> getInt_paras = new ArrayList<>();
+        Function _getInt = new Function("getInt", I32, getInt_paras, true);
+        FunctionMap.put(_getInt.getIdentifier(), _getInt);
+        // printInt()
+        ArrayList<Argument> printInt_paras = new ArrayList<>();
+        printInt_paras.add(new Argument(null, I32, 0));
+        Function _printInt = new Function("printInt", VOID, printInt_paras, true);
+        FunctionMap.put(_printInt.getIdentifier(), _printInt);
     }
 
     public HashMap<String, Function> getFunctionMap() {
@@ -148,7 +153,7 @@ public class Module extends Value{
             args.add(arg);
             id += 1;
         }
-        Function method = new Function(methodName, RetType, args);
+        Function method = new Function(methodName, RetType, args, false);
         method.initialize();
         BasicBlock head = method.getHeadBlock();
         ArrayList<AllocaInst> AllocaList = new ArrayList<>();
@@ -181,7 +186,7 @@ public class Module extends Value{
             args.add(arg);
             id += 1;
         }
-        Function function = new Function(FuncName, RetType, args);
+        Function function = new Function(FuncName, RetType, args, false);
         function.initialize();
         BasicBlock head = function.getHeadBlock();
         // Allocate address for all the arguments

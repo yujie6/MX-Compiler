@@ -9,11 +9,6 @@ import Tools.Operators;
 public class CmpInst extends Instruction {
     private CmpOperation SubOpcode;
 
-    @Override
-    public String toString() {
-        return null;
-    }
-
     enum CmpOperation {
         eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
     }
@@ -38,5 +33,22 @@ public class CmpInst extends Instruction {
         this.type = type;
     }
 
+    public Value getLHS() {
+        return this.UseList.get(0).getVal();
+    }
+
+    public Value getRHS() {
+        return this.UseList.get(1).getVal();
+    }
+
+    @Override
+    public String toString() {
+        StringBuilder ans = new StringBuilder(this.RegisterID);
+        ans.append(" = icmp ").append(SubOpcode.toString());
+        ans.append(" ").append(getLHS().getType().toString()).append(" ");
+        ans.append(getRightValueLabel(getLHS())).append(", ");
+        ans.append(getRightValueLabel(getRHS())).append("\n");
+        return ans.toString();
+    }
 
 }

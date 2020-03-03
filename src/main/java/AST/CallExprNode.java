@@ -33,7 +33,6 @@ public class CallExprNode extends ExprNode {
 
     @Override
     public Object accept(ASTVisitor visitor) {
-        visitor.visit(this);
-        return null;
+        return visitor.visit(this);
     }
 }

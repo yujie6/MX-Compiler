@@ -1,9 +1,6 @@
 package BackEnd;
 
-import IR.Argument;
-import IR.BasicBlock;
-import IR.Function;
-import IR.IRVisitor;
+import IR.*;
 import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
@@ -22,6 +19,7 @@ public class IRPrinter implements IRVisitor {
     private Function curFunction;
     private BasicBlock curBasicBlock;
     private int ValueID;
+    private String filename;
 
     private FileWriter writer;
     private BufferedWriter bufw;
@@ -45,7 +43,7 @@ public class IRPrinter implements IRVisitor {
 
     public IRPrinter(MXLogger logger, String filename) throws IOException {
         this.logger = logger;
-        ;
+        this.filename = filename;
         writer = new FileWriter("/tmp/" + filename + ".ll");
         this.bufw = new BufferedWriter(writer);
         this.indentLevel = 0;
@@ -58,6 +56,7 @@ public class IRPrinter implements IRVisitor {
         isAssignLabel = false;
         visit(node);
         bufw.flush();
+        logger.info("IR print to '/tmp/" + this.filename + ".ll' successfully!");
     }
 
     @Override
@@ -145,10 +144,19 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
             WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
             WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n");
+
+            for (GlobalVariable gvar : node.getGlobalVarMap().values()) {
+                WriteLLVM(gvar.toString());
+            }
+
         }
 
+
+
         for (Function func : node.getFunctionMap().values()) {
-            visit(func);
+            if (func.isExternal()) {
+                if (!isAssignLabel) WriteLLVM(func.toString() + "\n"); // only write declare
+            } else visit(func);
         }
 
         return null;

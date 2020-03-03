@@ -32,7 +32,6 @@ public class FunctionEntity extends Entity {
         this.IsMethod = isMethod;
         if (isMethod) {
             this.ClassName = className;
-            // setIdentifier(className + '.' + node.getIdentifier());
         } else this.ClassName = null;
         if (node instanceof MethodDecNode) {
             if (((MethodDecNode) node).isConstructMethod()) {

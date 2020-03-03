@@ -8,6 +8,11 @@ public class BoolConst extends Constant {
     }
 
     @Override
+    public String toString() {
+        return String.valueOf(constValue);
+    }
+
+    @Override
     public Object getValue() {
         return String.valueOf(constValue);
     }

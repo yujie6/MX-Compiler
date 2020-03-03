@@ -46,7 +46,7 @@ application {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/MX-Compiler/src/test/resources/sema/misc-package/misc-34.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e6.mx"]
     // options.warnings = false
 }
 

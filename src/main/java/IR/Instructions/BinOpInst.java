@@ -28,8 +28,8 @@ public class BinOpInst extends Instruction {
     public String toString() {
         StringBuilder ans = new StringBuilder(RegisterID + " = " + this.getOpcode());
         ans.append(" ").append(type.toString()).append(" ");
-        ans.append( ((Instruction) getLHS()).RegisterID).append(", ");
-        ans.append(( (Instruction) getRHS()).RegisterID).append("\n");
+        ans.append( getRightValueLabel(getLHS()) ).append(", ");
+        ans.append( getRightValueLabel(getRHS()) ).append("\n");
         return ans.toString();
     }
 }

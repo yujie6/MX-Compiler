@@ -45,10 +45,10 @@ public class CallInst extends Instruction {
         ans.append(getCalledFunction().getIdentifier()).append("(");
         if (!ArgumentList.isEmpty()) {
             Value var = ArgumentList.get(0);
-            ans.append(var.getType().toString()).append(" ").append(((Instruction) var).RegisterID);
+            ans.append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
             for (int i = 1; i < ArgumentList.size(); i++) {
                 var = ArgumentList.get(i);
-                ans.append(", ").append(var.getType().toString()).append(" ").append(((Instruction) var).RegisterID);
+                ans.append(", ").append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
             }
         }
         ans.append(")\n");

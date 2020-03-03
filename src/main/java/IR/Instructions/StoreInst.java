@@ -34,13 +34,9 @@ public class StoreInst extends Instruction {
     public String toString() {
         StringBuilder ans = new StringBuilder("store ");
         ans.append(getStoreValue().getType().toString()).append(" ");
-        if (StoreConst) {
-            ans.append( ((Constant) getStoreValue()).getValue() ).append(", ");
-        } else {
-            ans.append(((Instruction) getStoreValue()).RegisterID).append(", ");
-        }
+        ans.append(getRightValueLabel(getStoreValue())).append(", ");
         ans.append(getStoreDest().getType().toString()).append(" ");
-        ans.append( ((Instruction) getStoreDest()).RegisterID  );
+        ans.append( getRightValueLabel(getStoreDest()) );
         ans.append(", align 4\n");
         return ans.toString();
     }

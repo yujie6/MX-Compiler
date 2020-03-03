@@ -26,8 +26,9 @@ public class Function extends Value {
     private BasicBlock HeadBlock, TailBlock, RetBlock;
     private Value RetValue;
     private ValueSymbolTable varSymTab;
+    private boolean isExternal;
 
-    public Function(String id, IRBaseType returnType, ArrayList<Argument> parameterList) {
+    public Function(String id, IRBaseType returnType, ArrayList<Argument> parameterList, boolean isExternal) {
         super(ValueType.FUNCTION);
         this.Identifier = id;
         this.ParameterList = parameterList;
@@ -41,8 +42,27 @@ public class Function extends Value {
         HeadBlock = null;
         TailBlock = null;
         RetBlock = null;
+        this.isExternal = isExternal;
 
         varSymTab = new ValueSymbolTable();
+    }
+
+    @Override
+    public String toString() {
+        // this function only print declare, instead of the body
+        // something like `declare i32 @printf(i8*, ...) #2`
+        StringBuilder ans = new StringBuilder("declare ");
+        ans.append(functionType.getReturnType().toString()).append(" @");
+        ans.append(Identifier).append("(");
+        if (ParameterList.size() > 0) {
+            ans.append(ParameterList.get(0).getArgType().toString());
+            for (int i = 1; i < ParameterList.size(); i++) {
+                ans.append(", ").append(ParameterList.get(i).getArgType().toString());
+            }
+        }
+        ans.append(")");
+        return ans.toString();
+
     }
 
     public String getIdentifier() {
@@ -121,4 +141,7 @@ public class Function extends Value {
         RetValue = retValue;
     }
 
+    public boolean isExternal() {
+        return isExternal;
+    }
 }
