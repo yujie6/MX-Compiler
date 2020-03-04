@@ -48,4 +48,16 @@ public class ArrayType extends AggregateType {
         }
         return ans.toString();
     }
+
+    @Override
+    public IRBaseType getElementType(ArrayList<Value> offsets) {
+        if (offsets.size() == sizeList.size()) {
+            return getArrayBaseType();
+        } else if (offsets.size() < sizeList.size()) {
+
+        } else {
+
+        }
+        return null;
+    }
 }

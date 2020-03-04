@@ -143,7 +143,7 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM("; Module ID = '" + node.ModuleID + "'\n");
             WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
             WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
-            WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n");
+            WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n\n");
 
             for (GlobalVariable gvar : node.getGlobalVarMap().values()) {
                 WriteLLVM(gvar.toString());
@@ -155,7 +155,7 @@ public class IRPrinter implements IRVisitor {
 
         for (Function func : node.getFunctionMap().values()) {
             if (func.isExternal()) {
-                if (!isAssignLabel) WriteLLVM(func.toString() + "\n"); // only write declare
+                if (!isAssignLabel) WriteLLVM(func.toString() + "\n\n"); // only write declare
             } else visit(func);
         }
 

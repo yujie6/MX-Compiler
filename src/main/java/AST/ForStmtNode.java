@@ -43,7 +43,6 @@ public class ForStmtNode extends StmtNode {
 
     @Override
     public Object accept(ASTVisitor visitor) {
-        visitor.visit(this);
-        return null;
+        return visitor.visit(this);
     }
 }

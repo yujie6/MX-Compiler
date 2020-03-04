@@ -380,12 +380,10 @@ public class IRBuilder implements ASTVisitor {
         curFunction.AddBlockAtTail(UpdateBlock);
         curFunction.AddBlockAtTail(CondBlock);
         curFunction.AddBlockAtTail(MergeBlock);
-        TopModule.defineLabel(LoopBody);
-        TopModule.defineLabel(UpdateBlock);
-        TopModule.defineLabel(CondBlock);
-        TopModule.defineLabel(MergeBlock);
-
-
+//        TopModule.defineLabel(LoopBody);
+//        TopModule.defineLabel(UpdateBlock);
+//        TopModule.defineLabel(CondBlock);
+//        TopModule.defineLabel(MergeBlock);
         return null;
     }
 
@@ -468,8 +466,10 @@ public class IRBuilder implements ASTVisitor {
         Operators.BinaryOp bop = node.getBop();
         isLeftValue = bop.equals(Operators.BinaryOp.ASSIGN);
         Value LHS = (Value) node.getLeftExpr().accept(this);
+        if (LHS instanceof GetPtrInst) { curBasicBlock.AddInstAtTail((Instruction) LHS); }
         isLeftValue = false;
         Value RHS = (Value) node.getRightExpr().accept(this);
+        if (RHS instanceof GetPtrInst) { curBasicBlock.AddInstAtTail((Instruction) RHS); }
         if (LHS == null || RHS == null) {
             logger.severe("Fatal error", node.GetLocation());
             System.exit(1);
@@ -559,6 +559,9 @@ public class IRBuilder implements ASTVisitor {
             case EQUAL:
             case NEQUAL:
             case GREATER_EQUAL: {
+                if (LHS.getType() == null) {
+                    System.err.println("fatal error");
+                }
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use ge on non integer type.", node.GetLocation());
                 } else {
@@ -666,13 +669,20 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(ArrayExprNode node) {
         Value array = (Value) node.getArrayId().accept(this);
         Value offset = (Value) node.getOffset().accept(this);
-
-        return null;
+        if (array instanceof GetPtrInst) {
+            return new GetPtrInst((GetPtrInst) array, offset, ConvertTypeFromAST(node.getExprType()));
+        } else {
+            ArrayList<Value> offsets = new ArrayList<>();
+            offsets.add(offset);
+            return new GetPtrInst(curBasicBlock, array, offsets, ConvertTypeFromAST(node.getExprType()) );
+        }
+        // GetPtrInst ptr = new GetPtrInst();
     }
 
     @Override
     public Object visit(PrefixExprNode node) {
         Value expr = (Value) node.getExpr().accept(this);
+        if (expr instanceof GetPtrInst) { curBasicBlock.AddInstAtTail((Instruction) expr); }
         switch (node.getPrefixOp()) {
 
             case INC:
@@ -696,7 +706,8 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(PostfixExprNode node) {
-        Value expr = (Value) node.accept(this);
+        Value expr = (Value) node.getExpr().accept(this);
+        if (expr instanceof GetPtrInst) { curBasicBlock.AddInstAtTail((Instruction) expr); }
         switch (node.getPostfixOp()) {
             case INC: {
                 // require value

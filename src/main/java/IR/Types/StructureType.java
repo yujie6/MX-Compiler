@@ -52,4 +52,9 @@ public class StructureType extends AggregateType {
     public String toString() {
         return null;
     }
+
+    @Override
+    public IRBaseType getElementType(ArrayList<Value> offsets) {
+        return null;
+    }
 }
