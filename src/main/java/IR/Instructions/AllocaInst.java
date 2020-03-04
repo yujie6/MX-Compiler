@@ -9,7 +9,7 @@ public class AllocaInst extends Instruction {
     private IRBaseType baseType;
 
     public AllocaInst(BasicBlock block, IRBaseType type) {
-        super(block, InstType.alloca);;
+        super(block, InstType.alloca);
         this.type = new PointerType(type);
         baseType = type;
     }

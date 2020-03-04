@@ -26,7 +26,7 @@ public class IRBuilder implements ASTVisitor {
     private Scope GlobalScope;
     private Function curFunction, init;
     private BasicBlock curBasicBlock, curLoopBlock;
-    public MXLogger logger;
+    static public MXLogger logger;
 
     private Stack<BasicBlock> CondStackForBreak;
     private Stack<BasicBlock> LoopStackForContinue;
@@ -34,7 +34,7 @@ public class IRBuilder implements ASTVisitor {
     public IRBuilder(Scope globalScope, MXLogger logger) {
         TopModule = new Module(null, logger);
         this.GlobalScope = globalScope;
-        this.logger = logger;
+        IRBuilder.logger = logger;
         CondStackForBreak = new Stack<>();
         LoopStackForContinue = new Stack<>();
         init = new Function("_entry_block", Module.VOID, new ArrayList<>(), false);
@@ -45,9 +45,9 @@ public class IRBuilder implements ASTVisitor {
 
     public static IRBaseType ConvertTypeFromAST(Type type) {
         if (type.isArray()) {
-            return new ArrayType(0, ConvertTypeFromAST(
-                    new Type(type.getBaseType(), type.getArrayLevel(), type.getName())
-            ));
+            Type point_to = new Type(type);
+            point_to.setArrayLevel(type.getArrayLevel() - 1);
+            return new PointerType(ConvertTypeFromAST(point_to));
         } else if (type.isBool()) {
             return Module.I1;
         } else if (type.isInt()) {
@@ -161,12 +161,17 @@ public class IRBuilder implements ASTVisitor {
                 Value initValue;
                 if (initExpr != null) {
                     initValue = (Instruction) initExpr.accept(this); // could be print or new expr
+                    globalVar.setInitValue(initValue);
+                    if (initValue instanceof AllocaInst) {
+                        globalVar.setType( ((AllocaInst) initValue ).getBaseType());
+                    }
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
                         curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, globalVar));
                         // init global var at init's first block
                     }
                 } else {
                     initValue = type.getDefaultValue();
+                    globalVar.setInitValue(initValue);
                 }
                 globalVar.setInitValue(initValue);
                 TopModule.defineGlobalVar(globalVar);
@@ -388,7 +393,7 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(ReturnStmtNode node) {
         if (node.getReturnedExpr() != null) {
             Value RetValue;
-            if (node.getReturnedExpr() instanceof  ConstNode) {
+            if (node.getReturnedExpr() instanceof ConstNode) {
                 RetValue = (Constant) node.getReturnedExpr().accept(this);
             } else RetValue = (Instruction) node.getReturnedExpr().accept(this);
             curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RetValue, curFunction.getRetValue()));
@@ -433,8 +438,24 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ArrayCreatorNode node) {
-
-        return null;
+        // first only consider the simplest situation, that is new int[2][3]
+        int arrayLevel = node.getArrayLevel();
+        int sizeLen = node.getExprList().size();
+        ArrayList<Integer> sizeList = new ArrayList<>();
+        for (ExprNode expr : node.getExprList()) {
+            // expr must be int constant (TODO what about 5 * 4)
+            if ( ! (expr instanceof IntConstNode) ) {
+                logger.severe("Array size could only be int const", node.GetLocation());
+                System.exit(1);
+            }
+            sizeList.add( ((IntConstNode) expr).getValue() );
+        }
+        Type baseType = new Type(node.getExprType());
+        baseType.setArrayLevel(arrayLevel - sizeLen);
+        ArrayType arrayType = new ArrayType(sizeList, ConvertTypeFromAST(baseType) );
+        AllocaInst addr = new AllocaInst(curBasicBlock, arrayType);
+        curBasicBlock.AddInstAtTop(addr);
+        return addr;
     }
 
     @Override
@@ -643,6 +664,9 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ArrayExprNode node) {
+        Value array = (Value) node.getArrayId().accept(this);
+        Value offset = (Value) node.getOffset().accept(this);
+
         return null;
     }
 

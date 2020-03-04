@@ -9,18 +9,21 @@ import java.util.ArrayList;
  *  in memory. The array type requires a size (number of elements) and an underlying data type.
  */
 public class ArrayType extends AggregateType {
-    private int size;
+    private ArrayList<Integer> sizeList;
     private IRBaseType ArrayBaseType;
 
-    public ArrayType(int size, IRBaseType baseType) {
+    public ArrayType(ArrayList<Integer> size, IRBaseType baseType) {
         this.BaseTypeName = TypeID.ArrayTyID;
         this.ArrayBaseType = baseType;
-        this.size = size;
-        this.ByteNum = size * ArrayBaseType.getBytes();
+        this.sizeList = size;
+        this.ByteNum = ArrayBaseType.getBytes();
+        for (int s : sizeList) {
+            this.ByteNum *= s;
+        }
     }
 
-    public int getSize() {
-        return size;
+    public ArrayList<Integer> getSizeList() {
+        return sizeList;
     }
 
     public IRBaseType getArrayBaseType() {
@@ -34,6 +37,15 @@ public class ArrayType extends AggregateType {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder();
+        for (int size : sizeList) {
+            ans.append("[").append(size);
+            ans.append(" x ");
+        }
+        ans.append(getArrayBaseType().toString());
+        for (int size : sizeList) {
+            ans.append("]");
+        }
+        return ans.toString();
     }
 }

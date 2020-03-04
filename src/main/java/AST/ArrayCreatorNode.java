@@ -27,7 +27,7 @@ public class ArrayCreatorNode extends CreatorNode {
 
     @Override
     public Object accept(ASTVisitor visitor) {
-        visitor.visit(this);
-        return null;
+        return visitor.visit(this);
+
     }
 }

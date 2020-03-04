@@ -82,4 +82,8 @@ public class Type
     public int getArrayLevel() {
         return arrayLevel;
     }
+
+    public void setArrayLevel(int arrayLevel) {
+        this.arrayLevel = arrayLevel;
+    }
 }

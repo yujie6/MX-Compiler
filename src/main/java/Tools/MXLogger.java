@@ -31,6 +31,11 @@ public class MXLogger {
         logger.severe("Error at " + location.toString() + " with message: "+ msg);
     }
 
+    public void severe(String msg) {
+        errorNum += 1;
+        logger.severe("Error with message: "+ msg);
+    }
+
     public void warning(String msg, Location location) {
         warningNum += 1;
         logger.warning("Warning at " + location.toString() + " with message: "+ msg);

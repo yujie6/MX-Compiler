@@ -128,12 +128,10 @@ public class App {
     }
 
     public static void main(String[] args) throws MXError, IOException {
-
         Options options = getOptions();
         CommandLineParser parser = new DefaultParser();
         HelpFormatter formatter = new HelpFormatter();
         CommandLine cmd = null;
-
         try {
             cmd = parser.parse(options, args);
         } catch (ParseException e) {

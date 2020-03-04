@@ -1,5 +1,6 @@
 package IR;
 
+import IR.Constants.Constant;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 
@@ -25,7 +26,13 @@ public class GlobalVariable extends Value {
         StringBuilder ans = new StringBuilder("@");
         ans.append(Identifier).append(" = ");
         ans.append("dso_local global ").append(type.toString());
-        ans.append(" ").append(InitValue.toString()); // init value shall be const
+        ans.append(" ");
+        if (InitValue instanceof Constant) {
+            ans.append(InitValue.toString()); // init value shall be const or new expr
+        } else {
+            ans.append("zeroinitializer");
+        }
+
         ans.append(" , align ");
         int align = (type instanceof PointerType) ? 8 : 4;
         ans.append(String.valueOf(align)).append("\n");

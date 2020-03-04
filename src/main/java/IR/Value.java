@@ -42,6 +42,10 @@ public abstract class Value extends IRBaseNode {
         return type;
     }
 
+    public void setType(IRBaseType type) {
+        this.type = type;
+    }
+
     public ValueType getVTy() {
         return VTy;
     }
