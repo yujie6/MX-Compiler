@@ -12,16 +12,18 @@ import IR.Types.IRBaseType;
 public class Argument extends Value {
     private Function Parent;
     private IRBaseType ArgType;
+    private String name;
     private int ArgNo; // index of argument in the function
     public Function getParent() {
         return Parent;
     }
 
-    public Argument(Function parent, IRBaseType argType, int argNo) {
+    public Argument(Function parent, IRBaseType argType, int argNo, String name) {
         super(ValueType.ARGUMENT);
         this.Parent = parent;
         this.ArgType = argType;
         this.ArgNo = argNo;
+        this.name = name;
     }
 
     public int getArgNo() {
@@ -39,5 +41,9 @@ public class Argument extends Value {
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
         visitor.visit(this);
+    }
+
+    public String getName() {
+        return name;
     }
 }

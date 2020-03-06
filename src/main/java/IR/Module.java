@@ -12,6 +12,7 @@ import Tools.MXLogger;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.logging.Logger;
 
 /**
@@ -28,7 +29,7 @@ import java.util.logging.Logger;
  * about the target's characteristics.
  */
 public class Module extends Value{
-    private HashMap<String, GlobalVariable> GlobalVarMap;
+    private HashMap<String, Value> GlobalVarMap;
     private HashMap<String, Function> FunctionMap;
     private HashMap<String, StructureType> ClassMap;
     private HashMap<String, BasicBlock> LabelMap;
@@ -79,28 +80,28 @@ public class Module extends Value{
         // something like `declare i32 @printf(i8*, ...) #2`
         // print(string str)
         ArrayList<Argument> print_paras = new ArrayList<>();
-        print_paras.add(new Argument(null, STRING, 0));
+        print_paras.add(new Argument(null, STRING, 0, "str"));
         Function _print = new Function("print", VOID, print_paras, true);
         FunctionMap.put(_print.getIdentifier(), _print);
         // println(string str) -> end with '/n'
         ArrayList<Argument> println_paras = new ArrayList<>();
-        println_paras.add(new Argument(null, STRING, 0));
+        println_paras.add(new Argument(null, STRING, 0, "str"));
         Function _println = new Function("println", VOID, println_paras, true);
         FunctionMap.put(_println.getIdentifier(), _println);
         // printlnInt(int n) -> end with '/n'
         ArrayList<Argument> printlnInt_paras = new ArrayList<>();
-        printlnInt_paras.add(new Argument(null, I32, 0));
+        printlnInt_paras.add(new Argument(null, I32, 0, "str"));
         Function _printlnInt = new Function("printlnInt", VOID, printlnInt_paras, true);
         FunctionMap.put(_printlnInt.getIdentifier(), _printlnInt);
         // toString(int i)
         ArrayList<Argument> toString_paras = new ArrayList<>();
-        toString_paras.add(new Argument(null, I32, 0));
+        toString_paras.add(new Argument(null, I32, 0, "i"));
         Function _toString = new Function("toString", STRING, toString_paras, true);
         FunctionMap.put(_toString.getIdentifier(), _toString);
         // String add
         ArrayList<Argument> StringAdd_paras = new ArrayList<>();
-        StringAdd_paras.add(new Argument(null, STRING, 0));
-        StringAdd_paras.add(new Argument(null, STRING, 1));
+        StringAdd_paras.add(new Argument(null, STRING, 0, "lhs"));
+        StringAdd_paras.add(new Argument(null, STRING, 1, "rhs"));
         Function _StringAdd = new Function("_string_add", STRING, StringAdd_paras, true);
         FunctionMap.put(_StringAdd.getIdentifier(), _StringAdd);
         // getInt()
@@ -109,7 +110,7 @@ public class Module extends Value{
         FunctionMap.put(_getInt.getIdentifier(), _getInt);
         // printInt()
         ArrayList<Argument> printInt_paras = new ArrayList<>();
-        printInt_paras.add(new Argument(null, I32, 0));
+        printInt_paras.add(new Argument(null, I32, 0, "i"));
         Function _printInt = new Function("printInt", VOID, printInt_paras, true);
         FunctionMap.put(_printInt.getIdentifier(), _printInt);
     }
@@ -118,7 +119,7 @@ public class Module extends Value{
         return FunctionMap;
     }
 
-    public HashMap<String, GlobalVariable> getGlobalVarMap() {
+    public HashMap<String, Value> getGlobalVarMap() {
         return GlobalVarMap;
     }
 
@@ -147,10 +148,13 @@ public class Module extends Value{
         }
         ArrayList<Argument> args = new ArrayList<>();
         int id = 1;
-        Argument pointerThis = new Argument(null, new PointerType(ClassMap.get(ClassName)), 0);
+        List<ParameterNode> paraList =  methodDecNode.getParaDecList();
+        Argument pointerThis = new Argument(null, new PointerType(ClassMap.get(ClassName)), 0,
+                paraList.get(0).getIdentifier());
         args.add(pointerThis);
-        for (ParameterNode para : methodDecNode.getParaDecList()) {
-            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id);
+        for (ParameterNode para : paraList) {
+            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id,
+                    paraList.get(id).getIdentifier());
             args.add(arg);
             id += 1;
         }
@@ -181,9 +185,11 @@ public class Module extends Value{
         String FuncName = FuncDecNode.getIdentifier();
         IRBaseType RetType = IRBuilder.ConvertTypeFromAST(FuncDecNode.getReturnType().getType() );
         ArrayList<Argument> args = new ArrayList<>();
+        List<ParameterNode> paraList = FuncDecNode.getParaDecList();
         int id = 0;
-        for (ParameterNode para : FuncDecNode.getParaDecList()) {
-            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id);
+        for (ParameterNode para : paraList) {
+            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id,
+                    paraList.get(id).getIdentifier());
             args.add(arg);
             id += 1;
         }

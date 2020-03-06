@@ -59,10 +59,6 @@ public class SemanticChecker implements ASTVisitor {
         EnteredScope.pop();
     }
 
-    private Scope getFatherScope() {
-        return EnteredScope.lastElement();
-    }
-
     @Override
     public Object visit(MxProgramNode node) {
         LocalScope = GlobalScope;

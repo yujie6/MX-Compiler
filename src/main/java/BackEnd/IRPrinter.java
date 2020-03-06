@@ -145,8 +145,8 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
             WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n\n");
 
-            for (GlobalVariable gvar : node.getGlobalVarMap().values()) {
-                WriteLLVM(gvar.toString());
+            for (Value gvar : node.getGlobalVarMap().values()) {
+                WriteLLVM( ((GlobalVariable) gvar).toString());
             }
 
         }

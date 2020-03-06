@@ -79,6 +79,10 @@ public class Type
     public boolean isNull() {
         return baseType.equals(BaseType.DTYPE_NULL);
     }
+
+    public boolean isVoid() {
+        return baseType.equals(BaseType.RTYPE_VOID);
+    }
     public int getArrayLevel() {
         return arrayLevel;
     }

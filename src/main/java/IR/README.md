@@ -108,3 +108,15 @@
 ## Intrinsic Functions
 * llvm.umul.with.overflow ...
 * useful but we don't need this
+
+## testcases with class
+    t41.mx
+    t60.mx
+    t14.mx
+    t22.mx
+    t36.mx
+    t42.mx
+    t61.mx
+    t61.mx
+    t18.mx
+    t63.mx

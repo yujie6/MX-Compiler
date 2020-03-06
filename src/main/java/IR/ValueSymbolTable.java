@@ -9,6 +9,10 @@ public class ValueSymbolTable {
         valueHashMap = new HashMap<>();
     }
 
+    public ValueSymbolTable(HashMap<String, Value> hashMap) {
+        valueHashMap = hashMap;
+    }
+
     public void put(String id, Value var) {
         valueHashMap.put(id, var);
     }
@@ -21,4 +25,9 @@ public class ValueSymbolTable {
         return valueHashMap.containsKey(key);
     }
 
+    @Override
+    public ValueSymbolTable clone() {
+        HashMap<String, Value> hashMap = new HashMap<>(valueHashMap);
+        return new ValueSymbolTable(hashMap);
+    }
 }

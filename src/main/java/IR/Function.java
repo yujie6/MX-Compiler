@@ -32,10 +32,12 @@ public class Function extends Value {
         super(ValueType.FUNCTION);
         this.Identifier = id;
         this.ParameterList = parameterList;
+        varSymTab = new ValueSymbolTable();
         ArrayList<IRBaseType> argTypeList = new ArrayList<>();
         for (Argument argument : parameterList) {
             argument.setParent(this);
             argTypeList.add(argument.getArgType());
+            varSymTab.put(argument.getName(), argument);
         }
         functionType = new FunctionType(returnType, argTypeList);
         functionType.setIdentifiler(id);
@@ -44,7 +46,7 @@ public class Function extends Value {
         RetBlock = null;
         this.isExternal = isExternal;
 
-        varSymTab = new ValueSymbolTable();
+
     }
 
     @Override
@@ -108,8 +110,6 @@ public class Function extends Value {
         BasicBlock head = new BasicBlock(this, "_head_block");
         AddBlockAtTail(head);
         RetBlock = new BasicBlock(this, "_ret_block");
-        varSymTab.put(head.getIdentifier(), head);
-        varSymTab.put(RetBlock.getIdentifier(), RetBlock);
         IRBaseType RetType = functionType.getReturnType();
         if (RetType.getBaseTypeName() == IRBaseType.TypeID.VoidTyID) {
             RetBlock.AddInstAtTail(new ReturnInst(RetBlock, Module.VOID, null));

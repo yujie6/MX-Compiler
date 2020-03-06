@@ -4,6 +4,7 @@ import BackEnd.IRBuilder;
 import IR.Value;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  *  The structure type is used to represent a collection of data members together
@@ -19,15 +20,21 @@ import java.util.ArrayList;
 public class StructureType extends AggregateType {
     private ArrayList<IRBaseType> MemberList;
     private String Identifier;
-
+    private HashMap<Integer, IRBaseType> MemberTypeMap; // by offset
+    private int MemberNum;
     public StructureType(String id, ArrayList<IRBaseType> typeList) {
         this.BaseTypeName = TypeID.StructTyID;
         this.Identifier = id;
         this.MemberList = typeList;
+        MemberTypeMap = new HashMap<>();
         int sum = 0;
+        MemberNum = 0;
         for (IRBaseType typeMember : MemberList) {
+            MemberTypeMap.put(MemberNum, typeMember);
+            MemberNum += 1;
             sum += typeMember.getBytes();
         }
+
         this.ByteNum = sum;
     }
 
@@ -50,11 +57,22 @@ public class StructureType extends AggregateType {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder("%class.");
+        ans.append(getIdentifier()).append(" = type { ");
+        for (IRBaseType memberType : MemberList) {
+            ans.append(memberType.toString()).append(", ");
+        }
+        ans.delete(ans.length()-3, ans.length()-1);
+        ans.append("} ");
+        return ans.toString();
     }
 
     @Override
     public IRBaseType getElementType(ArrayList<Value> offsets) {
         return null;
+    }
+
+    public IRBaseType getElementType(int offset) {
+        return MemberTypeMap.get(offset);
     }
 }

@@ -41,8 +41,7 @@ public class VariableDecNode extends DecNode {
 
     @Override
     public Object accept(ASTVisitor visitor) {
-        visitor.visit(this);
-        return null;
+        return visitor.visit(this);
     }
 
     public boolean isGlobal() {
