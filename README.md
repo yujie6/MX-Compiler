@@ -23,5 +23,7 @@ More command line options:
 
 ### Current Objectives
 * Debug LLVM IR builder
+* Add global var for string const
 * Add phi node for logic and, or
 * Basic optimization
+

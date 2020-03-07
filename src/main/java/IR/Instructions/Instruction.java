@@ -1,10 +1,7 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
+import IR.*;
 import IR.Constants.Constant;
-import IR.GlobalVariable;
-import IR.User;
-import IR.Value;
 
 public abstract class Instruction extends User {
     static protected int regNum = 1;
@@ -35,6 +32,8 @@ public abstract class Instruction extends User {
             return rightValue.toString();
         } else if (rightValue instanceof GlobalVariable) {
             return "@" + ((GlobalVariable) rightValue).getIdentifier();
+        } else if (rightValue instanceof Argument) {
+            return "arg" + ((Argument) rightValue).getArgNo();
         } else {
             return ((Instruction) rightValue).getRegisterID();
         }

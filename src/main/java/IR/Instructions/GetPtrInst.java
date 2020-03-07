@@ -19,10 +19,12 @@ public class GetPtrInst extends Instruction {
         super(parent, InstType.getelementptr);
         this.offsets = offsets;
         this.aggregateValue = aggregateValue;
-        if (aggregateValue instanceof GlobalVariable) {
-            this.baseAggregateType = aggregateValue.getType();
-        } else if ( aggregateValue.getType() instanceof PointerType ) {
+
+        if ( aggregateValue.getType() instanceof PointerType ) {
             this.baseAggregateType = ((PointerType) aggregateValue.getType()).getBaseType();
+        } else {
+            // including global var
+            this.baseAggregateType = aggregateValue.getType();
         }
         if (! (baseAggregateType instanceof AggregateType)) {
             IRBuilder.logger.severe("Getptr target is not aggregate type");

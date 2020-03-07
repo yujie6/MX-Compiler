@@ -11,16 +11,12 @@ import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 import IR.Types.StructureType;
 import MxEntity.ClassEntity;
-import MxEntity.Entity;
 import MxEntity.FunctionEntity;
 import Tools.MXLogger;
 import Tools.Operators;
 
-import javax.print.DocFlavor;
-import java.awt.image.TileObserver;
 import java.util.ArrayList;
 import java.util.Stack;
-import java.util.logging.Logger;
 
 public class IRBuilder implements ASTVisitor {
     private ValueSymbolTable valueSymbolTable;
@@ -480,7 +476,31 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ConstructCreatorNode node) {
-        return null;
+        if (! TopModule.getClassMap().containsKey(node.getExprType().getName()) ) {
+            logger.severe("Fatal error, new expr's class could not be found.", node.GetLocation());
+            System.exit(1);
+        }
+        String name = node.getExprType().getName();
+        StructureType classType = TopModule.getClassMap().get(name);
+        if (TopModule.getFunctionMap().containsKey(name + '.' + name)) {
+            Function constructor = TopModule.getFunctionMap().get(name + '.' + name);
+            CallInst funcCall = new CallInst(curBasicBlock, constructor, new ArrayList<>());
+            curBasicBlock.AddInstAtTail(funcCall);
+            return funcCall;
+        } else {
+            // malloc some space, and bitcast to (class*)
+            Function malloc =TopModule.getFunctionMap().get("malloc");
+            ArrayList<Value> paras = new ArrayList<>();
+            paras.add(new IntConst(classType.getBytes()));
+            CallInst mallocCall = new CallInst(curBasicBlock, malloc, paras);
+            BitCastInst instancePointer = new BitCastInst(curBasicBlock, mallocCall,
+                    new PointerType(classType));
+
+
+            curBasicBlock.AddInstAtTail(mallocCall);
+            curBasicBlock.AddInstAtTail(instancePointer);
+            return instancePointer;
+        }
     }
 
     @Override
@@ -497,7 +517,7 @@ public class IRBuilder implements ASTVisitor {
             curBasicBlock.AddInstAtTail((Instruction) RHS);
         }
         if (LHS == null || RHS == null) {
-            logger.severe("Fatal error", node.GetLocation());
+            logger.severe("Fatal error, binOp encounter null", node.GetLocation());
             System.exit(1);
         }
         switch (bop) {
@@ -707,10 +727,11 @@ public class IRBuilder implements ASTVisitor {
         int offset = classEntity.getMemberOffset(node.getMember());
         GetPtrInst memberPtr;
         Value ExprPointer = (Value) node.getExpr().accept(this);
-        if (ExprPointer instanceof GetPtrInst) {
+        if (!(ExprPointer instanceof GetPtrInst) ) {
             ArrayList<Value> offsets = new ArrayList<>();
             offsets.add(new IntConst(offset));
-            memberPtr = new GetPtrInst(curBasicBlock, ExprPointer, offsets, classStructure);
+            IRBaseType eleType = classStructure.getElementType(offset);
+            memberPtr = new GetPtrInst(curBasicBlock, ExprPointer, offsets, eleType);
         } else {
             memberPtr = new GetPtrInst((GetPtrInst) ExprPointer,
                     new IntConst(offset),

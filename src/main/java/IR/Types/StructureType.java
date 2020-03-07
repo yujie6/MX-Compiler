@@ -58,6 +58,12 @@ public class StructureType extends AggregateType {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder("%class.");
+        ans.append(getIdentifier());
+        return ans.toString();
+    }
+
+    public String getDeclaration() {
+        StringBuilder ans = new StringBuilder("%class.");
         ans.append(getIdentifier()).append(" = type { ");
         for (IRBaseType memberType : MemberList) {
             ans.append(memberType.toString()).append(", ");

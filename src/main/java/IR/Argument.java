@@ -22,6 +22,7 @@ public class Argument extends Value {
         super(ValueType.ARGUMENT);
         this.Parent = parent;
         this.ArgType = argType;
+        this.type = argType;
         this.ArgNo = argNo;
         this.name = name;
     }

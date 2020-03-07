@@ -46,6 +46,7 @@ public class Module extends Value{
     public static final IntegerType I16 = new IntegerType(IntegerType.BitWidth.i16);
     public static final IntegerType I32 = new IntegerType(IntegerType.BitWidth.i32);
     public static final PointerType STRING = new PointerType(I8);
+    public static final PointerType ADDR = new PointerType(I8);
 
 
     public Module(ValueSymbolTable varSymTab, MXLogger logger) {
@@ -113,6 +114,12 @@ public class Module extends Value{
         printInt_paras.add(new Argument(null, I32, 0, "i"));
         Function _printInt = new Function("printInt", VOID, printInt_paras, true);
         FunctionMap.put(_printInt.getIdentifier(), _printInt);
+
+        // malloc() also called @_Znwm(i64) in llvm
+        ArrayList<Argument> malloc_paras = new ArrayList<>();
+        malloc_paras.add(new Argument(null, I32, 0, "size"));
+        Function _malloc = new Function("malloc", ADDR, malloc_paras, true);
+        FunctionMap.put(_malloc.getIdentifier(), _malloc);
     }
 
     public HashMap<String, Function> getFunctionMap() {
@@ -163,10 +170,12 @@ public class Module extends Value{
         BasicBlock head = method.getHeadBlock();
         ArrayList<AllocaInst> AllocaList = new ArrayList<>();
         ArrayList<StoreInst> StoreList = new ArrayList<>();
+        // argument shall have a default value
 
         for (Argument arg : method.getParameterList()) {
             AllocaInst ArgAddr = new AllocaInst(head, arg.type);
             AllocaList.add(ArgAddr);
+            method.getVarSymTab().put(arg.getName(), ArgAddr);
             StoreInst storeInst = new StoreInst(head, arg, ArgAddr);
             StoreList.add(storeInst);
         }
@@ -201,6 +210,7 @@ public class Module extends Value{
         ArrayList<StoreInst> StoreList = new ArrayList<>();
         for (Argument arg : function.getParameterList()) {
             AllocaInst ArgAddr = new AllocaInst(head, arg.type);
+            function.getVarSymTab().put(arg.getName(), ArgAddr);
             AllocaList.add(ArgAddr);
             StoreInst storeInst = new StoreInst(head, arg, ArgAddr);
             StoreList.add(storeInst);
