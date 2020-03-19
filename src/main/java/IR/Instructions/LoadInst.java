@@ -1,7 +1,9 @@
 package IR.Instructions;
 
+import BackEnd.IRBuilder;
 import IR.BasicBlock;
 import IR.Types.IRBaseType;
+import IR.Types.PointerType;
 import IR.Use;
 import IR.Value;
 
@@ -11,6 +13,10 @@ public class LoadInst extends Instruction {
     public LoadInst(BasicBlock parent, IRBaseType type, Value addr) {
         super(parent, InstType.load);
         this.type = type;
+        if (! (addr.getType() instanceof PointerType) ) {
+            IRBuilder.logger.severe("Fatal error: load addr must be a pointer!");
+            System.exit(1);
+        }
         this.UseList.add(new Use(addr, this));
     }
 
@@ -23,7 +29,7 @@ public class LoadInst extends Instruction {
         StringBuilder ans = new StringBuilder(RegisterID);
         ans.append(" = ").append("load ").append(type.toString());
         ans.append(", ").append(getLoadAddr().getType().toString()).append(" ");
-        ans.append(  ((Instruction) getLoadAddr()).RegisterID );
+        ans.append(  getRightValueLabel(getLoadAddr()) );
         ans.append(", align 4\n");
         return ans.toString();
     }

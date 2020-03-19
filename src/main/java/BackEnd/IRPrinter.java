@@ -4,6 +4,7 @@ import IR.*;
 import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
+import IR.Types.StructureType;
 import Tools.MXLogger;
 
 import java.io.BufferedWriter;
@@ -144,6 +145,10 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM("source_filename = \"" + node.SourceFileName + "\"\n");
             WriteLLVM("target datalayout = \"" + node.TargetDataLayout + "\"\n");
             WriteLLVM("target triple = \"" + node.TargetTriple + "\"\n\n");
+
+            for (StructureType classType : node.getClassMap().values()) {
+                WriteLLVM(classType.getDeclaration() + "\n");
+            }
 
             for (Value gvar : node.getGlobalVarMap().values()) {
                 WriteLLVM( ((GlobalVariable) gvar).toString());

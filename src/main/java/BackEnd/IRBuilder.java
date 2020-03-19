@@ -164,6 +164,7 @@ public class IRBuilder implements ASTVisitor {
             curFunction.getHeadBlock().AddInstAtTop(call);
         }
         ExitScope();
+        logger.fine("IR build for function " + node.getIdentifier() + " done.");
         curFunction = null;
         curBasicBlock = null;
         return null;
@@ -193,6 +194,7 @@ public class IRBuilder implements ASTVisitor {
                 }
                 globalVar.setInitValue(initValue);
                 TopModule.defineGlobalVar(globalVar);
+                logger.fine("IR build for '" + subnode.getIdentifier() + "' global variable done.");
             }
         } else {
             // Local Variable
@@ -208,11 +210,13 @@ public class IRBuilder implements ASTVisitor {
                     initValue = (Instruction) initExpr.accept(this);
                     curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                 }
+                logger.fine("IR build for '" + subnode.getIdentifier() + "' variable declaration ir done.");
 //                else {
 //                    initValue = type.getDefaultValue();
 //                    curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
 //                }
             }
+
         }
 
         return null;
@@ -438,7 +442,20 @@ public class IRBuilder implements ASTVisitor {
         IRBaseType constType = ConvertTypeFromAST(node.getType());
         Constant constant = null;
         if (constType.equals(Module.STRING)) {
-            constant = new StringConst(((StringConstNode) node).getValue());
+            // string const -> global var
+            String str_const = ((StringConstNode) node).getValue();
+            constant = new StringConst(str_const);
+            GlobalVariable globalString;
+
+            if (TopModule.getStringConstMap().containsKey(str_const)) {
+                globalString = TopModule.getStringConstMap().get(str_const);
+            } else {
+                globalString = new GlobalVariable(constType, null, constant);
+                TopModule.getStringConstMap().put(str_const, globalString);
+                TopModule.getGlobalVarMap().put(globalString.getIdentifier(), globalString);
+            }
+
+            return globalString;
         } else if (constType.equals(Module.I32)) {
             constant = new IntConst(((IntConstNode) node).getValue());
         } else if (constType.equals(Module.I1)) {
@@ -541,7 +558,8 @@ public class IRBuilder implements ASTVisitor {
             case SUB: {
                 // only integer sub
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use sub on non integer type.", node.GetLocation());
+                    logger.severe("Use sub on non integer type.", node.GetLocation());
+                    System.exit(1);
                 } else {
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -696,8 +714,11 @@ public class IRBuilder implements ASTVisitor {
                         node.GetLocation());
                 System.exit(1);
             }
+            // Global variable
             VarAddr = TopModule.getGlobalVarMap().get(node.getIdentifier());
-            return VarAddr;
+            LoadInst globalVar = new LoadInst(curBasicBlock, ((GlobalVariable) VarAddr).getOriginalType() ,VarAddr);
+            curBasicBlock.AddInstAtTail(globalVar);
+            return globalVar;
         }
 
 
@@ -815,12 +836,14 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(CallExprNode node) {
+        // copy the argument using memcpy
         FunctionEntity mx_func = node.getFunction();
         if (mx_func.isMethod()) {
             Function CalledFunc = TopModule.getFunctionMap().get(
                     mx_func.getClassName() + '.' + mx_func.getIdentifier()
             );
             assert CalledFunc != null;
+            // TODO add method call
         } else {
             Function CalledFunc = TopModule.getFunctionMap().get(mx_func.getIdentifier());
             if (CalledFunc == null) {
@@ -834,6 +857,7 @@ public class IRBuilder implements ASTVisitor {
             }
             CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
             curBasicBlock.AddInstAtTail(instance);
+            logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' function call done.", node.GetLocation());
             return instance;
         }
         return null;

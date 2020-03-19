@@ -3,6 +3,8 @@ package IR.Instructions;
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
 import IR.Constants.Constant;
+import IR.Types.IRBaseType;
+import IR.Types.PointerType;
 import IR.Use;
 import IR.Value;
 import Tools.MXError;
@@ -16,6 +18,13 @@ public class StoreInst extends Instruction {
         this.StoreConst = (storeValue instanceof Constant);
         if (storeValue == null) {
             throw new MXError("fuck ");
+        }
+        if (!(storeDest.getType() instanceof PointerType)) {
+            IRBuilder.logger.severe("Fatal error: store operand must be a pointer!");
+            for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+                System.out.println(ste);
+            }
+            System.exit(1);
         }
         this.UseList.add(new Use(storeValue, this));
         this.UseList.add(new Use(storeDest, this));

@@ -23,11 +23,25 @@ installDist {
 }
 
 tasks.create(name: 'judge', dependsOn: 'installDist', type: Exec)
+tasks.create(name: 'builtin_func', type: Exec)
+tasks.create(name: 'generate_llvm', dependsOn: 'run', type: Exec)
 
 judge {
     workingDir '/home/yujie6/Documents/Compiler/local-judge'
     executable 'python'
     args 'judge.py'
+}
+
+builtin_func {
+    workingDir '/home/yujie6/Documents/Compiler/MX-Compiler/src/main/c'
+    executable '/usr/bin/bash'
+    args './compile-builtin.sh'
+}
+
+generate_llvm {
+    workingDir '/home/yujie6/Documents/Compiler/MX-Compiler'
+    executable 'bash'
+    args './codegen.sh'
 }
 
 dependencies {
@@ -46,7 +60,7 @@ application {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t14.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e4.mx"]
     // options.warnings = false
 }
 

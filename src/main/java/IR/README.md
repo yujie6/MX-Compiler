@@ -107,7 +107,15 @@
 
 ## Intrinsic Functions
 * llvm.umul.with.overflow ...
-* useful but we don't need this
+* llvm.memcpy
+: Since when passing parameter to a function, we have
+to copy the value of the argument so that it wouldn't be 
+edited twice.
+    * declare void @llvm.memcpy.p0i8.p0i8.i32(i8* <dest>, i8* <src>,
+                                            i32 <len>, i1 <isvolatile>)
+    * declare void @llvm.memcpy.p0i8.p0i8.i64(i8* <dest>, i8* <src>,
+                                            i64 <len>, i1 <isvolatile>)        
+
 
 ## testcases with class
     t41.mx

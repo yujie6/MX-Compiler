@@ -49,6 +49,10 @@ public class MXLogger {
         logger.fine(msg);
     }
 
+    public void fine(String msg, Location location) {
+        logger.fine(msg + " At " + location.toString());
+    }
+
     public void finer(String msg) {
         logger.finer(msg);
     }

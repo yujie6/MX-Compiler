@@ -1,6 +1,7 @@
 package IR;
 
 import IR.Constants.Constant;
+import IR.Constants.StringConst;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 
@@ -8,35 +9,58 @@ public class GlobalVariable extends Value {
 
     private String Identifier;
     private Value InitValue;
+    private IRBaseType originalType;
+    static int globalStringNum = 0;
+    boolean isStringConst;
 
     public GlobalVariable(IRBaseType type, String id, Value initValue) {
         super(ValueType.GLOBAL_VAR);
-        this.type = type;
-        this.Identifier = id;
+        this.originalType = type;
+        this.type = new PointerType(type);
+        this.isStringConst = false;
+        if (id == null && type.equals(Module.STRING)) {
+            this.isStringConst = true;
+            this.Identifier = ".str." + globalStringNum;
+            globalStringNum += 1;
+        } else this.Identifier = id;
         this.InitValue = initValue;
     }
 
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
-
+        // this func shall never be used
     }
 
     @Override
     public String toString() {
+        // TODO Global variable should have pointer reference
         StringBuilder ans = new StringBuilder("@");
         ans.append(Identifier).append(" = ");
-        ans.append("dso_local global ").append(type.toString());
-        ans.append(" ");
-        if (InitValue instanceof Constant) {
-            ans.append(InitValue.toString()); // init value shall be const or new expr
+        if (isStringConst) {
+            ans.append("private unnamed_addr constant ");
+            ans.append("[").append( ((StringConst) getInitValue() ).getStrSize() );
+            ans.append(" x ").append("i8] ");
+            ans.append( getInitValue().toString() );
         } else {
-            ans.append("zeroinitializer");
+            ans.append("dso_local global ").append(this.originalType.toString());
+            ans.append(" ");
+            if (InitValue instanceof Constant) {
+                ans.append(InitValue.toString()); // init value shall be const or new expr
+            } else {
+                ans.append("zeroinitializer");
+            }
         }
 
         ans.append(" , align ");
         int align = (type instanceof PointerType) ? 8 : 4;
         ans.append(String.valueOf(align)).append("\n");
+
+
         return ans.toString();
+    }
+
+    public IRBaseType getOriginalType() {
+        return originalType;
     }
 
     public String getIdentifier() {

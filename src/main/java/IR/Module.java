@@ -34,6 +34,7 @@ public class Module extends Value{
     private HashMap<String, StructureType> ClassMap;
     private HashMap<String, BasicBlock> LabelMap;
     private ValueSymbolTable VarSymTab;
+    private HashMap<String, GlobalVariable> StringConstMap;
     public String TargetTriple;
     public String SourceFileName;
     public String ModuleID;
@@ -56,6 +57,7 @@ public class Module extends Value{
         GlobalVarMap = new HashMap<>();
         FunctionMap = new HashMap<>();
         ClassMap = new HashMap<>();
+        StringConstMap = new HashMap<>();
         TargetTriple = "x86_64-pc-linux-gnu";
         TargetDataLayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128";
         ModuleID = "Basic1";
@@ -241,5 +243,13 @@ public class Module extends Value{
 
     public HashMap<String, BasicBlock> getLabelMap() {
         return LabelMap;
+    }
+
+    public HashMap<String, GlobalVariable> getStringConstMap() {
+        return StringConstMap;
+    }
+
+    public void setStringConstMap(HashMap<String, GlobalVariable> stringConstMap) {
+        StringConstMap = stringConstMap;
     }
 }

@@ -68,7 +68,7 @@ public class StructureType extends AggregateType {
         for (IRBaseType memberType : MemberList) {
             ans.append(memberType.toString()).append(", ");
         }
-        ans.delete(ans.length()-3, ans.length()-1);
+        ans.delete(ans.length()-2, ans.length() - 1);
         ans.append("} ");
         return ans.toString();
     }

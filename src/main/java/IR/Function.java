@@ -62,6 +62,9 @@ public class Function extends Value {
                 ans.append(", ").append(ParameterList.get(i).getArgType().toString());
             }
         }
+//        else {
+//            ans.append("...");
+//        }
         ans.append(")");
         return ans.toString();
 
