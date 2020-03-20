@@ -15,21 +15,22 @@ public class GetPtrInst extends Instruction {
     private ArrayList<Value> offsets;
     private Value aggregateValue;
     private IRBaseType baseAggregateType;
+
     public GetPtrInst(BasicBlock parent, Value aggregateValue, ArrayList<Value> offsets,
                       IRBaseType elementType) {
         super(parent, InstType.getelementptr);
         this.offsets = offsets;
         this.aggregateValue = aggregateValue;
 
-        if ( aggregateValue.getType() instanceof PointerType ) {
+        if (aggregateValue.getType() instanceof PointerType) {
             this.baseAggregateType = ((PointerType) aggregateValue.getType()).getBaseType();
         } else {
             // including global var
             this.baseAggregateType = aggregateValue.getType();
         }
-        if (! (baseAggregateType instanceof AggregateType)) {
-            if (aggregateValue instanceof GlobalVariable ) {
-                if (!((GlobalVariable) aggregateValue).isStringConst ) {
+        if (!(baseAggregateType instanceof AggregateType)) {
+            if (aggregateValue instanceof GlobalVariable) {
+                if (!((GlobalVariable) aggregateValue).isStringConst) {
                     IRBuilder.logger.severe("Getptr target is not aggregate type");
                     System.exit(1);
                 }
@@ -55,29 +56,37 @@ public class GetPtrInst extends Instruction {
     public String toString() {
         StringBuilder ans = new StringBuilder(getRegisterID());
         if (aggregateValue instanceof GlobalVariable) {
-            GlobalVariable gvar = (GlobalVariable) aggregateValue;
-            ans.append(" = getelementptr inbounds ");
+            // global string const
+            if (((GlobalVariable) aggregateValue).getInitValue() instanceof StringConst) {
+                GlobalVariable gvar = (GlobalVariable) aggregateValue;
+                ans.append(" = getelementptr inbounds ");
 
-            ans.append("[").append( ((StringConst) gvar.getInitValue() ).getStrSize() );
-            ans.append(" x ").append("i8], ");
+                ans.append("[").append(((StringConst) gvar.getInitValue()).getStrSize());
+                ans.append(" x ").append("i8], ");
 
-            ans.append("[").append( ((StringConst) gvar.getInitValue() ).getStrSize() );
-            ans.append(" x ").append("i8]* @").append(gvar.getIdentifier());
-            for (Value off_t : offsets) {
-                ans.append(", ").append(off_t.getType().toString()).append(" ");
-                ans.append(getRightValueLabel(off_t));
-            }
-        } else {
-            ans.append(" = getelementptr inbounds ");
-            ans.append(baseAggregateType.toString()).append(", ");
-            ans.append(aggregateValue.getType());
-            ans.append(" ");
-            ans.append(getRightValueLabel(aggregateValue));
-            for (Value off_t : offsets) {
-                ans.append(", ").append(off_t.getType().toString()).append(" ");
-                ans.append(getRightValueLabel(off_t));
+                ans.append("[").append(((StringConst) gvar.getInitValue()).getStrSize());
+                ans.append(" x ").append("i8]* @").append(gvar.getIdentifier());
+                for (Value off_t : offsets) {
+                    ans.append(", ").append(off_t.getType().toString()).append(" ");
+                    ans.append(getRightValueLabel(off_t));
+                }
+                ans.append("\n");
+                return ans.toString();
             }
         }
+
+        // normal situations
+
+        ans.append(" = getelementptr inbounds ");
+        ans.append(baseAggregateType.toString()).append(", ");
+        ans.append(aggregateValue.getType());
+        ans.append(" ");
+        ans.append(getRightValueLabel(aggregateValue));
+        for (Value off_t : offsets) {
+            ans.append(", ").append(off_t.getType().toString()).append(" ");
+            ans.append(getRightValueLabel(off_t));
+        }
+
         ans.append("\n");
         return ans.toString();
     }

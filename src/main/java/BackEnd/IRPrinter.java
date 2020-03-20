@@ -102,6 +102,7 @@ public class IRPrinter implements IRVisitor {
     public Object visit(Function node) {
         this.ValueID = 0;
         if (isAssignLabel) {
+            this.ValueID += node.getParameterList().size();
             BasicBlock head = node.getHeadBlock();
             while (head != node.getTailBlock()) {
                 if (head.getInstList().size() != 0) {

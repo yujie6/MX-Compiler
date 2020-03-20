@@ -55,12 +55,11 @@ dependencies {
 }
 
 application {
-    // Define the main class for the application.
     mainClassName = 'Compiler.App'
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e1.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e2.mx"]
     // options.warnings = false
 }
 

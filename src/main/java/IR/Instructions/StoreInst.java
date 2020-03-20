@@ -3,6 +3,7 @@ package IR.Instructions;
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
 import IR.Constants.Constant;
+import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 import IR.Use;
@@ -19,7 +20,8 @@ public class StoreInst extends Instruction {
         if (storeValue == null) {
             throw new MXError("fuck ");
         }
-        if (!(storeDest.getType() instanceof PointerType)) {
+        if (!(storeDest.getType() instanceof PointerType || storeDest.getType() instanceof ArrayType
+        || storeDest instanceof GetPtrInst)) {
             IRBuilder.logger.severe("Fatal error: store operand must be a pointer!");
             System.exit(1);
         }

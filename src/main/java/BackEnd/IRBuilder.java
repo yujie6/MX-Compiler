@@ -60,7 +60,7 @@ public class IRBuilder implements ASTVisitor {
             point_to.setArrayLevel(type.getArrayLevel() - 1);
             return new PointerType(ConvertTypeFromAST(point_to));
         } else if (type.isBool()) {
-            return Module.I1;
+            return Module.I1; // shall be i8
         } else if (type.isInt()) {
             return Module.I32;
         } else if (type.isString()) {
@@ -153,6 +153,7 @@ public class IRBuilder implements ASTVisitor {
         EnterScope(function);
         curFunction = function;
         curBasicBlock = function.getHeadBlock();
+
         for (StmtNode stmt : node.getFuncBlock().getStmtList()) {
             stmt.accept(this);
         }
@@ -182,7 +183,8 @@ public class IRBuilder implements ASTVisitor {
                     initValue = (Value) initExpr.accept(this); // could be print or new expr
                     globalVar.setInitValue(initValue);
                     if (initValue instanceof AllocaInst) {
-                        globalVar.setType(((AllocaInst) initValue).getBaseType());
+                        globalVar.setType(initValue.getType());
+                        globalVar.setOriginalType(((AllocaInst) initValue).getBaseType());
                     }
                     if (initValue.getVTy() != Value.ValueType.CONSTANT) {
                         curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, globalVar));
@@ -203,11 +205,11 @@ public class IRBuilder implements ASTVisitor {
                 BasicBlock head = curFunction.getHeadBlock();
                 AllocaInst AllocaAddr = new AllocaInst(curBasicBlock, type);
                 LocalSymTab.put(subnode.getIdentifier(), AllocaAddr);
-                head.AddInstAtTail(AllocaAddr);
+                head.AddInstAtTop(AllocaAddr);
                 ExprNode initExpr = subnode.getInitValue();
                 Value initValue;
                 if (initExpr != null) {
-                    initValue = (Instruction) initExpr.accept(this);
+                    initValue = (Value) initExpr.accept(this);
                     curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                 }
                 logger.fine("IR build for '" + subnode.getIdentifier() + "' variable declaration ir done.");
@@ -294,15 +296,15 @@ public class IRBuilder implements ASTVisitor {
         }
 
         curBasicBlock = ThenBlock;
-        node.getThenStmt().accept(this);
+        node.getThenStmt().accept(this); // curBasicBlock may change here
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
-        curFunction.AddBlockAtTail(curBasicBlock);
+        curFunction.AddBlockAtTail(ThenBlock);
 
         if (node.isHasElse()) {
             curBasicBlock = ElseBlock;
             node.getElseStmt().accept(this);
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
-            curFunction.AddBlockAtTail(curBasicBlock);
+            curFunction.AddBlockAtTail(ElseBlock);
         }
 
         curBasicBlock = MergeBlock;
@@ -384,13 +386,13 @@ public class IRBuilder implements ASTVisitor {
 
         curBasicBlock = LoopBody;
         node.getLoopBlcok().accept(this);
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, UpdateBlock, null));
 
         LoopStackForContinue.pop();
         CondStackForBreak.pop();
 
         curBasicBlock = UpdateBlock;
-        Instruction updateInst = (Instruction) node.getUpdateExpr().accept(this);
+        node.getUpdateExpr().accept(this);
         // could only be assign expr
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
 
@@ -729,7 +731,6 @@ public class IRBuilder implements ASTVisitor {
                 LoadInst globalVar = new LoadInst(curBasicBlock, gvar.getOriginalType(), VarAddr);
                 curBasicBlock.AddInstAtTail(globalVar);
                 return globalVar;
-
             }
         }
 
@@ -775,7 +776,13 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ArrayExprNode node) {
+
+        // TODO Wrong element Type !!!, first get array at 0, then get off_t element!!
+        // TODO even after that we need to load from the ptr
+
+        isLeftValue = true; // to get pure pointer
         Value array = (Value) node.getArrayId().accept(this);
+        isLeftValue = false;
         Value offset = (Value) node.getOffset().accept(this);
         if (array instanceof GetPtrInst) {
             return new GetPtrInst((GetPtrInst) array, offset, ConvertTypeFromAST(node.getExprType()));
@@ -795,19 +802,64 @@ public class IRBuilder implements ASTVisitor {
         }
         switch (node.getPrefixOp()) {
 
-            case INC:
-                break;
-            case DEC:
-                break;
-            case POS:
-                break;
-            case NEG:
-                break;
-            case LOGIC_NOT: {
-                break;
+            case INC: {
+                // require value
+                Instruction res = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, expr,
+                        new IntConst(1));
+
+                // require addr
+                isLeftValue = true;
+                expr = (Value) node.getExpr().accept(this);
+                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                curBasicBlock.AddInstAtTail(res);
+                curBasicBlock.AddInstAtTail(st);
+                // return the new value
+                return expr;
             }
-            case BITWISE_NOT:
-                break;
+            case DEC: {
+                // require value
+                Instruction res = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, expr,
+                        new IntConst(1));
+
+                // require addr
+                isLeftValue = true;
+                expr = (Value) node.getExpr().accept(this);
+                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                curBasicBlock.AddInstAtTail(res);
+                curBasicBlock.AddInstAtTail(st);
+                return expr;
+            }
+            case POS: {
+                return expr;
+            }
+            case NEG: {
+                if (expr instanceof IntConst) {
+                    int value = (int) ((IntConst) expr).getValue();
+                    return new IntConst(-value);
+                } else {
+                    BinOpInst negExpr = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub,
+                            new IntConst(0), expr);
+                    curBasicBlock.AddInstAtTail(negExpr);
+                    return negExpr;
+                }
+            }
+            case LOGIC_NOT: {
+                if (expr instanceof BoolConst) {
+                    boolean val = (boolean) ((BoolConst) expr).getValue();
+                    return new BoolConst(!val);
+                } else {
+                    BinOpInst notExpr = new BinOpInst(curBasicBlock, Module.I1, Instruction.InstType.xor, expr,
+                            new BoolConst(true));
+                    curBasicBlock.AddInstAtTail(notExpr);
+                    return notExpr;
+                }
+            }
+            case BITWISE_NOT: {
+                BinOpInst notExpr = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.xor, expr,
+                        new IntConst(-1));
+                curBasicBlock.AddInstAtTail(notExpr);
+                return notExpr;
+            }
             case DEFAULT:
                 break;
         }
@@ -816,6 +868,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(PostfixExprNode node) {
+        isLeftValue = false;
         Value expr = (Value) node.getExpr().accept(this);
         if (expr instanceof GetPtrInst) {
             curBasicBlock.AddInstAtTail((Instruction) expr);
@@ -827,12 +880,24 @@ public class IRBuilder implements ASTVisitor {
                         new IntConst(1));
 
                 // require addr
+                isLeftValue = true;
+                expr = (Value) node.getExpr().accept(this);
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
                 break;
             }
             case DEC: {
+                // require value
+                Instruction res = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, expr,
+                        new IntConst(1));
+
+                // require addr
+                isLeftValue = true;
+                expr = (Value) node.getExpr().accept(this);
+                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                curBasicBlock.AddInstAtTail(res);
+                curBasicBlock.AddInstAtTail(st);
                 break;
             }
             case DEFAULT:

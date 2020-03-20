@@ -33,7 +33,7 @@ public abstract class Instruction extends User {
         } else if (rightValue instanceof GlobalVariable) {
             return "@" + ((GlobalVariable) rightValue).getIdentifier();
         } else if (rightValue instanceof Argument) {
-            return "arg" + ((Argument) rightValue).getArgNo();
+            return "%" + ((Argument) rightValue).getArgNo();
         } else {
             return ((Instruction) rightValue).getRegisterID();
         }

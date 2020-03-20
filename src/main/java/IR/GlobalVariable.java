@@ -63,6 +63,10 @@ public class GlobalVariable extends Value {
         return originalType;
     }
 
+    public void setOriginalType(IRBaseType originalType) {
+        this.originalType = originalType;
+    }
+
     public String getIdentifier() {
         return Identifier;
     }
