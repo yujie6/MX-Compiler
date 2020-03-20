@@ -455,7 +455,13 @@ public class IRBuilder implements ASTVisitor {
                 TopModule.getGlobalVarMap().put(globalString.getIdentifier(), globalString);
             }
 
-            return globalString;
+            ArrayList<Value> offsetList = new ArrayList<>();
+            offsetList.add(new IntConst(0));
+            offsetList.add(new IntConst(0));
+            GetPtrInst strPtr = new GetPtrInst(curBasicBlock, globalString, offsetList, globalString.getOriginalType());
+            curBasicBlock.AddInstAtTail(strPtr);
+            return strPtr;
+
         } else if (constType.equals(Module.I32)) {
             constant = new IntConst(((IntConstNode) node).getValue());
         } else if (constType.equals(Module.I1)) {
@@ -493,7 +499,7 @@ public class IRBuilder implements ASTVisitor {
 
     @Override
     public Object visit(ConstructCreatorNode node) {
-        if (! TopModule.getClassMap().containsKey(node.getExprType().getName()) ) {
+        if (!TopModule.getClassMap().containsKey(node.getExprType().getName())) {
             logger.severe("Fatal error, new expr's class could not be found.", node.GetLocation());
             System.exit(1);
         }
@@ -506,7 +512,7 @@ public class IRBuilder implements ASTVisitor {
             return funcCall;
         } else {
             // malloc some space, and bitcast to (class*)
-            Function malloc =TopModule.getFunctionMap().get("malloc");
+            Function malloc = TopModule.getFunctionMap().get("malloc");
             ArrayList<Value> paras = new ArrayList<>();
             paras.add(new IntConst(classType.getBytes()));
             CallInst mallocCall = new CallInst(curBasicBlock, malloc, paras);
@@ -581,7 +587,7 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use div on non integer type.", node.GetLocation());
                 } else {
-                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.div, LHS, RHS);
+                    BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sdiv, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
                 }
@@ -716,9 +722,15 @@ public class IRBuilder implements ASTVisitor {
             }
             // Global variable
             VarAddr = TopModule.getGlobalVarMap().get(node.getIdentifier());
-            LoadInst globalVar = new LoadInst(curBasicBlock, ((GlobalVariable) VarAddr).getOriginalType() ,VarAddr);
-            curBasicBlock.AddInstAtTail(globalVar);
-            return globalVar;
+            if (isLeftValue) {
+                return VarAddr;
+            } else {
+                GlobalVariable gvar = ((GlobalVariable) VarAddr);
+                LoadInst globalVar = new LoadInst(curBasicBlock, gvar.getOriginalType(), VarAddr);
+                curBasicBlock.AddInstAtTail(globalVar);
+                return globalVar;
+
+            }
         }
 
 
@@ -748,7 +760,7 @@ public class IRBuilder implements ASTVisitor {
         int offset = classEntity.getMemberOffset(node.getMember());
         GetPtrInst memberPtr;
         Value ExprPointer = (Value) node.getExpr().accept(this);
-        if (!(ExprPointer instanceof GetPtrInst) ) {
+        if (!(ExprPointer instanceof GetPtrInst)) {
             ArrayList<Value> offsets = new ArrayList<>();
             offsets.add(new IntConst(offset));
             IRBaseType eleType = classStructure.getElementType(offset);
@@ -851,10 +863,12 @@ public class IRBuilder implements ASTVisitor {
                 System.exit(1);
             }
             ArrayList<Value> args = new ArrayList<>();
+
             for (ExprNode expr : node.getParameters()) {
                 Value arg = (Value) expr.accept(this);
                 args.add(arg);
             }
+
             CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
             curBasicBlock.AddInstAtTail(instance);
             logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' function call done.", node.GetLocation());

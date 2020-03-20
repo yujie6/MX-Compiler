@@ -9,7 +9,7 @@ public class StringConst extends Constant {
     public StringConst(String value) {
         super(Module.STRING);
         this.constValue = value;
-        this.StrSize = value.length() -  2;
+        this.StrSize = value.length() -  1;
     }
 
     public String getConstValue() {
@@ -23,8 +23,7 @@ public class StringConst extends Constant {
         text = text.replace("\n", "\\0A");
         text = text.replace("\"", "");
         text = text.replace("\0", "\\00");
-
-        return "c\"" + text + "\"";
+        return "c\"" + text + "\\00\"";
     }
 
     @Override

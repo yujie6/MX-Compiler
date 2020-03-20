@@ -21,9 +21,6 @@ public class StoreInst extends Instruction {
         }
         if (!(storeDest.getType() instanceof PointerType)) {
             IRBuilder.logger.severe("Fatal error: store operand must be a pointer!");
-            for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
-                System.out.println(ste);
-            }
             System.exit(1);
         }
         this.UseList.add(new Use(storeValue, this));

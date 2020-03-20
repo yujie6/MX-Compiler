@@ -34,6 +34,9 @@ public class MXLogger {
     public void severe(String msg) {
         errorNum += 1;
         logger.severe("Error with message: "+ msg);
+        for (StackTraceElement ste : Thread.currentThread().getStackTrace()) {
+            System.out.println(ste);
+        }
     }
 
     public void warning(String msg, Location location) {

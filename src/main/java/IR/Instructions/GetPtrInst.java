@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.Constants.StringConst;
 import IR.GlobalVariable;
 import IR.Types.AggregateType;
 import IR.Types.IRBaseType;
@@ -27,8 +28,15 @@ public class GetPtrInst extends Instruction {
             this.baseAggregateType = aggregateValue.getType();
         }
         if (! (baseAggregateType instanceof AggregateType)) {
-            IRBuilder.logger.severe("Getptr target is not aggregate type");
-            System.exit(1);
+            if (aggregateValue instanceof GlobalVariable ) {
+                if (!((GlobalVariable) aggregateValue).isStringConst ) {
+                    IRBuilder.logger.severe("Getptr target is not aggregate type");
+                    System.exit(1);
+                }
+            } else {
+                IRBuilder.logger.severe("Getptr target is not aggregate type");
+                System.exit(1);
+            }
         }
         this.type = elementType;
 
@@ -46,17 +54,29 @@ public class GetPtrInst extends Instruction {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getRegisterID());
-        ans.append(" = getelementptr inbounds ");
-        ans.append(baseAggregateType.toString()).append(", ");
-        ans.append(aggregateValue.getType());
         if (aggregateValue instanceof GlobalVariable) {
-            ans.append("*");
-        }
-        ans.append(" ");
-        ans.append( getRightValueLabel(aggregateValue));
-        for (Value off_t : offsets) {
-            ans.append(", ").append(off_t.getType().toString()).append(" ");
-            ans.append(getRightValueLabel(off_t));
+            GlobalVariable gvar = (GlobalVariable) aggregateValue;
+            ans.append(" = getelementptr inbounds ");
+
+            ans.append("[").append( ((StringConst) gvar.getInitValue() ).getStrSize() );
+            ans.append(" x ").append("i8], ");
+
+            ans.append("[").append( ((StringConst) gvar.getInitValue() ).getStrSize() );
+            ans.append(" x ").append("i8]* @").append(gvar.getIdentifier());
+            for (Value off_t : offsets) {
+                ans.append(", ").append(off_t.getType().toString()).append(" ");
+                ans.append(getRightValueLabel(off_t));
+            }
+        } else {
+            ans.append(" = getelementptr inbounds ");
+            ans.append(baseAggregateType.toString()).append(", ");
+            ans.append(aggregateValue.getType());
+            ans.append(" ");
+            ans.append(getRightValueLabel(aggregateValue));
+            for (Value off_t : offsets) {
+                ans.append(", ").append(off_t.getType().toString()).append(" ");
+                ans.append(getRightValueLabel(off_t));
+            }
         }
         ans.append("\n");
         return ans.toString();

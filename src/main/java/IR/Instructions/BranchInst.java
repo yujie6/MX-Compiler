@@ -38,8 +38,8 @@ public class BranchInst extends Instruction {
         if (getCondition() != null) {
             assert getElseBlock() != null;
             ans.append(getCondition().getType().toString()).append(" ");
-            ans.append(getCondLabel()).append(", label ");
-            ans.append(getThenBlock().getLabel()).append(", label ");
+            ans.append(getCondLabel()).append(", label %");
+            ans.append(getThenBlock().getLabel()).append(", label %");
             ans.append(getElseBlock().getLabel());
         } else {
             ans.append("label %").append(getThenBlock().getLabel());

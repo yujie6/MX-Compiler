@@ -13,7 +13,7 @@ public abstract class Instruction extends User {
     public enum InstType {
         alloca, br, call, load, store, phi, ret, bitcast,
         icmp, getelementptr,
-        add, sub, mul, div, shl, shr, srem, and, or, xor
+        add, sub, mul, sdiv, shl, shr, srem, and, or, xor
     }
 
     public Instruction(BasicBlock parent, InstType instType) {

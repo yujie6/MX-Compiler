@@ -11,7 +11,7 @@ public class GlobalVariable extends Value {
     private Value InitValue;
     private IRBaseType originalType;
     static int globalStringNum = 0;
-    boolean isStringConst;
+    public boolean isStringConst;
 
     public GlobalVariable(IRBaseType type, String id, Value initValue) {
         super(ValueType.GLOBAL_VAR);
@@ -33,7 +33,7 @@ public class GlobalVariable extends Value {
 
     @Override
     public String toString() {
-        // TODO Global variable should have pointer reference
+        // TODO Global variable should have pointer reference, including global string
         StringBuilder ans = new StringBuilder("@");
         ans.append(Identifier).append(" = ");
         if (isStringConst) {
