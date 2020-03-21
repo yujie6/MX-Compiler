@@ -81,6 +81,7 @@ public class Module extends Value{
     private void PreProcess() {
         // Add external function to map, these functions only need to print
         // something like `declare i32 @printf(i8*, ...) #2`
+
         // print(string str)
         ArrayList<Argument> print_paras = new ArrayList<>();
         print_paras.add(new Argument(null, STRING, 0, "str"));
@@ -122,6 +123,88 @@ public class Module extends Value{
         malloc_paras.add(new Argument(null, I32, 0, "size"));
         Function _malloc = new Function("malloc", ADDR, malloc_paras, true);
         FunctionMap.put(_malloc.getIdentifier(), _malloc);
+        // getString()
+        ArrayList<Argument> getString_paras = new ArrayList<>();
+        Function _getString = new Function("getString", STRING, getString_paras, true);
+        FunctionMap.put(_getString.getIdentifier(), _getString);
+
+
+        DefineStringFunction();
+
+    }
+
+    private void DefineStringFunction() {
+        // __string_length
+        ArrayList<Argument> string_len_paras = new ArrayList<>();
+        string_len_paras.add(new Argument(null, STRING, 0, "str"));
+        Function __string_length = new Function("__string_length", I32, string_len_paras, true);
+        FunctionMap.put(__string_length.getIdentifier(), __string_length);
+        // __string_substring
+        ArrayList<Argument> string_substring_paras = new ArrayList<>();
+        string_substring_paras.add(new Argument(null, STRING, 0, "str"));
+        string_substring_paras.add(new Argument(null, I32, 1, "left"));
+        string_substring_paras.add(new Argument(null, I32, 2, "right"));
+        Function __string_substring = new Function("__string_substring", STRING, string_substring_paras, true);
+        FunctionMap.put(__string_substring.getIdentifier(), __string_substring);
+        // __string_concatenate
+        ArrayList<Argument> string_concatenate_paras = new ArrayList<>();
+        string_concatenate_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_concatenate_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_concatenate = new Function("__string_equal", STRING, string_concatenate_paras, true);
+        FunctionMap.put(__string_concatenate.getIdentifier(), __string_concatenate);
+        // __string_equal
+        ArrayList<Argument> string_equal_paras = new ArrayList<>();
+        string_equal_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_equal_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_equal = new Function("__string_equal", I1, string_equal_paras, true);
+        FunctionMap.put(__string_equal.getIdentifier(), __string_equal);
+        // __string_notEqual
+        ArrayList<Argument> string_notequal_paras = new ArrayList<>();
+        string_notequal_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_notequal_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_notEqual = new Function("__string_notEqual", I1, string_notequal_paras, true);
+        // __string_lessThan
+        ArrayList<Argument> string_lessthan_paras = new ArrayList<>();
+        string_lessthan_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_lessthan_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_lessThan = new Function("__string_lessThan", I1, string_lessthan_paras, true);
+        FunctionMap.put(__string_lessThan.getIdentifier(), __string_lessThan);
+        // __string_greaterThan
+        ArrayList<Argument> string_greaterThan_paras = new ArrayList<>();
+        string_greaterThan_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_greaterThan_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_greaterThan= new Function("__string_greaterThan", I1, string_greaterThan_paras, true);
+        FunctionMap.put(__string_greaterThan.getIdentifier(), __string_greaterThan);
+        // __string_lessEqual
+        ArrayList<Argument> string_lessEqual_paras = new ArrayList<>();
+        string_lessEqual_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_lessEqual_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_lessEqual= new Function("__string_lessEqual", I1, string_lessEqual_paras, true);
+        FunctionMap.put(__string_lessEqual.getIdentifier(), __string_lessEqual);
+        // __string_greaterEqual
+        ArrayList<Argument> string_greaterEqual_paras = new ArrayList<>();
+        string_greaterEqual_paras.add(new Argument(null, STRING, 0, "str1"));
+        string_greaterEqual_paras.add(new Argument(null, STRING, 1, "str2"));
+        Function __string_greaterEqual= new Function("__string_greaterEqual", I1, string_greaterEqual_paras, true);
+        FunctionMap.put(__string_greaterEqual.getIdentifier(), __string_greaterEqual);
+
+        // __string_ord
+        ArrayList<Argument> string_ord_paras = new ArrayList<>();
+        string_ord_paras.add(new Argument(null, STRING, 0, "str"));
+        string_ord_paras.add(new Argument(null, I32, 1, "pos"));
+        Function __string_ord = new Function("__string_ord", I32, string_ord_paras, true);
+        FunctionMap.put(__string_ord.getIdentifier(), __string_ord);
+        // __string_parseInt
+        ArrayList<Argument> string_parseInt_paras = new ArrayList<>();
+        string_parseInt_paras.add(new Argument(null, STRING,  0, "str"));
+        Function __string_parseInt = new Function("__string_parseInt", I32, string_parseInt_paras, true);
+        FunctionMap.put(__string_parseInt.getIdentifier(), __string_parseInt);
+
+        // __array_size
+        ArrayList<Argument> array_size_paras = new ArrayList<>();
+        array_size_paras.add(new Argument(null, STRING, 0, "arr"));
+        Function __array_size = new Function("__array_size", I32, array_size_paras, true);
+        FunctionMap.put(__array_size.getIdentifier(), __array_size);
     }
 
     public HashMap<String, Function> getFunctionMap() {

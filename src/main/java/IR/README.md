@@ -53,6 +53,13 @@
         getelementptr i32 %P, i32 1
       ; used to compute address of P[1]    
         ```
+    * This instruction is always confusing, especially the first
+    index, as is said in the official link
+        
+            This question arises most often when the GEP instruction 
+            is applied to a global variable which is always a pointer type.
+            The first operand indexes through the pointer 
+    
 * Other Constant Expressions
     * `icmp COND (VAL1, VAL2)`
     * `bitcast (CST to TYPE)`

@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.Constants.IntConst;
 import IR.Constants.StringConst;
 import IR.GlobalVariable;
 import IR.Types.AggregateType;
@@ -15,6 +16,7 @@ public class GetPtrInst extends Instruction {
     private ArrayList<Value> offsets;
     private Value aggregateValue;
     private IRBaseType baseAggregateType;
+    private IRBaseType elementType;
 
     public GetPtrInst(BasicBlock parent, Value aggregateValue, ArrayList<Value> offsets,
                       IRBaseType elementType) {
@@ -39,8 +41,8 @@ public class GetPtrInst extends Instruction {
                 System.exit(1);
             }
         }
-        this.type = elementType;
-
+        this.elementType = elementType;
+        this.type = new PointerType(elementType);
     }
 
     public GetPtrInst(GetPtrInst array, Value offset, IRBaseType elementType) {
@@ -101,5 +103,9 @@ public class GetPtrInst extends Instruction {
 
     public IRBaseType getBaseAggregateType() {
         return baseAggregateType;
+    }
+
+    public IRBaseType getElementType() {
+        return elementType;
     }
 }

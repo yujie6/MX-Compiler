@@ -157,7 +157,13 @@ public class IRBuilder implements ASTVisitor {
         for (StmtNode stmt : node.getFuncBlock().getStmtList()) {
             stmt.accept(this);
         }
-        // curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, function.getRetBlock(), null));
+        if (!(curBasicBlock.getTailInst() instanceof BranchInst) && FuncName.equals("main") ) {
+            // deal with cases with no return stmt
+            StoreInst storeZeroToRet = new StoreInst(curBasicBlock, new IntConst(0), function.getRetValue());
+            curBasicBlock.AddInstAtTail(storeZeroToRet);
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, function.getRetBlock(), null));
+        }
+
         function.AddBlockAtTail(function.getRetBlock());
         if (FuncName.equals("main")) {
             // call init at main's top block
@@ -297,7 +303,10 @@ public class IRBuilder implements ASTVisitor {
 
         curBasicBlock = ThenBlock;
         node.getThenStmt().accept(this); // curBasicBlock may change here
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+        if (!( curBasicBlock.getTailInst() instanceof BranchInst )) {
+            // else is the return inst
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+        }
         curFunction.AddBlockAtTail(ThenBlock);
 
         if (node.isHasElse()) {
@@ -460,7 +469,7 @@ public class IRBuilder implements ASTVisitor {
             ArrayList<Value> offsetList = new ArrayList<>();
             offsetList.add(new IntConst(0));
             offsetList.add(new IntConst(0));
-            GetPtrInst strPtr = new GetPtrInst(curBasicBlock, globalString, offsetList, globalString.getOriginalType());
+            GetPtrInst strPtr = new GetPtrInst(curBasicBlock, globalString, offsetList, Module.I8);
             curBasicBlock.AddInstAtTail(strPtr);
             return strPtr;
 
@@ -535,11 +544,19 @@ public class IRBuilder implements ASTVisitor {
         Value LHS = (Value) node.getLeftExpr().accept(this);
         if (LHS instanceof GetPtrInst) {
             curBasicBlock.AddInstAtTail((Instruction) LHS);
+            if (!isLeftValue) {
+                LoadInst lhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) LHS).getElementType(), LHS);
+                curBasicBlock.AddInstAtTail(lhs_instance);
+                LHS = lhs_instance;
+            }
         }
         isLeftValue = false;
         Value RHS = (Value) node.getRightExpr().accept(this);
         if (RHS instanceof GetPtrInst) {
             curBasicBlock.AddInstAtTail((Instruction) RHS);
+            LoadInst rhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) RHS).getElementType(), RHS);
+            curBasicBlock.AddInstAtTail(rhs_instance);
+            RHS = rhs_instance;
         }
         if (LHS == null || RHS == null) {
             logger.severe("Fatal error, binOp encounter null", node.GetLocation());
@@ -632,7 +649,8 @@ public class IRBuilder implements ASTVisitor {
             case NEQUAL:
             case GREATER_EQUAL: {
                 if (LHS.getType() == null) {
-                    System.err.println("fatal error");
+                    logger.severe("LHS type null", node.GetLocation());
+                    System.exit(1);
                 }
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use ge on non integer type.", node.GetLocation());
@@ -751,10 +769,14 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(MemberExprNode node) {
         // TODO return getelementptr inst
         Type classType = node.getExpr().getExprType();
-        if (!classType.isClass()) {
-            logger.severe("Member is not used on a class object.");
+        if (!classType.isClass() && !classType.isString()) {
+            logger.severe("Member is not used on a class object.", node.GetLocation());
             System.exit(1);
         }
+        if (classType.isString()) {
+            return node.getExpr().accept(this);
+        }
+        // what about method here ??? return getExpr directly
         StructureType classStructure = TopModule.getClassMap().get(classType.getName());
         ClassEntity classEntity = GlobalScope.GetClass(classType.getName());
         classEntity.getMember(node.getMember());
@@ -779,15 +801,17 @@ public class IRBuilder implements ASTVisitor {
 
         // TODO Wrong element Type !!!, first get array at 0, then get off_t element!!
         // TODO even after that we need to load from the ptr
-
+        boolean old_left = isLeftValue;
         isLeftValue = true; // to get pure pointer
         Value array = (Value) node.getArrayId().accept(this);
         isLeftValue = false;
         Value offset = (Value) node.getOffset().accept(this);
+        isLeftValue = old_left;
         if (array instanceof GetPtrInst) {
             return new GetPtrInst((GetPtrInst) array, offset, ConvertTypeFromAST(node.getExprType()));
         } else {
             ArrayList<Value> offsets = new ArrayList<>();
+            offsets.add(new IntConst(0));
             offsets.add(offset);
             return new GetPtrInst(curBasicBlock, array, offsets, ConvertTypeFromAST(node.getExprType()));
         }
@@ -880,8 +904,10 @@ public class IRBuilder implements ASTVisitor {
                         new IntConst(1));
 
                 // require addr
+                boolean old_left = isLeftValue;
                 isLeftValue = true;
                 expr = (Value) node.getExpr().accept(this);
+                isLeftValue = old_left;
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
@@ -893,8 +919,10 @@ public class IRBuilder implements ASTVisitor {
                         new IntConst(1));
 
                 // require addr
+                boolean old_left = isLeftValue;
                 isLeftValue = true;
                 expr = (Value) node.getExpr().accept(this);
+                isLeftValue = old_left;
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
@@ -916,15 +944,37 @@ public class IRBuilder implements ASTVisitor {
         // copy the argument using memcpy
         FunctionEntity mx_func = node.getFunction();
         if (mx_func.isMethod()) {
-            Function CalledFunc = TopModule.getFunctionMap().get(
-                    mx_func.getClassName() + '.' + mx_func.getIdentifier()
-            );
+            Function CalledFunc = null;
+            if (mx_func.getClassName().equals("string")) {
+                CalledFunc = TopModule.getFunctionMap().get(
+                        "__string_" + mx_func.getIdentifier()
+                );
+                ArrayList<Value> args = new ArrayList<>();
+                boolean old_left = isLeftValue;
+                isLeftValue = true;
+                Value str_instance = (Value) node.getObj().accept(this);
+                isLeftValue = old_left;
+                args.add(str_instance);
+                for (ExprNode expr : node.getParameters()) {
+                    Value arg = (Value) expr.accept(this);
+                    args.add(arg);
+                }
+                CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
+                curBasicBlock.AddInstAtTail(instance);
+                logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
+                return instance;
+
+            } else {
+                CalledFunc = TopModule.getFunctionMap().get(
+                        mx_func.getClassName() + '.' + mx_func.getIdentifier()
+                );
+            }
             assert CalledFunc != null;
             // TODO add method call
         } else {
             Function CalledFunc = TopModule.getFunctionMap().get(mx_func.getIdentifier());
             if (CalledFunc == null) {
-                logger.severe("Fatal error, check func inin.", node.GetLocation());
+                logger.severe("Fatal error, no such function, check func init.", node.GetLocation());
                 System.exit(1);
             }
             ArrayList<Value> args = new ArrayList<>();
