@@ -18,7 +18,7 @@ public class IntegerType extends SingleValueType {
     }
 
     public enum BitWidth {
-        i1, i8, i16, i32
+        i1, i8, i16, i32, i64
     }
 
     public IntegerType(BitWidth bitWidth) {
@@ -36,6 +36,10 @@ public class IntegerType extends SingleValueType {
             }
             case i32: {
                 ByteNum = 4;
+                break;
+            }
+            case i64: {
+                ByteNum = 8;
                 break;
             }
         }

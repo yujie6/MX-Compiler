@@ -11,7 +11,7 @@ public abstract class Instruction extends User {
     protected String RegisterID;
 
     public enum InstType {
-        alloca, br, call, load, store, phi, ret, bitcast,
+        alloca, br, call, load, store, phi, ret, bitcast, sext,
         icmp, getelementptr,
         add, sub, mul, sdiv, shl, shr, srem, and, or, xor
     }

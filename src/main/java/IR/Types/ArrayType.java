@@ -1,5 +1,6 @@
 package IR.Types;
 
+import IR.Constants.IntConst;
 import IR.Value;
 
 import java.util.ArrayList;
@@ -9,20 +10,18 @@ import java.util.ArrayList;
  *  in memory. The array type requires a size (number of elements) and an underlying data type.
  */
 public class ArrayType extends AggregateType {
-    private ArrayList<Integer> sizeList;
+    private ArrayList<Value> sizeList;
     private IRBaseType ArrayBaseType;
 
-    public ArrayType(ArrayList<Integer> size, IRBaseType baseType) {
+    public ArrayType(ArrayList<Value> size, IRBaseType baseType) {
         this.BaseTypeName = TypeID.ArrayTyID;
         this.ArrayBaseType = baseType;
         this.sizeList = size;
         this.ByteNum = ArrayBaseType.getBytes();
-        for (int s : sizeList) {
-            this.ByteNum *= s;
-        }
+        // compute bytNum ...
     }
 
-    public ArrayList<Integer> getSizeList() {
+    public ArrayList<Value> getSizeList() {
         return sizeList;
     }
 
@@ -38,12 +37,12 @@ public class ArrayType extends AggregateType {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
-        for (int size : sizeList) {
-            ans.append("[").append(size);
+        for (Value size : sizeList) {
+            ans.append("[").append( ((IntConst) size).getValue() );
             ans.append(" x ");
         }
         ans.append(getArrayBaseType().toString());
-        for (int size : sizeList) {
+        for (Value size : sizeList) {
             ans.append("]");
         }
         return ans.toString();

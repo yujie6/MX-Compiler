@@ -70,6 +70,10 @@ public class App {
         debugOption.setRequired(false);
         options.addOption(debugOption);
 
+        Option semanticOption = new Option("c", "semantic", false, "do not generate ir");
+        semanticOption.setRequired(false);
+        options.addOption(semanticOption);
+
         return options;
     }
 
@@ -149,6 +153,11 @@ public class App {
                 debugLevel = 0;
             }
         }
+        boolean onlySemantic = false;
+        if (cmd.hasOption("c")) {
+            onlySemantic = true;
+        }
+
         logger = new MXLogger(getLogLevel());
 
         if (cmd.hasOption("h")) {
@@ -168,7 +177,7 @@ public class App {
         if (cmd.hasOption("i")) {
             fileName = inputFilePath.replaceAll("\\s","");
         } else if (args.length == 1) {
-            fileName = args[0];
+            fileName = null;
         }
 
         CharStream input = null;
@@ -188,8 +197,10 @@ public class App {
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
-        Module LLVMTopModule = GetIRModule(ast, globalScope);
-        PrintLLVMIR(LLVMTopModule);
 
+        if (!onlySemantic) {
+            Module LLVMTopModule = GetIRModule(ast, globalScope);
+            PrintLLVMIR(LLVMTopModule);
+        }
     }
 }

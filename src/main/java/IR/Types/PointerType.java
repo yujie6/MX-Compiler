@@ -28,7 +28,9 @@ public class PointerType extends SingleValueType {
 
     @Override
     public int getBytes() {
-        return 4;
+        // On 64-bit machine should return 8
+        // considering rv32i, we shall change this to 4 later
+        return 8;
     }
 
     @Override

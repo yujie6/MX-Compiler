@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+void* malloc(size_t size);
+
 void print(char* str) {
     printf("%s", str);
 }

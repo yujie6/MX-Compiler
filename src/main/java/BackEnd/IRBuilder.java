@@ -491,20 +491,26 @@ public class IRBuilder implements ASTVisitor {
         // first only consider the simplest situation, that is new int[2][3]
         int arrayLevel = node.getArrayLevel();
         int sizeLen = node.getExprList().size();
-        ArrayList<Integer> sizeList = new ArrayList<>();
+
+        ArrayList<Value> sizeList = new ArrayList<>();
+        boolean old_left = isLeftValue;
+        isLeftValue = false;
         for (ExprNode expr : node.getExprList()) {
-            // expr must be int constant (TODO what about 5 * 4)
-            if (!(expr instanceof IntConstNode)) {
-                logger.severe("Array size could only be int const", node.GetLocation());
-                System.exit(1);
-            }
-            sizeList.add(((IntConstNode) expr).getValue());
+            // expr could not be int constant
+            // use malloc to generate i8 * , and then bitcast to the type we want
+           sizeList.add((Value) expr.accept(this));
         }
+        isLeftValue = old_left;
+
         Type baseType = new Type(node.getExprType());
         baseType.setArrayLevel(arrayLevel - sizeLen);
         ArrayType arrayType = new ArrayType(sizeList, ConvertTypeFromAST(baseType));
         AllocaInst addr = new AllocaInst(curBasicBlock, arrayType);
         curBasicBlock.AddInstAtTop(addr);
+        Function _malloc = TopModule.getFunctionMap().get("malloc");
+
+
+
         return addr;
     }
 
@@ -570,7 +576,7 @@ public class IRBuilder implements ASTVisitor {
                     return instance;
                 } else if (LHS.getType().equals(Module.STRING)) {
                     // str add, need function call
-                    Function function = getTopModule().getFunctionMap().get("_string_add");
+                    Function function = getTopModule().getFunctionMap().get("__string_concatenate");
                     ArrayList<Value> paras = new ArrayList<>();
                     paras.add(LHS);
                     paras.add(RHS);
@@ -950,11 +956,13 @@ public class IRBuilder implements ASTVisitor {
                         "__string_" + mx_func.getIdentifier()
                 );
                 ArrayList<Value> args = new ArrayList<>();
+
                 boolean old_left = isLeftValue;
-                isLeftValue = true;
+                isLeftValue = false;
                 Value str_instance = (Value) node.getObj().accept(this);
                 isLeftValue = old_left;
                 args.add(str_instance);
+
                 for (ExprNode expr : node.getParameters()) {
                     Value arg = (Value) expr.accept(this);
                     args.add(arg);

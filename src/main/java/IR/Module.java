@@ -46,6 +46,7 @@ public class Module extends Value{
     public static final IntegerType I8 = new IntegerType(IntegerType.BitWidth.i8);
     public static final IntegerType I16 = new IntegerType(IntegerType.BitWidth.i16);
     public static final IntegerType I32 = new IntegerType(IntegerType.BitWidth.i32);
+    public static final IntegerType I64 = new IntegerType(IntegerType.BitWidth.i64);
     public static final PointerType STRING = new PointerType(I8);
     public static final PointerType ADDR = new PointerType(I8);
 
@@ -102,12 +103,6 @@ public class Module extends Value{
         toString_paras.add(new Argument(null, I32, 0, "i"));
         Function _toString = new Function("toString", STRING, toString_paras, true);
         FunctionMap.put(_toString.getIdentifier(), _toString);
-        // String add
-        ArrayList<Argument> StringAdd_paras = new ArrayList<>();
-        StringAdd_paras.add(new Argument(null, STRING, 0, "lhs"));
-        StringAdd_paras.add(new Argument(null, STRING, 1, "rhs"));
-        Function _StringAdd = new Function("_string_add", STRING, StringAdd_paras, true);
-        FunctionMap.put(_StringAdd.getIdentifier(), _StringAdd);
         // getInt()
         ArrayList<Argument> getInt_paras = new ArrayList<>();
         Function _getInt = new Function("getInt", I32, getInt_paras, true);
@@ -118,9 +113,9 @@ public class Module extends Value{
         Function _printInt = new Function("printInt", VOID, printInt_paras, true);
         FunctionMap.put(_printInt.getIdentifier(), _printInt);
 
-        // malloc() also called @_Znwm(i64) in llvm
+        // malloc()
         ArrayList<Argument> malloc_paras = new ArrayList<>();
-        malloc_paras.add(new Argument(null, I32, 0, "size"));
+        malloc_paras.add(new Argument(null, I64, 0, "size"));
         Function _malloc = new Function("malloc", ADDR, malloc_paras, true);
         FunctionMap.put(_malloc.getIdentifier(), _malloc);
         // getString()
@@ -150,7 +145,7 @@ public class Module extends Value{
         ArrayList<Argument> string_concatenate_paras = new ArrayList<>();
         string_concatenate_paras.add(new Argument(null, STRING, 0, "str1"));
         string_concatenate_paras.add(new Argument(null, STRING, 1, "str2"));
-        Function __string_concatenate = new Function("__string_equal", STRING, string_concatenate_paras, true);
+        Function __string_concatenate = new Function("__string_concatenate", STRING, string_concatenate_paras, true);
         FunctionMap.put(__string_concatenate.getIdentifier(), __string_concatenate);
         // __string_equal
         ArrayList<Argument> string_equal_paras = new ArrayList<>();
@@ -163,6 +158,7 @@ public class Module extends Value{
         string_notequal_paras.add(new Argument(null, STRING, 0, "str1"));
         string_notequal_paras.add(new Argument(null, STRING, 1, "str2"));
         Function __string_notEqual = new Function("__string_notEqual", I1, string_notequal_paras, true);
+        FunctionMap.put(__string_notEqual.getIdentifier(), __string_notEqual);
         // __string_lessThan
         ArrayList<Argument> string_lessthan_paras = new ArrayList<>();
         string_lessthan_paras.add(new Argument(null, STRING, 0, "str1"));
