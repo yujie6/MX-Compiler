@@ -45,7 +45,7 @@ public class StoreInst extends Instruction {
         ans.append(getRightValueLabel(getStoreValue())).append(", ");
         ans.append(getStoreDest().getType().toString()).append(" ");
         ans.append( getRightValueLabel(getStoreDest()) );
-        ans.append(", align 4\n");
+        ans.append(", align 8\n");
         return ans.toString();
     }
 }

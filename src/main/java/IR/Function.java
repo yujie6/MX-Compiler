@@ -113,6 +113,7 @@ public class Function extends Value {
         BasicBlock head = new BasicBlock(this, "_head_block");
         AddBlockAtTail(head);
         RetBlock = new BasicBlock(this, "_ret_block");
+        // AddBlockAtTail(RetBlock);
         IRBaseType RetType = functionType.getReturnType();
         if (RetType.getBaseTypeName() == IRBaseType.TypeID.VoidTyID) {
             RetBlock.AddInstAtTail(new ReturnInst(RetBlock, Module.VOID, null));

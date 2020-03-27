@@ -18,16 +18,9 @@ configurations {
     jna
 }
 
-tasks.create(name: 'copyToBin', type: Copy)
-
-copyToBin {
-    from './build/install/Compiler/bin/'
-    into './bin'
-}
 
 installDist {
 
-    copyToBin
 }
 
 tasks.create(name: 'judge', dependsOn: 'installDist', type: Exec)
@@ -66,7 +59,7 @@ application {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t1.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t25.mx"]
     // options.warnings = false
 }
 

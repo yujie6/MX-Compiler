@@ -7,13 +7,13 @@ import IR.Value;
 
 public class SextInst extends Instruction {
     // sign extend on integer
-    private IRBaseType BaseType, TargetType;
+    private IRBaseType BaseType;
 
     public SextInst(BasicBlock parent, IRBaseType baseType, Value extendValue, IRBaseType targetType) {
         super(parent, InstType.sext);
         this.UseList.add(new Use(extendValue, this));
         this.BaseType = baseType;
-        this.TargetType = targetType;
+        this.type = targetType;
     }
 
     public Value getExtendValue() {
@@ -25,15 +25,11 @@ public class SextInst extends Instruction {
         StringBuilder ans = new StringBuilder(RegisterID);
         ans.append(" = sext ").append(this.BaseType.toString());
         ans.append(" ").append(getRightValueLabel(getExtendValue()));
-        ans.append(" to ").append(this.TargetType.toString()).append("\n");
+        ans.append(" to ").append(this.type.toString()).append("\n");
         return ans.toString();
     }
 
     public IRBaseType getBaseType() {
         return BaseType;
-    }
-
-    public IRBaseType getTargetType() {
-        return TargetType;
     }
 }

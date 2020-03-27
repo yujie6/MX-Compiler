@@ -72,6 +72,8 @@ public class IRBuilder implements ASTVisitor {
         } else if (type.isClass()) {
             return TopModule.getClassMap().get(type.getName());
         }
+        logger.severe("Bad type transfer!");
+        System.exit(1);
         return null;
     }
 
@@ -123,6 +125,8 @@ public class IRBuilder implements ASTVisitor {
                 declaration.accept(this);
             }
         }
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, curFunction.getRetBlock(), null));
+        curFunction.AddBlockAtTail(curFunction.getRetBlock());
         curBasicBlock = null;
         curFunction = null;
 
@@ -153,14 +157,15 @@ public class IRBuilder implements ASTVisitor {
         EnterScope(function);
         curFunction = function;
         curBasicBlock = function.getHeadBlock();
-
+        if (FuncName.equals("main")) {
+            StoreInst storeZeroToRet = new StoreInst(curBasicBlock, new IntConst(0), function.getRetValue());
+            curBasicBlock.AddInstAtTail(storeZeroToRet);
+        }
         for (StmtNode stmt : node.getFuncBlock().getStmtList()) {
             stmt.accept(this);
         }
-        if (!(curBasicBlock.getTailInst() instanceof BranchInst) && FuncName.equals("main") ) {
+        if (!curBasicBlock.endWithBranch()) {
             // deal with cases with no return stmt
-            StoreInst storeZeroToRet = new StoreInst(curBasicBlock, new IntConst(0), function.getRetValue());
-            curBasicBlock.AddInstAtTail(storeZeroToRet);
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, function.getRetBlock(), null));
         }
 
@@ -303,7 +308,7 @@ public class IRBuilder implements ASTVisitor {
 
         curBasicBlock = ThenBlock;
         node.getThenStmt().accept(this); // curBasicBlock may change here
-        if (!( curBasicBlock.getTailInst() instanceof BranchInst )) {
+        if (!curBasicBlock.endWithBranch()) {
             // else is the return inst
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
         }
@@ -312,7 +317,9 @@ public class IRBuilder implements ASTVisitor {
         if (node.isHasElse()) {
             curBasicBlock = ElseBlock;
             node.getElseStmt().accept(this);
-            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+            if (!curBasicBlock.endWithBranch()) {
+                curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+            }
             curFunction.AddBlockAtTail(ElseBlock);
         }
 
@@ -383,20 +390,28 @@ public class IRBuilder implements ASTVisitor {
 
         if (node.getInitExpr() != null) {
             Instruction initInst = (Instruction) node.getInitExpr().accept(this);
+            curBasicBlock.AddInstAtTail(initInst);
         }
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
 
         curBasicBlock = CondBlock;
 
-        Instruction condInst = (Instruction) node.getCondExpr().accept(this);
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condInst, LoopBody, MergeBlock));
-        LoopStackForContinue.push(LoopBody);
-        CondStackForBreak.push(CondBlock);
+        if (node.getCondExpr() != null) {
+            Instruction condInst = (Instruction) node.getCondExpr().accept(this);
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condInst, LoopBody, MergeBlock));
+            LoopStackForContinue.push(LoopBody);
+            CondStackForBreak.push(CondBlock);
+        } else {
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, LoopBody, null));
+            LoopStackForContinue.push(LoopBody);
+            CondStackForBreak.push(CondBlock);
+        }
 
         curBasicBlock = LoopBody;
         node.getLoopBlcok().accept(this);
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, UpdateBlock, null));
-
+        if (!curBasicBlock.endWithBranch()) {
+            curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, UpdateBlock, null));
+        }
         LoopStackForContinue.pop();
         CondStackForBreak.pop();
 
@@ -424,11 +439,15 @@ public class IRBuilder implements ASTVisitor {
             Value RetValue;
             if (node.getReturnedExpr() instanceof ConstNode) {
                 RetValue = (Constant) node.getReturnedExpr().accept(this);
-            } else RetValue = (Instruction) node.getReturnedExpr().accept(this);
+            } else {
+                boolean old_left = isLeftValue;
+                isLeftValue = false;
+                RetValue = (Instruction) node.getReturnedExpr().accept(this);
+                isLeftValue = old_left;
+            }
             curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RetValue, curFunction.getRetValue()));
         }
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null,
-                curFunction.getRetBlock(), null));
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, curFunction.getRetBlock(), null));
         return null;
     }
 
@@ -498,20 +517,32 @@ public class IRBuilder implements ASTVisitor {
         for (ExprNode expr : node.getExprList()) {
             // expr could not be int constant
             // use malloc to generate i8 * , and then bitcast to the type we want
-           sizeList.add((Value) expr.accept(this));
+            sizeList.add((Value) expr.accept(this));
         }
         isLeftValue = old_left;
 
         Type baseType = new Type(node.getExprType());
         baseType.setArrayLevel(arrayLevel - sizeLen);
-        ArrayType arrayType = new ArrayType(sizeList, ConvertTypeFromAST(baseType));
-        AllocaInst addr = new AllocaInst(curBasicBlock, arrayType);
-        curBasicBlock.AddInstAtTop(addr);
+        PointerType arrayType = new PointerType(ConvertTypeFromAST(baseType));
+
+
+        Value malloc_size = new IntConst(ConvertTypeFromAST(baseType).getBytes());
+        for (Value expr : sizeList) {
+            malloc_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, malloc_size, expr);
+            curBasicBlock.AddInstAtTail((Instruction) malloc_size);
+        }
+        SextInst malloc_size_i64 = new SextInst(curBasicBlock, Module.I32, malloc_size, Module.I64);
+        curBasicBlock.AddInstAtTail(malloc_size_i64);
+        ArrayList<Value> paras = new ArrayList<>();
+        paras.add(malloc_size_i64);
+
         Function _malloc = TopModule.getFunctionMap().get("malloc");
 
-
-
-        return addr;
+        CallInst malloc_addr = new CallInst(curBasicBlock, _malloc, paras);
+        BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, arrayType);
+        curBasicBlock.AddInstAtTail(malloc_addr);
+        curBasicBlock.AddInstAtTail(array_addr);
+        return array_addr;
     }
 
     @Override
@@ -546,12 +577,16 @@ public class IRBuilder implements ASTVisitor {
     @Override
     public Object visit(BinExprNode node) {
         Operators.BinaryOp bop = node.getBop();
+
+        boolean old_left = isLeftValue;
         isLeftValue = bop.equals(Operators.BinaryOp.ASSIGN);
         Value LHS = (Value) node.getLeftExpr().accept(this);
         if (LHS instanceof GetPtrInst) {
-            curBasicBlock.AddInstAtTail((Instruction) LHS);
             if (!isLeftValue) {
                 LoadInst lhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) LHS).getElementType(), LHS);
+                if (lhs_instance.getType() == null) {
+                    logger.severe("LHS is null type", node.GetLocation());
+                }
                 curBasicBlock.AddInstAtTail(lhs_instance);
                 LHS = lhs_instance;
             }
@@ -559,13 +594,15 @@ public class IRBuilder implements ASTVisitor {
         isLeftValue = false;
         Value RHS = (Value) node.getRightExpr().accept(this);
         if (RHS instanceof GetPtrInst) {
-            curBasicBlock.AddInstAtTail((Instruction) RHS);
             LoadInst rhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) RHS).getElementType(), RHS);
             curBasicBlock.AddInstAtTail(rhs_instance);
             RHS = rhs_instance;
         }
+        isLeftValue = old_left;
+
         if (LHS == null || RHS == null) {
             logger.severe("Fatal error, binOp encounter null", node.GetLocation());
+            logger.severe("exit now");
             System.exit(1);
         }
         switch (bop) {
@@ -656,10 +693,11 @@ public class IRBuilder implements ASTVisitor {
             case GREATER_EQUAL: {
                 if (LHS.getType() == null) {
                     logger.severe("LHS type null", node.GetLocation());
+                    logger.severe("Fatal error.");
                     System.exit(1);
                 }
                 if (!LHS.getType().equals(Module.I32)) {
-                    logger.warning("Use ge on non integer type.", node.GetLocation());
+                    logger.warning("Use ge or equal on non integer type.", node.GetLocation());
                 } else {
                     CmpInst instance = new CmpInst(curBasicBlock, Module.I1, bop, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
@@ -775,11 +813,11 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(MemberExprNode node) {
         // TODO return getelementptr inst
         Type classType = node.getExpr().getExprType();
-        if (!classType.isClass() && !classType.isString()) {
+        if (!classType.isClass() && !classType.isString() && !classType.isArray()) {
             logger.severe("Member is not used on a class object.", node.GetLocation());
             System.exit(1);
         }
-        if (classType.isString()) {
+        if (classType.isString() || classType.isArray()) {
             return node.getExpr().accept(this);
         }
         // what about method here ??? return getExpr directly
@@ -799,6 +837,7 @@ public class IRBuilder implements ASTVisitor {
                     new IntConst(offset),
                     classStructure.getElementType(offset));
         }
+        curBasicBlock.AddInstAtTail(memberPtr);
         return memberPtr;
     }
 
@@ -808,28 +847,30 @@ public class IRBuilder implements ASTVisitor {
         // TODO Wrong element Type !!!, first get array at 0, then get off_t element!!
         // TODO even after that we need to load from the ptr
         boolean old_left = isLeftValue;
-        isLeftValue = true; // to get pure pointer
+        isLeftValue = false; // to get pure pointer
         Value array = (Value) node.getArrayId().accept(this);
-        isLeftValue = false;
         Value offset = (Value) node.getOffset().accept(this);
         isLeftValue = old_left;
-        if (array instanceof GetPtrInst) {
-            return new GetPtrInst((GetPtrInst) array, offset, ConvertTypeFromAST(node.getExprType()));
-        } else {
-            ArrayList<Value> offsets = new ArrayList<>();
-            offsets.add(new IntConst(0));
-            offsets.add(offset);
-            return new GetPtrInst(curBasicBlock, array, offsets, ConvertTypeFromAST(node.getExprType()));
+        if (ConvertTypeFromAST(node.getExprType()) == null) {
+            logger.warning("Bad convert", node.GetLocation());
         }
-        // GetPtrInst ptr = new GetPtrInst();
+
+        ArrayList<Value> offsets = new ArrayList<>();
+        // offsets.add(new IntConst(0));
+        offsets.add(offset);
+        GetPtrInst addr = new GetPtrInst(curBasicBlock, array, offsets, ConvertTypeFromAST(node.getExprType()));
+        curBasicBlock.AddInstAtTail(addr);
+        if (!isLeftValue) {
+            LoadInst inst = new LoadInst(curBasicBlock, addr.getElementType(), addr);
+            curBasicBlock.AddInstAtTail(inst);
+            return inst;
+        }
+        return addr;
     }
 
     @Override
     public Object visit(PrefixExprNode node) {
         Value expr = (Value) node.getExpr().accept(this);
-        if (expr instanceof GetPtrInst) {
-            curBasicBlock.AddInstAtTail((Instruction) expr);
-        }
         switch (node.getPrefixOp()) {
 
             case INC: {
@@ -838,9 +879,12 @@ public class IRBuilder implements ASTVisitor {
                         new IntConst(1));
 
                 // require addr
+                boolean old_left = isLeftValue;
                 isLeftValue = true;
-                expr = (Value) node.getExpr().accept(this);
-                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                Value addr = (Value) node.getExpr().accept(this);
+                isLeftValue = old_left;
+
+                Instruction st = new StoreInst(curBasicBlock, res, addr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
                 // return the new value
@@ -852,9 +896,11 @@ public class IRBuilder implements ASTVisitor {
                         new IntConst(1));
 
                 // require addr
+                boolean old_left = isLeftValue;
                 isLeftValue = true;
-                expr = (Value) node.getExpr().accept(this);
-                Instruction st = new StoreInst(curBasicBlock, res, expr);
+                Value addr = (Value) node.getExpr().accept(this);
+                isLeftValue = old_left;
+                Instruction st = new StoreInst(curBasicBlock, res, addr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
                 return expr;
@@ -864,7 +910,7 @@ public class IRBuilder implements ASTVisitor {
             }
             case NEG: {
                 if (expr instanceof IntConst) {
-                    int value = (int) ((IntConst) expr).getValue();
+                    int value = ((IntConst) expr).ConstValue;
                     return new IntConst(-value);
                 } else {
                     BinOpInst negExpr = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub,
@@ -900,9 +946,6 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(PostfixExprNode node) {
         isLeftValue = false;
         Value expr = (Value) node.getExpr().accept(this);
-        if (expr instanceof GetPtrInst) {
-            curBasicBlock.AddInstAtTail((Instruction) expr);
-        }
         switch (node.getPostfixOp()) {
             case INC: {
                 // require value
@@ -913,11 +956,15 @@ public class IRBuilder implements ASTVisitor {
                 boolean old_left = isLeftValue;
                 isLeftValue = true;
                 expr = (Value) node.getExpr().accept(this);
+                isLeftValue = false;
+                Value store_value = (Value) node.getExpr().accept(this);
                 isLeftValue = old_left;
+
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
-                break;
+
+                return store_value;
             }
             case DEC: {
                 // require value
@@ -928,11 +975,15 @@ public class IRBuilder implements ASTVisitor {
                 boolean old_left = isLeftValue;
                 isLeftValue = true;
                 expr = (Value) node.getExpr().accept(this);
+                isLeftValue = false;
+                Value storeValue = (Value) node.getExpr().accept(this);
+                ;
                 isLeftValue = old_left;
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
-                break;
+
+                return storeValue;
             }
             case DEFAULT:
                 break;
@@ -967,6 +1018,26 @@ public class IRBuilder implements ASTVisitor {
                     Value arg = (Value) expr.accept(this);
                     args.add(arg);
                 }
+                CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
+                curBasicBlock.AddInstAtTail(instance);
+                logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
+                return instance;
+
+            } else if (mx_func.getClassName().equals("__Array")) {
+                CalledFunc = TopModule.getFunctionMap().get(
+                        "__array_" + mx_func.getIdentifier()
+                );
+                ArrayList<Value> args = new ArrayList<>();
+
+                boolean old_left = isLeftValue;
+                isLeftValue = false;
+                Value array_instance = (Value) node.getObj().accept(this);
+                isLeftValue = old_left;
+
+                BitCastInst addr = new BitCastInst(curBasicBlock, array_instance, Module.ADDR);
+                curBasicBlock.AddInstAtTail(addr);
+                args.add(addr);
+
                 CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
                 curBasicBlock.AddInstAtTail(instance);
                 logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());

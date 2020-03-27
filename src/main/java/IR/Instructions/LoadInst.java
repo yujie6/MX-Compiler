@@ -30,7 +30,7 @@ public class LoadInst extends Instruction {
         ans.append(" = ").append("load ").append(type.toString());
         ans.append(", ").append(getLoadAddr().getType().toString()).append(" ");
         ans.append(  getRightValueLabel(getLoadAddr()) );
-        ans.append(", align 4\n");
+        ans.append(", align 8\n");
         return ans.toString();
     }
 }

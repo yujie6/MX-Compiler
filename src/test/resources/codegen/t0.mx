@@ -1,0 +1,30 @@
+/*
+Test Package: Codegen
+Author: 18' Yujie Lu
+Time: 2020-03-27
+Input:
+=== input ===
+102
+=== end ===
+Output:
+=== output ===
+68
+=== end ===
+ExitCode: 0
+InstLimit: -1
+Origin Package: Codegen Pretest-523
+*/
+
+int main() {
+    int N, i, j;
+    int[][] step;
+    N = getInt();
+    step = new int[N][];
+    for (i = 0; i < N;  i ++ ) {
+        step[i] = new int[N];
+        for (j = 0; j < N; j ++ )
+            step[i][j] = -1;
+    }
+    println("hello world");
+    // println(toString(step[0][0]));
+}

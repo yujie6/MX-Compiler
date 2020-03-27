@@ -30,17 +30,6 @@ public class GetPtrInst extends Instruction {
             // including global var
             this.baseAggregateType = aggregateValue.getType();
         }
-        if (!(baseAggregateType instanceof AggregateType)) {
-            if (aggregateValue instanceof GlobalVariable) {
-                if (!((GlobalVariable) aggregateValue).isStringConst) {
-                    IRBuilder.logger.severe("Getptr target is not aggregate type");
-                    System.exit(1);
-                }
-            } else {
-                IRBuilder.logger.severe("Getptr target is not aggregate type");
-                System.exit(1);
-            }
-        }
         this.elementType = elementType;
         this.type = new PointerType(elementType);
     }
@@ -52,6 +41,7 @@ public class GetPtrInst extends Instruction {
         this.aggregateValue = array.aggregateValue;
         this.baseAggregateType = array.baseAggregateType;
         this.type = elementType;
+        this.elementType = elementType;
     }
 
     @Override

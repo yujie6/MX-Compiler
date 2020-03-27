@@ -1,6 +1,8 @@
 package IR;
 
+import IR.Instructions.BranchInst;
 import IR.Instructions.Instruction;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
@@ -12,7 +14,7 @@ import java.util.Set;
  * block. Matching the language definition, the last element of this list of instructions is always a terminator
  * instruction. In addition to tracking the list of instructions that make up the block, the BasicBlock class
  * also keeps track of the Function that it is embedded into.
- *
+ * <p>
  * Note that BasicBlocks themselves are Values, because they are referenced by instructions like branches
  * and can go in the switch tables. BasicBlocks have type label.
  */
@@ -94,6 +96,10 @@ public class BasicBlock extends Value {
         }
         HeadInst = inst;
         InstList.addFirst(inst);
+    }
+
+    public boolean endWithBranch() {
+        return TailInst instanceof BranchInst;
     }
 
     @Override

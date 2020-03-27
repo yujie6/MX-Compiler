@@ -80,7 +80,7 @@ public class IRPrinter implements IRVisitor {
             }
         } else {
             curBasicBlock = node;
-            WriteLLVM(node.getLabel() + ":\n");
+            WriteLLVM(node.getLabel() + ":  ;" + node.getIdentifier() + "\n");
             this.indentLevel += 1;
             for (Instruction inst : node.getInstList()) {
                 WriteLLVM(inst.toString());

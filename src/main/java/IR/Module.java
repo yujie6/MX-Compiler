@@ -59,6 +59,7 @@ public class Module extends Value{
         FunctionMap = new HashMap<>();
         ClassMap = new HashMap<>();
         StringConstMap = new HashMap<>();
+        LabelMap = new HashMap<>();
         TargetTriple = "x86_64-pc-linux-gnu";
         TargetDataLayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128";
         ModuleID = "Basic1";

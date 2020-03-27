@@ -1,11 +1,8 @@
 # Frontend structure
 
-[o] Use GlobalScopeBuilder to develop global scope, which 
-is a collection of `hashmap<String, Entity>` 
-for global variable, function and class.   
-
-[x] Use LocalScopeBuilder to traverse again, and check the
-semantic errors by local scope, using 
-something like a stack of scope.
-
-[x] Build symbol table and implement type checking. 
+* `ASTBuilder` build abstract syntax tree from parse tree
+created by antler
+* `GlobalScopeBuilder`, build global scope, store 
+global variables, class and functions.
+* `SemanticChekcer`, maintain localScope to do 
+type checking and something other semantic checks.
