@@ -2,7 +2,11 @@
 #include <stdlib.h>
 #include <string.h>
 
-void* malloc(size_t size);
+void* _malloc_and_init(long size) {
+    char * addr = (char *) malloc(size);
+    memset(addr, 0, size);
+    return addr;
+}
 
 void print(char* str) {
     printf("%s", str);
@@ -202,6 +206,7 @@ int __string_ord(char* str, int pos) {
     return str[pos];
 }
 
-int __array_size(char* arr) {
-    return *(((int*)arr) - 1);
+int __array_size(char * arr) {
+    // return *(((int*)arr) - 1);
+    return *(((long long*)arr)-1);
 }

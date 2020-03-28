@@ -1,5 +1,7 @@
 #!/bin/zsh
-cp /home/yujie6/Documents/Compiler/MX-Compiler/src/main/c/builtin-func.ll /tmp
+cd /home/yujie6/Documents/Compiler/MX-Compiler/src/main/c
+./compile-builtin.sh
+cp ./builtin-func.ll /tmp
 cd /tmp || exit
 rm a.out
 echo "Now ready to link!"

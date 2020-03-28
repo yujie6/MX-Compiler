@@ -17,6 +17,7 @@ import Tools.Operators;
 
 import java.util.ArrayList;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class IRBuilder implements ASTVisitor {
     private ValueSymbolTable valueSymbolTable;
@@ -536,9 +537,10 @@ public class IRBuilder implements ASTVisitor {
         ArrayList<Value> paras = new ArrayList<>();
         paras.add(malloc_size_i64);
 
-        Function _malloc = TopModule.getFunctionMap().get("malloc");
-
+        Function _malloc = TopModule.getFunctionMap().get("_malloc_and_init");
         CallInst malloc_addr = new CallInst(curBasicBlock, _malloc, paras);
+        // after malloc, init to zero
+
         BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, arrayType);
         curBasicBlock.AddInstAtTail(malloc_addr);
         curBasicBlock.AddInstAtTail(array_addr);
@@ -593,10 +595,12 @@ public class IRBuilder implements ASTVisitor {
         }
         isLeftValue = false;
         Value RHS = (Value) node.getRightExpr().accept(this);
-        if (RHS instanceof GetPtrInst) {
-            LoadInst rhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) RHS).getElementType(), RHS);
-            curBasicBlock.AddInstAtTail(rhs_instance);
-            RHS = rhs_instance;
+        if (RHS instanceof GetPtrInst ) {
+            if (!(node.getRightExpr() instanceof ConstNode)) {
+                LoadInst rhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) RHS).getElementType(), RHS);
+                curBasicBlock.AddInstAtTail(rhs_instance);
+                RHS = rhs_instance;
+            }
         }
         isLeftValue = old_left;
 

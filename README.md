@@ -22,8 +22,7 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
-* Debug LLVM IR builder
-* Add global var for string const
+* Add array size support
 * Add phi node for logic and, or
-* Basic optimization
+* Dead code elimination
 

@@ -59,7 +59,7 @@ application {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t25.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t2.mx"]
     // options.warnings = false
 }
 
