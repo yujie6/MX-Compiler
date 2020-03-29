@@ -207,6 +207,5 @@ int __string_ord(char* str, int pos) {
 }
 
 int __array_size(char * arr) {
-    // return *(((int*)arr) - 1);
-    return *(((long long*)arr)-1);
+    return *(((long long*)arr) - 1);
 }

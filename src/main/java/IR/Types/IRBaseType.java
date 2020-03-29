@@ -68,6 +68,14 @@ public abstract class IRBaseType {
         return false;
     }
 
+    public boolean isIntegerType() {
+        return BaseTypeName.equals(TypeID.IntegerTyID);
+    }
+
+    public boolean isPointerType() {
+        return BaseTypeName.equals(TypeID.PointerTyID);
+    }
+
     public abstract int getBytes();
 
     public abstract Value getDefaultValue();

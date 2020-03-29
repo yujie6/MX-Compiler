@@ -23,7 +23,6 @@ Origin Package: Codegen Pretest-531
 int[] a = new int[4];
 int main()
 {
-    print(toString(a.size()));
     int[] b = new int[a.size()];
 	int i;
     for (i = 0; i < a.size(); i++)

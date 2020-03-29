@@ -12,6 +12,7 @@ import IR.Types.PointerType;
 import IR.Types.StructureType;
 import MxEntity.ClassEntity;
 import MxEntity.FunctionEntity;
+import Tools.Location;
 import Tools.MXLogger;
 import Tools.Operators;
 
@@ -516,35 +517,110 @@ public class IRBuilder implements ASTVisitor {
         boolean old_left = isLeftValue;
         isLeftValue = false;
         for (ExprNode expr : node.getExprList()) {
-            // expr could not be int constant
-            // use malloc to generate i8 * , and then bitcast to the type we want
             sizeList.add((Value) expr.accept(this));
         }
         isLeftValue = old_left;
 
         Type baseType = new Type(node.getExprType());
         baseType.setArrayLevel(arrayLevel - sizeLen);
-        PointerType arrayType = new PointerType(ConvertTypeFromAST(baseType));
+        IRBaseType arrayBaseType = ConvertTypeFromAST(baseType);
 
+        Value array_addr = getNewArray(arrayBaseType, arrayLevel, sizeList, node.GetLocation());
 
-        Value malloc_size = new IntConst(ConvertTypeFromAST(baseType).getBytes());
-        for (Value expr : sizeList) {
-            malloc_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, malloc_size, expr);
-            curBasicBlock.AddInstAtTail((Instruction) malloc_size);
-        }
+        return array_addr;
+    }
+
+    private Value getNewArray(IRBaseType arrayBaseType, int arrayLevel, ArrayList<Value> arraySizeList, Location location) {
+        int arrayUnitSize = (arrayLevel > 1) ? 8 : 4;
+        Value arraySize = arraySizeList.get(0);
+        BinOpInst malloc_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, arraySize, new IntConst(arrayUnitSize));
+        BinOpInst total_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, malloc_size, new IntConst(8));
         SextInst malloc_size_i64 = new SextInst(curBasicBlock, Module.I32, malloc_size, Module.I64);
-        curBasicBlock.AddInstAtTail(malloc_size_i64);
+
         ArrayList<Value> paras = new ArrayList<>();
         paras.add(malloc_size_i64);
-
         Function _malloc = TopModule.getFunctionMap().get("_malloc_and_init");
         CallInst malloc_addr = new CallInst(curBasicBlock, _malloc, paras);
-        // after malloc, init to zero
-
-        BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, arrayType);
+        curBasicBlock.AddInstAtTail(malloc_size);
+        curBasicBlock.AddInstAtTail(total_size);
+        curBasicBlock.AddInstAtTail(malloc_size_i64);
         curBasicBlock.AddInstAtTail(malloc_addr);
+
+        if (!arraySize.getType().equals(Module.I32)) {
+            logger.warning("Array size must be int32", location);
+            logger.severe("Fatal error, exit");
+            System.exit(1);
+        }
+        BitCastInst ArraySizeAddr = new BitCastInst(curBasicBlock, malloc_addr, new PointerType(Module.I64));
+        SextInst arraySizeInt64 = new SextInst(curBasicBlock, Module.I32, arraySize, Module.I64);
+        StoreInst stArraySize = new StoreInst(curBasicBlock, arraySizeInt64, ArraySizeAddr);
+        BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, new PointerType(arrayBaseType));
+        ArrayList<Value> offsets = new ArrayList<>();
+        offsets.add(new IntConst(8 / arrayUnitSize));
+        GetPtrInst arrayBaseAddr = new GetPtrInst(curBasicBlock, array_addr, offsets, arrayBaseType);
+
+        curBasicBlock.AddInstAtTail(ArraySizeAddr);
+        curBasicBlock.AddInstAtTail(arraySizeInt64);
+        curBasicBlock.AddInstAtTail(stArraySize);
         curBasicBlock.AddInstAtTail(array_addr);
-        return array_addr;
+        curBasicBlock.AddInstAtTail(arrayBaseAddr);
+
+        if (arraySizeList.size() == 1) {
+            return arrayBaseAddr;
+        } else if (!(arrayBaseType instanceof PointerType)) {
+            logger.warning("multilevel array type error.", location);
+        }
+
+        // multiLevel array, init recursively
+        BasicBlock condBlock = new BasicBlock(curFunction, "ArrayInitCond");
+        BasicBlock loopBlock = new BasicBlock(curFunction, "ArrayInitLoop");
+        BasicBlock updateBlock = new BasicBlock(curFunction, "ArrayInitUpdate");
+        BasicBlock mergeBlock = new BasicBlock(curFunction, "ArrayInitMerge");
+        IRBaseType subArrayType = new PointerType(arrayBaseType);
+        AllocaInst subArrayAddr = new AllocaInst(curFunction.getHeadBlock(), subArrayType);
+        curFunction.getHeadBlock().AddInstAtTop(subArrayAddr);
+        StoreInst stBase = new StoreInst(curBasicBlock, arrayBaseAddr, subArrayAddr);
+        curBasicBlock.AddInstAtTail(stBase);
+        offsets = new ArrayList<>();
+        offsets.add(arraySize);
+        GetPtrInst arrayTail = new GetPtrInst(curBasicBlock, arrayBaseAddr, offsets, arrayBaseType);
+        curBasicBlock.AddInstAtTail(arrayTail);
+
+        curBasicBlock = condBlock;
+        LoadInst subArray = new LoadInst(curBasicBlock, subArrayType, subArrayAddr);
+        CmpInst subArrayReachTail = new CmpInst(curBasicBlock, subArrayType, Operators.BinaryOp.LESS, subArray,
+                arrayTail);
+        BranchInst jump = new BranchInst(curBasicBlock, subArrayReachTail, loopBlock, mergeBlock);
+        curBasicBlock.AddInstAtTail(subArray);
+        curBasicBlock.AddInstAtTail(subArrayReachTail);
+        curBasicBlock.AddInstAtTail(jump);
+
+        curBasicBlock = loopBlock;
+        IRBaseType subArrayBaseType = ((PointerType) arrayBaseType).getBaseType();
+        arraySizeList.remove(0);
+        Value _subArray = getNewArray(subArrayBaseType, arrayLevel - 1, arraySizeList, location);
+        StoreInst stSubArray = new StoreInst(curBasicBlock, _subArray, subArray);
+        curBasicBlock.AddInstAtTail(stSubArray);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, updateBlock, null));
+
+        curBasicBlock = updateBlock;
+        offsets = new ArrayList<>();
+        offsets.add(new IntConst(1));
+        GetPtrInst nextSubArray = new GetPtrInst(curBasicBlock, arrayBaseAddr, offsets, arrayBaseType);
+        StoreInst stNextSubArray = new StoreInst(curBasicBlock, nextSubArray, subArrayAddr);
+        curBasicBlock.AddInstAtTail(nextSubArray);
+        curBasicBlock.AddInstAtTail(stNextSubArray);
+        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, condBlock, null));
+        curBasicBlock = mergeBlock;
+
+
+
+        curFunction.AddBlockAtTail(condBlock);
+        curFunction.AddBlockAtTail(loopBlock);
+        curFunction.AddBlockAtTail(updateBlock);
+        curFunction.AddBlockAtTail(mergeBlock);
+
+        return arrayBaseAddr;
     }
 
     @Override
@@ -596,7 +672,7 @@ public class IRBuilder implements ASTVisitor {
         isLeftValue = false;
         Value RHS = (Value) node.getRightExpr().accept(this);
         if (RHS instanceof GetPtrInst ) {
-            if (!(node.getRightExpr() instanceof ConstNode)) {
+            if (!(node.getRightExpr() instanceof ConstNode) && !(node.getRightExpr() instanceof ArrayCreatorNode)) {
                 LoadInst rhs_instance = new LoadInst(curBasicBlock, ((GetPtrInst) RHS).getElementType(), RHS);
                 curBasicBlock.AddInstAtTail(rhs_instance);
                 RHS = rhs_instance;

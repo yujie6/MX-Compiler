@@ -80,7 +80,7 @@ int main() {
     int i;
 	n = getString().parseInt();
 	a = new int[n];
-
+    println(toString(a.size()));
     for (i = 0; i < a.size(); i = i + 1)
 		a[i] = i;
     makeHeap();
