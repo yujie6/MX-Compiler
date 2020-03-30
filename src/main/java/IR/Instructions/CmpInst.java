@@ -5,6 +5,7 @@ import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
 import Tools.Operators;
+import IR.Module;
 
 public class CmpInst extends Instruction {
     private CmpOperation SubOpcode;
@@ -13,7 +14,7 @@ public class CmpInst extends Instruction {
         eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
     }
 
-    public CmpInst(BasicBlock parent, IRBaseType type, Operators.BinaryOp bop, Value LHS, Value RHS) {
+    public CmpInst(BasicBlock parent, Operators.BinaryOp bop, Value LHS, Value RHS) {
         super(parent, InstType.icmp);
         this.UseList.add(new Use(LHS, this));
         this.UseList.add(new Use(RHS, this));
@@ -30,7 +31,7 @@ public class CmpInst extends Instruction {
         } else if (bop.equals(Operators.BinaryOp.NEQUAL)) {
             this.SubOpcode = CmpOperation.ne;
         }
-        this.type = type;
+        this.type = Module.I1;
     }
 
     public Value getLHS() {

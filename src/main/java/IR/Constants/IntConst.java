@@ -10,6 +10,11 @@ public class IntConst extends Constant {
         this.ConstValue = value;
     }
 
+    public IntConst(int value, boolean isI64) {
+        super(Module.I64);
+        this.ConstValue = value;
+    }
+
     @Override
     public String toString() {
         return String.valueOf(ConstValue);
