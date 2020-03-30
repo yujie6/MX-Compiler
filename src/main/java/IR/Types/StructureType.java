@@ -22,6 +22,12 @@ public class StructureType extends AggregateType {
     private String Identifier;
     private HashMap<Integer, IRBaseType> MemberTypeMap; // by offset
     private int MemberNum;
+    public StructureType(String id) {
+        this.BaseTypeName = TypeID.StructTyID;
+        this.Identifier = id;
+        this.MemberList = null;
+    }
+
     public StructureType(String id, ArrayList<IRBaseType> typeList) {
         this.BaseTypeName = TypeID.StructTyID;
         this.Identifier = id;
@@ -36,6 +42,10 @@ public class StructureType extends AggregateType {
         }
 
         this.ByteNum = sum;
+    }
+
+    public boolean isFakeType() {
+        return this.MemberList == null;
     }
 
     public ArrayList<IRBaseType> getMemberList() {

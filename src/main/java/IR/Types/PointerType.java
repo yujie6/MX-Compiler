@@ -22,6 +22,10 @@ public class PointerType extends SingleValueType {
         this.PtrBaseType = baseType;
     }
 
+    public void setBaseType(IRBaseType type) {
+        this.PtrBaseType = type;
+    }
+
     public IRBaseType getBaseType() {
         return PtrBaseType;
     }

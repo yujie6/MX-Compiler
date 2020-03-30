@@ -68,9 +68,13 @@ public class IRBuilder implements ASTVisitor {
         } else if (type.isVoid()) {
             return Module.VOID;
         } else if (type.isNull()) {
-
+            return Module.ADDR;
         } else if (type.isClass()) {
-            return new PointerType(TopModule.getClassMap().get(type.getName()) ) ;
+            if (TopModule.getClassMap().containsKey(type.getName())) {
+                return new PointerType(TopModule.getClassMap().get(type.getName()));
+            } else {
+                return new PointerType(new StructureType(type.getName()));
+            }
         }
         logger.severe("Bad type transfer!");
         System.exit(1);
@@ -222,6 +226,8 @@ public class IRBuilder implements ASTVisitor {
                 Value initValue;
                 if (initExpr != null) {
                     initValue = (Value) initExpr.accept(this);
+                    if (initValue instanceof NullConst)
+                        initValue.setType(type);
                     curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                 }
                 logger.fine("IR build for '" + subnode.getIdentifier() + "' variable declaration ir done.");
@@ -239,9 +245,7 @@ public class IRBuilder implements ASTVisitor {
             for (VariableDecNode subnode : node.getVarNodeList()) {
                 IRBaseType memberType = ConvertTypeFromAST(subnode.getType());
                 assert memberType != null;
-//                if (memberType.getBaseTypeName() == IRBaseType.TypeID.StructTyID) {
-//                    memberType = new PointerType(memberType);
-//                }
+
                 for (VarDecoratorNode var : subnode.getVarDecoratorList()) {
                     MemberList.add(memberType);
                 }
@@ -249,10 +253,21 @@ public class IRBuilder implements ASTVisitor {
             StructureType curClass = new StructureType(node.getIdentifier(), MemberList);
             TopModule.defineClass(node.getIdentifier(), curClass);
         } else if (node.getAcceptStage() == 1) {
-
-//            for (VariableDecNode subnode : node.getVarNodeList()) {
-//                subnode.accept(this);
-//            }
+            StructureType curClass = TopModule.getClassMap().get(node.getIdentifier());
+            for (int i = 0; i < curClass.getMemberList().size(); i ++) {
+                IRBaseType type = curClass.getMemberList().get(i);
+                if (type instanceof PointerType) {
+                    PointerType p = (PointerType) type;
+                    IRBaseType baseType = p.getBaseType();
+                    if (baseType instanceof StructureType) {
+                        if (((StructureType) baseType).isFakeType()  ) {
+                            String className = ((StructureType) baseType).getIdentifier();
+                            StructureType realType = TopModule.getClassMap().get(className);
+                            p.setBaseType(realType);
+                        }
+                    }
+                }
+            }
 
             for (MethodDecNode method : node.getMethodNodeList()) {
                 method.accept(this);
@@ -294,7 +309,7 @@ public class IRBuilder implements ASTVisitor {
         BasicBlock MergeBlock = new BasicBlock(curFunction, "IfMergeBlock");
         Value condition = (Value) node.getConditionExpr().accept(this);
 
-        if (!condition.getType().getBaseTypeName().equals(IRBaseType.TypeID.IntegerTyID)) {
+        if (!condition.getType().isIntegerType()) {
             logger.severe("Condition is not boolean type", node.GetLocation());
         }
         if (node.isHasElse()) {
@@ -416,7 +431,8 @@ public class IRBuilder implements ASTVisitor {
 
         curFunction.AddBlockAtTail(UpdateBlock);
         curBasicBlock = UpdateBlock;
-        node.getUpdateExpr().accept(this);
+        if (node.getUpdateExpr() != null)
+            node.getUpdateExpr().accept(this);
         // could only be assign expr
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
 
@@ -463,6 +479,10 @@ public class IRBuilder implements ASTVisitor {
     public Object visit(ConstNode node) {
         IRBaseType constType = ConvertTypeFromAST(node.getType());
         Constant constant = null;
+        if (node.getType().isNull()) {
+            return new NullConst(constType);
+        }
+
         if (constType.equals(Module.STRING)) {
             // string const -> global var
             String str_const = ((StringConstNode) node).getValue();
@@ -519,7 +539,8 @@ public class IRBuilder implements ASTVisitor {
     }
 
     private Value getNewArray(IRBaseType arrayBaseType, int arrayLevel, ArrayList<Value> arraySizeList, Location location) {
-        int arrayUnitSize = (arrayLevel > 1) ? 8 : 4;
+        int t = (arrayBaseType instanceof PointerType) ? 8 : 4;
+        int arrayUnitSize = (arrayLevel > 1) ? 8 : t;
         Value arraySize = arraySizeList.get(0);
         BinOpInst malloc_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, arraySize, new IntConst(arrayUnitSize));
         BinOpInst total_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, malloc_size, new IntConst(8));
@@ -844,7 +865,7 @@ public class IRBuilder implements ASTVisitor {
                     logger.severe("Fatal error.");
                     System.exit(1);
                 }
-                if (!LHS.getType().equals(Module.I32)) {
+                if (!LHS.getType().equals(Module.I32) && !(RHS instanceof NullConst) ) {
                     logger.warning("Use ge or equal on non integer type.", node.GetLocation());
                 } else {
                     CmpInst instance = new CmpInst(curBasicBlock, bop, LHS, RHS);
@@ -892,6 +913,10 @@ public class IRBuilder implements ASTVisitor {
             case ASSIGN: {
                 // RHS may be const or inst
                 // LHS must be address (alloca)
+                if (RHS instanceof NullConst) {
+                    IRBaseType nullType = ((PointerType) LHS.getType()).getBaseType();
+                    RHS.setType(nullType);
+                }
                 curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RHS, LHS));
                 break;
             }
@@ -970,8 +995,14 @@ public class IRBuilder implements ASTVisitor {
         offsets.add(new IntConst(offset));
         IRBaseType eleType = classStructure.getElementType(offset);
         memberPtr = new GetPtrInst(curBasicBlock, ExprPointer, offsets, eleType);
-
         curBasicBlock.AddInstAtTail(memberPtr);
+
+        if (!isLeftValue) {
+            LoadInst memberInstance = new LoadInst(curBasicBlock, memberPtr.getElementType(), memberPtr);
+            curBasicBlock.AddInstAtTail(memberInstance);
+            return memberInstance;
+        }
+
         return memberPtr;
     }
 
@@ -1022,7 +1053,7 @@ public class IRBuilder implements ASTVisitor {
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
                 // return the new value
-                return expr;
+                return res;
             }
             case DEC: {
                 // require value
@@ -1037,7 +1068,8 @@ public class IRBuilder implements ASTVisitor {
                 Instruction st = new StoreInst(curBasicBlock, res, addr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
-                return expr;
+                // if ()
+                return res;
             }
             case POS: {
                 return expr;
@@ -1111,8 +1143,8 @@ public class IRBuilder implements ASTVisitor {
                 expr = (Value) node.getExpr().accept(this);
                 isLeftValue = false;
                 Value storeValue = (Value) node.getExpr().accept(this);
-                ;
                 isLeftValue = old_left;
+
                 Instruction st = new StoreInst(curBasicBlock, res, expr);
                 curBasicBlock.AddInstAtTail(res);
                 curBasicBlock.AddInstAtTail(st);
