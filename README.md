@@ -22,7 +22,6 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
-* Add array size support
-* Add phi node for logic and, or
 * Dead code elimination
+* Function inline
 

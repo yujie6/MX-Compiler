@@ -19,8 +19,7 @@ import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.apache.commons.cli.*;
 
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.util.logging.Level;
 
 
@@ -30,6 +29,11 @@ public class App {
 
     static MXLogger logger;
     private static int debugLevel;
+
+    public App() {
+        debugLevel = 0;
+        logger = new MXLogger(getLogLevel());
+    }
 
     private static Level getLogLevel() {
         switch (debugLevel) {
@@ -81,6 +85,21 @@ public class App {
         return "Hello world.";
     }
 
+    public void compile(String fileName) throws IOException {
+        CharStream input = null;
+        fileName = fileName.replaceAll("\\s","");
+        try {
+            input = CharStreams.fromFileName(fileName);
+        } catch (IOException e) {
+            System.err.println("Read File Failed.\n");
+        }
+        MxProgramNode ast = GetAbstractSyntaxTree(input);
+        Scope globalScope = GetGlobalScope(ast);
+        SemanticCheck(globalScope, ast);
+        Module LLVMTopModule = GetIRModule(ast, globalScope);
+        PrintLLVMIR(LLVMTopModule);
+    }
+
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
         MxLexer lexer = new MxLexer(input);
         lexer.removeErrorListeners();
@@ -129,6 +148,33 @@ public class App {
         IRPrinter printer = new IRPrinter(logger, "Basic1");
         printer.setPrintMode(1);
         printer.Print(irModule);
+    }
+
+    public static void codegen() throws IOException{
+        String homeDirectory = "/home/yujie6/Documents/Compiler/MX-Compiler";
+        ProcessBuilder builder = new ProcessBuilder();
+        builder.directory(new File(homeDirectory));
+        builder.command("bash", "codegen.bash");
+        Process process = builder.start();
+
+        int exitCode = 0;
+        try {
+            exitCode = process.waitFor();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        assert exitCode == 0;
+
+        SequenceInputStream sis = new SequenceInputStream(process.getInputStream(), process.getErrorStream());
+        InputStreamReader inst = new InputStreamReader(sis, "GBK");//设置编码格式并转换为输入流
+        BufferedReader br = new BufferedReader(inst);//输入流缓冲区
+
+        String res = null;
+        StringBuilder sb = new StringBuilder();
+        while ((res = br.readLine()) != null) {//循环读取缓冲区中的数据
+            sb.append(res+"\n");
+        }
+        logger.info(sb.toString());
     }
 
     public static void main(String[] args) throws MXError, IOException {
@@ -198,9 +244,12 @@ public class App {
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
 
-        if (!onlySemantic) {
-            Module LLVMTopModule = GetIRModule(ast, globalScope);
-            PrintLLVMIR(LLVMTopModule);
+        if (onlySemantic) {
+            return;
         }
+        Module LLVMTopModule = GetIRModule(ast, globalScope);
+        PrintLLVMIR(LLVMTopModule);
+
+        // codegen part
     }
 }
