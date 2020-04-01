@@ -31,7 +31,7 @@ public class App {
     private static int debugLevel;
 
     public App() {
-        debugLevel = 0;
+        debugLevel = 1;
         logger = new MXLogger(getLogLevel());
     }
 

@@ -10,7 +10,7 @@ public class ValueSymbolTable {
     }
 
     public ValueSymbolTable(HashMap<String, Value> hashMap) {
-        valueHashMap = hashMap;
+        valueHashMap = (HashMap<String, Value>) hashMap.clone();
     }
 
     public void put(String id, Value var) {

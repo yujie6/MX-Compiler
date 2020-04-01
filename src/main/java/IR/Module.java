@@ -13,14 +13,13 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
-import java.util.logging.Logger;
 
 /**
  * LLVM programs are composed of Module’s, each of which is a translation unit of the input programs.
  * Each module consists of functions, global variables, and symbol table entries.
  * Modules may be combined together with the LLVM linker, which merges function (and global variable) definitions,
  * resolves forward declarations, and merges symbol table entries.
-
+ * <p>
  * A Module instance is used to store all the information related to an
  * LLVM module. Modules are the top level container of all other LLVM
  * Intermediate Representation (IR) objects. Each module directly contains a
@@ -28,7 +27,7 @@ import java.util.logging.Logger;
  * other modules) this module depends on, a symbol table, and various data
  * about the target's characteristics.
  */
-public class Module extends Value{
+public class Module extends Value {
     private HashMap<String, Value> GlobalVarMap;
     private HashMap<String, Function> FunctionMap;
     private HashMap<String, StructureType> ClassMap;
@@ -70,8 +69,9 @@ public class Module extends Value{
     }
 
     public void RefreshClassMapping() {
+        // ???
         for (StructureType structureType : ClassMap.values()) {
-            structureType.getMemberList().forEach(memberType->{
+            structureType.getMemberTypeList().forEach(memberType -> {
                 if (memberType.getBaseTypeName().equals(IRBaseType.TypeID.StructTyID)) {
                     String className = ((StructureType) memberType).getIdentifier();
                     memberType = ClassMap.get(className);
@@ -175,19 +175,19 @@ public class Module extends Value{
         ArrayList<Argument> string_greaterThan_paras = new ArrayList<>();
         string_greaterThan_paras.add(new Argument(null, STRING, 0, "str1"));
         string_greaterThan_paras.add(new Argument(null, STRING, 1, "str2"));
-        Function __string_greaterThan= new Function("__string_greaterThan", I1, string_greaterThan_paras, true);
+        Function __string_greaterThan = new Function("__string_greaterThan", I1, string_greaterThan_paras, true);
         FunctionMap.put(__string_greaterThan.getIdentifier(), __string_greaterThan);
         // __string_lessEqual
         ArrayList<Argument> string_lessEqual_paras = new ArrayList<>();
         string_lessEqual_paras.add(new Argument(null, STRING, 0, "str1"));
         string_lessEqual_paras.add(new Argument(null, STRING, 1, "str2"));
-        Function __string_lessEqual= new Function("__string_lessEqual", I1, string_lessEqual_paras, true);
+        Function __string_lessEqual = new Function("__string_lessEqual", I1, string_lessEqual_paras, true);
         FunctionMap.put(__string_lessEqual.getIdentifier(), __string_lessEqual);
         // __string_greaterEqual
         ArrayList<Argument> string_greaterEqual_paras = new ArrayList<>();
         string_greaterEqual_paras.add(new Argument(null, STRING, 0, "str1"));
         string_greaterEqual_paras.add(new Argument(null, STRING, 1, "str2"));
-        Function __string_greaterEqual= new Function("__string_greaterEqual", I1, string_greaterEqual_paras, true);
+        Function __string_greaterEqual = new Function("__string_greaterEqual", I1, string_greaterEqual_paras, true);
         FunctionMap.put(__string_greaterEqual.getIdentifier(), __string_greaterEqual);
 
         // __string_ord
@@ -198,7 +198,7 @@ public class Module extends Value{
         FunctionMap.put(__string_ord.getIdentifier(), __string_ord);
         // __string_parseInt
         ArrayList<Argument> string_parseInt_paras = new ArrayList<>();
-        string_parseInt_paras.add(new Argument(null, STRING,  0, "str"));
+        string_parseInt_paras.add(new Argument(null, STRING, 0, "str"));
         Function __string_parseInt = new Function("__string_parseInt", I32, string_parseInt_paras, true);
         FunctionMap.put(__string_parseInt.getIdentifier(), __string_parseInt);
 
@@ -225,7 +225,9 @@ public class Module extends Value{
         return VarSymTab;
     }
 
-    public void defineLabel(BasicBlock basicBlock) { LabelMap.put(basicBlock.getLabel(), basicBlock); }
+    public void defineLabel(BasicBlock basicBlock) {
+        LabelMap.put(basicBlock.getLabel(), basicBlock);
+    }
 
     public void defineFunction(Function func) {
         FunctionMap.put(func.getIdentifier(), func);
@@ -241,17 +243,18 @@ public class Module extends Value{
             RetType = IRBuilder.ConvertTypeFromAST(methodDecNode.getReturnType().getType());
         }
         ArrayList<Argument> args = new ArrayList<>();
-        int id = 1;
-        List<ParameterNode> paraList =  methodDecNode.getParaDecList();
-        Argument pointerThis = new Argument(null, new PointerType(ClassMap.get(ClassName)), 0,
-                paraList.get(0).getIdentifier());
+        int id = 0;
+        List<ParameterNode> paraList = methodDecNode.getParaDecList();
+        Argument pointerThis = new Argument(null, new PointerType(ClassMap.get(ClassName)), 0, "this");
         args.add(pointerThis);
+
         for (ParameterNode para : paraList) {
-            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id,
+            Argument arg = new Argument(null, IRBuilder.ConvertTypeFromAST(para.getType()), id + 1,
                     paraList.get(id).getIdentifier());
             args.add(arg);
             id += 1;
         }
+
         Function method = new Function(methodName, RetType, args, false);
         method.initialize();
         BasicBlock head = method.getHeadBlock();
@@ -279,7 +282,7 @@ public class Module extends Value{
 
     public void defineFunction(FunctionDecNode FuncDecNode) {
         String FuncName = FuncDecNode.getIdentifier();
-        IRBaseType RetType = IRBuilder.ConvertTypeFromAST(FuncDecNode.getReturnType().getType() );
+        IRBaseType RetType = IRBuilder.ConvertTypeFromAST(FuncDecNode.getReturnType().getType());
         ArrayList<Argument> args = new ArrayList<>();
         List<ParameterNode> paraList = FuncDecNode.getParaDecList();
         int id = 0;

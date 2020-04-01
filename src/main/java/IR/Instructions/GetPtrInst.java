@@ -34,16 +34,6 @@ public class GetPtrInst extends Instruction {
         this.type = new PointerType(elementType);
     }
 
-    public GetPtrInst(GetPtrInst array, Value offset, IRBaseType elementType) {
-        super(array.getParent(), InstType.getelementptr);
-        this.offsets = array.getOffsets();
-        this.offsets.add(offset);
-        this.aggregateValue = array.aggregateValue;
-        this.baseAggregateType = array.baseAggregateType;
-        this.type = elementType;
-        this.elementType = elementType;
-    }
-
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getRegisterID());

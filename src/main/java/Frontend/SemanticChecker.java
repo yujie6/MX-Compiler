@@ -59,6 +59,8 @@ public class SemanticChecker implements ASTVisitor {
         EnteredScope.pop();
     }
 
+    private boolean setInitForGVar;
+
     @Override
     public Object visit(MxProgramNode node) {
         LocalScope = GlobalScope;
@@ -70,9 +72,14 @@ public class SemanticChecker implements ASTVisitor {
             if (declaration instanceof ClassDecNode)
                 declaration.accept(this);
         }
-
+        setInitForGVar = false;
         for (DecNode declaration : node.getDecNodeList()) {
             if (declaration instanceof FunctionDecNode)
+                declaration.accept(this);
+        }
+        setInitForGVar = true;
+        for (DecNode declaration : node.getDecNodeList()) {
+            if (declaration instanceof VariableDecNode)
                 declaration.accept(this);
         }
 
@@ -132,6 +139,10 @@ public class SemanticChecker implements ASTVisitor {
             }
         }
         for (VarDecoratorNode var : node.getVarDecoratorList()) {
+            if (setInitForGVar) {
+                visit(var);
+                return null;
+            }
             if (GlobalScope.hasClass(var.getIdentifier())) {
                 logger.severe("Variable name and class name for '" +
                         var.getIdentifier() + "' is duplicated", node.GetLocation());

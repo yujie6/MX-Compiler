@@ -5,16 +5,38 @@ package Compiler;
 
 import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.io.IOUtils;
+import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.junit.runners.Parameterized;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 
 import static org.junit.Assert.*;
 
+@RunWith(Parameterized.class)
 public class AppTest {
 
-    public int PrepareTestFile(String path) throws IOException {
+    private int TestNumber;
+    private String testClass;
+    private App mxcc;
+
+    @Before
+    public void initialize() {
+        this.mxcc = new App();
+    }
+
+    public AppTest(String testClass, int testNumber) {
+        this.testClass = testClass;
+        this.TestNumber = testNumber;
+    }
+
+    static public int PrepareTestFile(String path) throws IOException {
         InputStream is = new FileInputStream(path);
 
         String text = IOUtils.toString(is, StandardCharsets.UTF_8);
@@ -45,7 +67,6 @@ public class AppTest {
     }
 
     public int RunTestFile(String name) throws IOException, InterruptedException {
-        App mxcc = new App();
         String rootDir = "/home/yujie6/Documents/Compiler/MX-Compiler/src/test/resources/";
         String fileName = "codegen/" + name;
         System.out.println("Ready to compile \'" + name + "\'");
@@ -58,147 +79,24 @@ public class AppTest {
         return process.waitFor();
     }
 
+    @Parameterized.Parameters
+    public static Collection testNames() {
+        ArrayList<Object> t = new ArrayList<>();
+        for (int i = 1; i <= 10; i++) {
+            t.add(new Object[] {"e", i} );
+        }
+        for (int i = 1; i <= 68; i++) {
+            if (i != 65)
+                t.add(new Object[] {"t", i});
+        }
+        return t;
+    }
+
+
     @Test
-    public void test2dArray() throws IOException, InterruptedException {
-        int diffResult = RunTestFile("t3.mx");
+    public void testCodegen() throws IOException, InterruptedException {
+        int diffResult = RunTestFile(this.testClass + this.TestNumber + ".mx");
         assertEquals(diffResult, 0);
     }
 
-    @Test
-    public void testArrayInit() throws IOException, InterruptedException {
-        int diffResult = RunTestFile("t7.mx");
-        assertEquals(diffResult, 0);
-    }
-
-    @Test
-    public void testExpr() throws IOException, InterruptedException {
-        int diffResult = RunTestFile("t6.mx");
-        assertEquals(diffResult, 0);
-    }
-
-    @Test
-    public void testBasic_e1_to_e5() throws IOException, InterruptedException {
-        for (int i = 1; i <= 5; i++) {
-            String name = "e" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_e6_to_e10() throws IOException, InterruptedException {
-        for (int i = 6; i <= 10; i++) {
-            String name = "e" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t11_to_t15() throws IOException, InterruptedException {
-        for (int i = 11; i <= 15; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t16_to_t20() throws IOException, InterruptedException {
-        for (int i = 16; i <= 20; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t21_to_t25() throws IOException, InterruptedException {
-        for (int i = 21; i <= 25; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t26_to_t30() throws IOException, InterruptedException {
-        for (int i = 26; i <= 30; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t31_to_t35() throws IOException, InterruptedException {
-        for (int i = 31; i <= 35; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t36_to_t40() throws IOException, InterruptedException {
-        for (int i = 36; i <= 40; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t41_to_t45() throws IOException, InterruptedException {
-        for (int i = 41; i <= 45; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t46_to_t50() throws IOException, InterruptedException {
-        for (int i = 46; i <= 50; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t51_to_t55() throws IOException, InterruptedException {
-        for (int i = 51; i <= 55; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t56_to_t60() throws IOException, InterruptedException {
-        for (int i = 56; i <= 60; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t61_to_t65() throws IOException, InterruptedException {
-        for (int i = 61; i <= 65; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
-
-    @Test
-    public void testBasic_t66_to_t68() throws IOException, InterruptedException {
-        for (int i = 66; i <= 68; i++) {
-            String name = "t" + i + ".mx";
-            int diffResult = RunTestFile(name);
-            assertEquals(diffResult, 0);
-        }
-    }
 }

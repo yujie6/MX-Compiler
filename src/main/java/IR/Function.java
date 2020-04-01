@@ -24,7 +24,7 @@ public class Function extends Value {
     private FunctionType functionType;
     private ArrayList<Argument> ParameterList;
     private BasicBlock HeadBlock, TailBlock, RetBlock;
-    private Value RetValue;
+    private Value RetValue, thisExpr;
     private ValueSymbolTable varSymTab;
     private boolean isExternal;
 
@@ -147,5 +147,13 @@ public class Function extends Value {
 
     public boolean isExternal() {
         return isExternal;
+    }
+
+    public Value getThisExpr() {
+        return thisExpr;
+    }
+
+    public void setThisExpr(Value thisExpr) {
+        this.thisExpr = thisExpr;
     }
 }

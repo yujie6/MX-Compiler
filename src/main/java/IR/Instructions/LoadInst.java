@@ -13,6 +13,9 @@ public class LoadInst extends Instruction {
     public LoadInst(BasicBlock parent, IRBaseType type, Value addr) {
         super(parent, InstType.load);
         this.type = type;
+        if (type == null) {
+            System.exit(1);
+        }
         if (! (addr.getType() instanceof PointerType || addr instanceof GetPtrInst) ) {
             IRBuilder.logger.severe("Fatal error: load addr must be a pointer!");
             System.exit(1);

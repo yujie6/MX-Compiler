@@ -1,6 +1,6 @@
 package IR.Types;
 
-import BackEnd.IRBuilder;
+import IR.IRVisitor;
 import IR.Value;
 
 import java.util.ArrayList;
@@ -18,24 +18,27 @@ import java.util.HashMap;
  */
 
 public class StructureType extends AggregateType {
-    private ArrayList<IRBaseType> MemberList;
+    private ArrayList<IRBaseType> MemberTypeList;
+    private ArrayList<String> MemberNameList;
     private String Identifier;
     private HashMap<Integer, IRBaseType> MemberTypeMap; // by offset
     private int MemberNum;
     public StructureType(String id) {
         this.BaseTypeName = TypeID.StructTyID;
         this.Identifier = id;
-        this.MemberList = null;
+        this.MemberTypeList = null;
+        this.MemberNameList = null;
     }
 
-    public StructureType(String id, ArrayList<IRBaseType> typeList) {
+    public StructureType(String id, ArrayList<IRBaseType> typeList, ArrayList<String> nameList) {
         this.BaseTypeName = TypeID.StructTyID;
         this.Identifier = id;
-        this.MemberList = typeList;
+        this.MemberTypeList = typeList;
+        this.MemberNameList = nameList;
         MemberTypeMap = new HashMap<>();
         int sum = 0;
         MemberNum = 0;
-        for (IRBaseType typeMember : MemberList) {
+        for (IRBaseType typeMember : MemberTypeList) {
             MemberTypeMap.put(MemberNum, typeMember);
             MemberNum += 1;
             sum += typeMember.getBytes();
@@ -45,15 +48,15 @@ public class StructureType extends AggregateType {
     }
 
     public boolean isFakeType() {
-        return this.MemberList == null;
+        return this.MemberTypeList == null;
     }
 
-    public ArrayList<IRBaseType> getMemberList() {
-        return MemberList;
+    public ArrayList<IRBaseType> getMemberTypeList() {
+        return MemberTypeList;
     }
 
     public void AddMemberType(IRBaseType memberType) {
-        this.MemberList.add(memberType);
+        this.MemberTypeList.add(memberType);
     }
 
     public String getIdentifier() {
@@ -75,7 +78,7 @@ public class StructureType extends AggregateType {
     public String getDeclaration() {
         StringBuilder ans = new StringBuilder("%class.");
         ans.append(getIdentifier()).append(" = type { ");
-        for (IRBaseType memberType : MemberList) {
+        for (IRBaseType memberType : MemberTypeList) {
             ans.append(memberType.toString()).append(", ");
         }
         ans.delete(ans.length()-2, ans.length() - 1);
@@ -90,5 +93,21 @@ public class StructureType extends AggregateType {
 
     public IRBaseType getElementType(int offset) {
         return MemberTypeMap.get(offset);
+    }
+
+    public IRBaseType getElementType (String name) {
+        int id = this.MemberNameList.indexOf(name);
+        if (id == -1) {
+            return null;
+        }
+        return this.MemberTypeList.get(id);
+    }
+
+    public int getMemberOffset(String name) {
+        return MemberNameList.indexOf(name);
+    }
+
+    public ArrayList<String> getMemberNameList() {
+        return MemberNameList;
     }
 }
