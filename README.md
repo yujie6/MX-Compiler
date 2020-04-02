@@ -7,6 +7,10 @@ To run the project
 ./gradlew installDist
 ./build/install/Compiler/bin/Compiler inputfile
 ```
+To run codegen tests with llvm
+```bash
+./gradlew test --tests LLVMTest
+```
 More command line options:
 
     usage: MX-Compiler
@@ -22,6 +26,7 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
+* CFG Simplify
 * Dead code elimination
 * Function inline
 

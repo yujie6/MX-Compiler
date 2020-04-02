@@ -68,7 +68,7 @@ check {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t66.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t64.mx"]
     // options.warnings = false
 }
 

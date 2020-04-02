@@ -25,12 +25,12 @@ import java.util.logging.Level;
 
 
 
-public class App {
+public class MXCC {
 
     static MXLogger logger;
     private static int debugLevel;
 
-    public App() {
+    public MXCC() {
         debugLevel = 1;
         logger = new MXLogger(getLogLevel());
     }

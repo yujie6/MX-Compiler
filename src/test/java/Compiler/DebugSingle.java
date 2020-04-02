@@ -1,18 +1,15 @@
 package Compiler;
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.junit.runners.Parameterized;
 
 import java.io.File;
 import java.io.IOException;
 
-import static Compiler.AppTest.PrepareTestFile;
+import static Compiler.LLVMTest.PrepareTestFile;
 import static org.junit.Assert.assertEquals;
 
 public class DebugSingle {
-    private App mxcc;
+    private MXCC mxcc;
 
     public int RunTestFile(String name) throws IOException, InterruptedException {
         String rootDir = "/home/yujie6/Documents/Compiler/MX-Compiler/src/test/resources/";
@@ -29,12 +26,12 @@ public class DebugSingle {
 
     @Before
     public void initialize() {
-        this.mxcc = new App();
+        this.mxcc = new MXCC();
     }
 
     @Test
     public void debugCustomTest() throws IOException, InterruptedException {
-        mxcc = new App();
+        mxcc = new MXCC();
         int diffResult = RunTestFile("t59.mx");
         assertEquals(diffResult, 0);
     }

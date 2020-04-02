@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.Stack;
 
 public class IRBuilder implements ASTVisitor {
-    private ValueSymbolTable valueSymbolTable;
     private static Module TopModule;
     private Scope GlobalScope;
     private Function curFunction, init;

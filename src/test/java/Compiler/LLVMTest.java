@@ -3,7 +3,6 @@
  */
 package Compiler;
 
-import org.antlr.v4.runtime.CharStreams;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
@@ -13,25 +12,23 @@ import org.junit.runners.Parameterized;
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 
 import static org.junit.Assert.*;
 
 @RunWith(Parameterized.class)
-public class AppTest {
+public class LLVMTest {
 
     private int TestNumber;
     private String testClass;
-    private App mxcc;
+    private MXCC mxcc;
 
     @Before
     public void initialize() {
-        this.mxcc = new App();
+        this.mxcc = new MXCC();
     }
 
-    public AppTest(String testClass, int testNumber) {
+    public LLVMTest(String testClass, int testNumber) {
         this.testClass = testClass;
         this.TestNumber = testNumber;
     }
