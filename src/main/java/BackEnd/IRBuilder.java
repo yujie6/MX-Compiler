@@ -14,7 +14,9 @@ import MxEntity.FunctionEntity;
 import Tools.Location;
 import Tools.MXLogger;
 import Tools.Operators;
+import org.antlr.v4.codegen.model.Loop;
 
+import java.awt.image.BandedSampleModel;
 import java.util.ArrayList;
 import java.util.Stack;
 
@@ -325,6 +327,7 @@ public class IRBuilder implements ASTVisitor {
         return null;
     }
 
+
     @Override
     public Object visit(IfStmtNode node) {
         BasicBlock ThenBlock = new BasicBlock(curFunction, "ThenBlock");
@@ -340,7 +343,6 @@ public class IRBuilder implements ASTVisitor {
         } else {
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condition, ThenBlock, MergeBlock));
         }
-
         curBasicBlock = ThenBlock;
         curFunction.AddBlockAtTail(ThenBlock);
 
@@ -401,7 +403,6 @@ public class IRBuilder implements ASTVisitor {
         LoopStackForContinue.pop();
         MergeStackForBreak.pop();
 
-
         return null;
     }
 
@@ -432,7 +433,6 @@ public class IRBuilder implements ASTVisitor {
 
         curFunction.AddBlockAtTail(CondBlock);
         curBasicBlock = CondBlock;
-
         if (node.getCondExpr() != null) {
             Instruction condInst = (Instruction) node.getCondExpr().accept(this);
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condInst, LoopBody, MergeBlock));
@@ -489,8 +489,9 @@ public class IRBuilder implements ASTVisitor {
             }
             curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RetValue, curFunction.getRetValue()));
         }
-        if (!curBasicBlock.endWithBranch())
+        if (!curBasicBlock.endWithBranch()) {
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, curFunction.getRetBlock(), null));
+        }
         return null;
     }
 

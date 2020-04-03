@@ -1,29 +1,54 @@
 package Optim;
 
-import IR.Argument;
 import IR.BasicBlock;
 import IR.Function;
-import IR.IRVisitor;
+import IR.Instructions.Instruction;
 import IR.Module;
 
-public class CFGSimplifier implements IRVisitor {
+public class CFGSimplifier extends Pass {
+
+
+    private Module TopModule;
+
+    public CFGSimplifier(Module topModule) {
+        this.TopModule = topModule;
+    }
+
     @Override
     public Object visit(BasicBlock node) {
         return null;
     }
 
-    @Override
-    public Object visit(Argument node) {
-        return null;
+    private void merge(BasicBlock father, BasicBlock child) {
+        father.RemoveTailInst();
+        for (Instruction inst : child.getInstList()) {
+            father.AddInstAtTail(inst);
+        }
     }
 
     @Override
     public Object visit(Function node) {
-        return null;
+        boolean changed = false;
+        for (BasicBlock curBasicBlock = node.getHeadBlock(); curBasicBlock != node.getTailBlock();
+        curBasicBlock = curBasicBlock.getNext() ) {
+            if (curBasicBlock.successors.size() == 1) {
+                BasicBlock child = curBasicBlock.successors.iterator().next();
+                if (child.successors.size() == 1 && child.predecessors.contains(curBasicBlock)) {
+                    merge(curBasicBlock, child);
+                    changed = true;
+                }
+            }
+        }
+        return changed;
     }
 
     @Override
-    public Object visit(Module node) {
-        return null;
+    boolean optimize() {
+        boolean changed = false;
+        for (Function func : TopModule.getFunctionMap().values()) {
+            if (!func.isExternal())
+                changed |= (boolean) visit(func);
+        }
+        return changed;
     }
 }

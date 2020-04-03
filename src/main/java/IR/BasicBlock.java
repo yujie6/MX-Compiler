@@ -29,8 +29,8 @@ public class BasicBlock extends Value {
     private static int BlockNum = 1;
     private String Label;
 
-    private Set<BasicBlock> predecessors;
-    private Set<BasicBlock> successors;
+    public Set<BasicBlock> predecessors;
+    public Set<BasicBlock> successors;
 
     public BasicBlock(Function parent, String id) {
         super(ValueType.BASIC_BLOCK);
@@ -45,6 +45,14 @@ public class BasicBlock extends Value {
         InstList = new LinkedList<>();
         Label = String.valueOf(BlockNum);
         BlockNum += 1;
+    }
+
+    public void addSuccessor(BasicBlock basicBlock) {
+        successors.add(basicBlock);
+    }
+
+    public void addPredecessor(BasicBlock basicBlock) {
+        predecessors.add(basicBlock);
     }
 
     public Instruction getHeadInst() {
@@ -85,6 +93,12 @@ public class BasicBlock extends Value {
         }
         TailInst = inst;
         InstList.addLast(inst);
+    }
+
+    public void RemoveTailInst() {
+        TailInst = TailInst.getPrev();
+        InstList.pollLast();
+        TailInst.setNext(null);
     }
 
     public void AddInstAtTop(Instruction inst) {

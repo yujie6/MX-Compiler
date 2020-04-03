@@ -326,7 +326,7 @@ public class Module extends Value {
 
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) throws IOException {
-        visitor.visit(this);
+
     }
 
     public HashMap<String, BasicBlock> getLabelMap() {

@@ -8,6 +8,7 @@ import Frontend.GlobalScopeBuilder;
 import Frontend.Scope;
 import Frontend.SemanticChecker;
 import IR.Module;
+import Optim.MxOptimizer;
 import Tools.MXError;
 import Tools.MXLogger;
 import Tools.SyntaxErrorListener;
@@ -97,7 +98,7 @@ public class MXCC {
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
         Module LLVMTopModule = GetIRModule(ast, globalScope);
-        PrintLLVMIR(LLVMTopModule);
+        PrintLLVMIR(LLVMTopModule, "Basic1");
     }
 
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
@@ -144,8 +145,8 @@ public class MXCC {
         (new SemanticChecker(globalScope, logger)).visit(ast);
     }
 
-    private static void PrintLLVMIR(Module irModule) throws IOException {
-        IRPrinter printer = new IRPrinter(logger, "Basic1");
+    private static void PrintLLVMIR(Module irModule, String name) throws IOException {
+        IRPrinter printer = new IRPrinter(logger, name);
         printer.setPrintMode(1);
         printer.Print(irModule);
     }
@@ -248,8 +249,10 @@ public class MXCC {
             return;
         }
         Module LLVMTopModule = GetIRModule(ast, globalScope);
-        PrintLLVMIR(LLVMTopModule);
-
+        PrintLLVMIR(LLVMTopModule, "Basic1");
+        MxOptimizer optimizer = new MxOptimizer(LLVMTopModule);
+        optimizer.optimize();
+        PrintLLVMIR(LLVMTopModule, "optim");
         // codegen part
     }
 }

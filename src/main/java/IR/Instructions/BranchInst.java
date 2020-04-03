@@ -1,5 +1,6 @@
 package IR.Instructions;
 
+import BackEnd.IRBuilder;
 import IR.BasicBlock;
 import IR.Use;
 import IR.Value;
@@ -12,6 +13,12 @@ public class BranchInst extends Instruction {
         this.UseList.add(new Use(condition, this));
         this.UseList.add(new Use(thenBlock, this));
         this.UseList.add(new Use(elseBlock, this));
+        parent.addSuccessor(thenBlock);
+        thenBlock.addPredecessor(parent);
+        if (elseBlock != null) {
+            parent.addSuccessor(elseBlock);
+            elseBlock.addPredecessor(parent);
+        }
         this.type = null; // shall change to label type;
     }
 

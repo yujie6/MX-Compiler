@@ -56,7 +56,7 @@ dependencies {
 }
 
 application {
-    mainClassName = 'Compiler.App'
+    mainClassName = 'Compiler.MXCC'
 }
 
 test {
@@ -68,7 +68,7 @@ check {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t64.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/custom/optim1.mx"]
     // options.warnings = false
 }
 
