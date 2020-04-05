@@ -93,10 +93,6 @@ public class IRPrinter implements IRVisitor {
         return null;
     }
 
-    @Override
-    public Object visit(Argument node) {
-        return null;
-    }
 
     @Override
     public Object visit(Function node) {
@@ -134,7 +130,7 @@ public class IRPrinter implements IRVisitor {
         return null;
     }
 
-    @Override
+
     public Object visit(Module node) {
         if (PrintMode == 1 && isAssignLabel) {
             logger.info("Print IR to disk.");

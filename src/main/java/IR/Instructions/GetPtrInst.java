@@ -73,6 +73,19 @@ public class GetPtrInst extends Instruction {
         return ans.toString();
     }
 
+    public boolean hasAllZeroOffsets() {
+        for (Value var : offsets) {
+            if (var instanceof IntConst) {
+                if ( ((IntConst) var).ConstValue != 0) {
+                    return false;
+                }
+            } else {
+                return false;
+            }
+        }
+        return true;
+    }
+
     public Value getAggregateValue() {
         return aggregateValue;
     }

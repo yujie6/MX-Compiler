@@ -1,5 +1,6 @@
 package IR;
 
+import AST.BlockNode;
 import IR.Instructions.AllocaInst;
 import IR.Instructions.LoadInst;
 import IR.Instructions.ReturnInst;
@@ -23,16 +24,22 @@ public class Function extends Value {
     private String Identifier;
     private FunctionType functionType;
     private ArrayList<Argument> ParameterList;
+    private ArrayList<BasicBlock> BlockList;
     private BasicBlock HeadBlock, TailBlock, RetBlock;
     private Value RetValue, thisExpr;
     private ValueSymbolTable varSymTab;
     private boolean isExternal;
+
+    public ArrayList<BasicBlock> getBlockList() {
+        return BlockList;
+    }
 
     public Function(String id, IRBaseType returnType, ArrayList<Argument> parameterList, boolean isExternal) {
         super(ValueType.FUNCTION);
         this.Identifier = id;
         this.ParameterList = parameterList;
         varSymTab = new ValueSymbolTable();
+        this.BlockList = new ArrayList<>();
         ArrayList<IRBaseType> argTypeList = new ArrayList<>();
         for (Argument argument : parameterList) {
             argument.setParent(this);
@@ -45,8 +52,6 @@ public class Function extends Value {
         TailBlock = null;
         RetBlock = null;
         this.isExternal = isExternal;
-
-
     }
 
     @Override
@@ -106,6 +111,7 @@ public class Function extends Value {
             TailBlock.setNext(basicBlock);
             basicBlock.setPrev(TailBlock);
         }
+        this.BlockList.add(basicBlock);
         TailBlock = basicBlock;
     }
 

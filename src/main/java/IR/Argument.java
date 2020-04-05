@@ -41,7 +41,7 @@ public class Argument extends Value {
 
     @Override
     public void accept(IRVisitor<IRBaseNode> visitor) {
-        visitor.visit(this);
+
     }
 
     public String getName() {

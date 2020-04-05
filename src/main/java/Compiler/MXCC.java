@@ -250,7 +250,7 @@ public class MXCC {
         }
         Module LLVMTopModule = GetIRModule(ast, globalScope);
         PrintLLVMIR(LLVMTopModule, "Basic1");
-        MxOptimizer optimizer = new MxOptimizer(LLVMTopModule);
+        MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
         optimizer.optimize();
         PrintLLVMIR(LLVMTopModule, "optim");
         // codegen part
