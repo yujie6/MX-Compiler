@@ -21,6 +21,7 @@ public class Use {
     public Use(Value var, User user) {
         this.user = user;
         this.Val = var;
+        var.UserList.add(user);
     }
 
     public Use getPrev() {

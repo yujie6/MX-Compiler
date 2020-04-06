@@ -47,6 +47,16 @@ public abstract class Instruction extends User {
         return Parent;
     }
 
+    public void eraseFromParent() {
+        this.Parent.getInstList().remove(this);
+    }
+
+    public void replaceAllUsesWith(Value replaceValue) {
+        for (User U : this.UserList) {
+
+        }
+    }
+
     public boolean isTerminalInst() {
         return Opcode == InstType.ret || Opcode == InstType.br;
     }

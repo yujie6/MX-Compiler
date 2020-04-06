@@ -24,6 +24,8 @@ public abstract class Value extends IRBaseNode {
 
     protected IRBaseType type;
 
+    public ArrayList<User> UserList;
+
     public enum ValueType {
         INSTRUCTION,
         ARGUMENT,
@@ -35,6 +37,7 @@ public abstract class Value extends IRBaseNode {
     }
 
     public Value(ValueType vTy) {
+        this.UserList = new ArrayList<>();
         this.VTy = vTy;
     }
 

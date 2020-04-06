@@ -2,7 +2,7 @@ package Optim;
 
 import IR.*;
 import IR.Instructions.*;
-import IR.Module;
+import Optim.FuncAnalysis.DomTreeBuilder;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -14,9 +14,15 @@ import java.util.Set;
  */
 public class Mem2reg extends Pass {
 
-    private Module TopModule;
+    private Function function;
     ArrayList<AllocaInst> allocaInsts;
     private int NumPromoted;
+    DomTreeBuilder domBuilder;
+
+    public Mem2reg(Function function1, DomTreeBuilder dm) {
+        this.function = function1;
+        this.domBuilder = dm;
+    }
 
     protected class AllocaInfo {
         Set<BasicBlock> definingBlocks;
@@ -41,8 +47,7 @@ public class Mem2reg extends Pass {
 
         public void AnalyzeAlloca(AllocaInst AI) {
             clear();
-            for (Use use : AI.getUseList()) {
-                User U = use.getUser();
+            for (User U : AI.UserList) {
                 if (U instanceof StoreInst) {
                     onlyStore = (StoreInst) U;
                     definingBlocks.add(((StoreInst) U).getParent());
@@ -57,11 +62,6 @@ public class Mem2reg extends Pass {
                 }
             }
         }
-    }
-
-
-    public Mem2reg(Module topModule) {
-        this.TopModule = topModule;
     }
 
     private boolean isAllocaPromotable(AllocaInst AI) {
@@ -87,61 +87,106 @@ public class Mem2reg extends Pass {
             if (inst instanceof AllocaInst)
                 if (isAllocaPromotable((AllocaInst) inst))
                     allocaInsts.add((AllocaInst) inst);
-
-            if (allocaInsts.isEmpty())
-                break;
-
-            PromoteMemToReg(allocaInsts);
-            NumPromoted += allocaInsts.size();
-            changed = true;
         }
+
+
+        changed |= PromoteMemToReg(allocaInsts);
+        NumPromoted += allocaInsts.size();
         return changed;
+    }
+
+    void RemoveFromAllocasList(int AllocaIdx) {
+        allocaInsts.set(AllocaIdx, allocaInsts.get(allocaInsts.size() - 1));
+        allocaInsts.remove(allocaInsts.size() - 1);
     }
 
     private boolean PromoteMemToReg(ArrayList<AllocaInst> allocaInsts) {
         boolean changed = false;
         AllocaInfo info = new AllocaInfo();
-        for (AllocaInst AI : allocaInsts) {
+        for (int i = 0; i < allocaInsts.size(); i++) {
+            AllocaInst AI = allocaInsts.get(i);
+
             info.AnalyzeAlloca(AI);
 
-            if (info.definingBlocks.size() == 1)
-                rewriteSingleStoreAlloca(AI, info);
+            if (AI.getUseList().isEmpty()) {
+                AI.eraseFromParent();
+                RemoveFromAllocasList(i);
+                i--;
+                continue;
+            }
+
+            if (info.definingBlocks.size() == 1) {
+                boolean success = rewriteSingleStoreAlloca(AI, info);
+                if (success) {
+                    RemoveFromAllocasList(i);
+                    i--;
+                    continue;
+                }
+            }
 
             if (info.onlyUsedInOneBlock) {
-
+                boolean success = promoteSingleBlockAlloca(AI, info);
+                if (success) {
+                    RemoveFromAllocasList(i);
+                    i--;
+                    continue;
+                }
             }
+
+            // prepare for algorithm for adding phi inst
+            ComputeLiveInBlocks(AI, info);
+            // computing phi blocks
         }
         return changed;
+    }
+
+    public void ComputeLiveInBlocks(AllocaInst AI, AllocaInfo info) {
+
     }
 
     /*Rewrite as many loads as possible given a single store.
     When there is only a single store, we can use the domtree to trivially
-    replace all of the dominated loads with the stored value. If this returns
-    false there were some loads which were not dominated by the single store
-    and thus must be phi-ed with undef. We fall back to the standard alloca
-    promotion algorithm in that case.*/
-    private void rewriteSingleStoreAlloca(AllocaInst AI, AllocaInfo info) {
+    replace all of the dominated loads with the stored value. Else insert phi node*/
+    private boolean rewriteSingleStoreAlloca(AllocaInst AI, AllocaInfo info) {
+        StoreInst onlyStore = info.onlyStore;
+        BasicBlock storeBB = info.onlyStore.getParent();
+        info.usingBlocks.clear();
+        for (User U : AI.UserList) {
+            LoadInst LI = (LoadInst) U;
+            if (LI.getParent() == storeBB) {
+                int i1 = storeBB.getInstList().indexOf(LI);
+                int i2 = storeBB.getInstList().indexOf(onlyStore);
+                if (i1 < i2) {
+                    // can't handle
+                    info.usingBlocks.add(storeBB);
+                    continue;
+                }
+            } else if (!domBuilder.dominates(storeBB, LI.getParent())) {
+                info.usingBlocks.add(LI.getParent());
+                continue;
+            }
 
-    }
-
-    @Override
-    boolean optimize() {
-        boolean changed = false;
-        for (Function func : TopModule.getFunctionMap().values()) {
-            changed |= (boolean) visit(func);
+            Value replaceValue = onlyStore.getStoreValue();
+            LI.replaceAllUsesWith(replaceValue);
+            LI.eraseFromParent();
         }
-        return changed;
+
+        if (!info.usingBlocks.isEmpty()) {
+            return false;
+        }
+        // remove dead code
+        onlyStore.eraseFromParent();
+        AI.eraseFromParent();
+        return true;
+    }
+
+    public boolean promoteSingleBlockAlloca(AllocaInst AI, AllocaInfo info) {
+
+        return true;
     }
 
     @Override
-    public Object visit(BasicBlock node) {
-        return null;
-    }
-
-    @Override
-    public Object visit(Function node) {
-        boolean changed = false;
-        changed = promoteMemoryToRegister(node);
-        return changed;
+    public boolean optimize() {
+        return promoteMemoryToRegister(function);
     }
 }

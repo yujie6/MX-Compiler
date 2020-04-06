@@ -26,8 +26,8 @@ import java.util.LinkedHashSet;
 public class DomTreeBuilder {
 
     Function function;
-    HashMap<BasicBlock, DomNode> domTree;
-    HashMap<BasicBlock, LinkedHashSet<BasicBlock>> domFrontier;
+    public HashMap<BasicBlock, DomNode> domTree;
+    public HashMap<BasicBlock, LinkedHashSet<BasicBlock>> domFrontier;
     BasicBlock[] parent;
     BasicBlock[] a;
     BasicBlock[] idom;
@@ -65,7 +65,7 @@ public class DomTreeBuilder {
         this.function = function;
     }
 
-    public DomNode build() {
+    public void init() {
         sum = function.getBlockList().size();
         parent = new BasicBlock[sum];
         idom = new BasicBlock[sum];
@@ -78,19 +78,13 @@ public class DomTreeBuilder {
         for (int i = 0; i < sum; i++)
             bucket[i] = new LinkedHashSet<>();
         dfn = 0;
+    }
+
+    public void build() {
+        init();
         dfs(null, function.getHeadBlock());
         computeIdom();
-        MxOptimizer.logger.fine("Dom tree build on function '" + function.getIdentifier() + "' done");
-
-        DomNode root = new DomNode(vertex[0]);
-        domTree.put(vertex[0], root);
-        for (int i = 1; i < sum; i++) {
-            DomNode t = new DomNode(vertex[i]);
-            domTree.put(vertex[i], t);
-            t.idom = domTree.get(idom[i]);
-            t.idom.addChild(t);
-        }
-        return root;
+        computeDF();
     }
 
     public boolean dominates(Instruction def, Instruction user) {
@@ -165,6 +159,42 @@ public class DomTreeBuilder {
             }
         }
 
+        DomNode root = new DomNode(vertex[0]);
+        domTree.put(vertex[0], root);
+        for (int i = 1; i < sum; i++) {
+            DomNode t = new DomNode(vertex[i]);
+            domTree.put(vertex[i], t);
+            t.idom = domTree.get(idom[i]);
+            t.idom.addChild(t);
+        }
+
+        MxOptimizer.logger.fine("Dom tree build on function '" + function.getIdentifier() + "' done");
+
+    }
+
+    private void computeDF() {
+        computeDF(domTree.get(function.getHeadBlock()));
+    }
+
+    private void computeDF(DomNode node) {
+        LinkedHashSet<BasicBlock> df = new LinkedHashSet<>();
+        // this loop computer df_local
+        for (BasicBlock y : node.block.successors) {
+            if (domTree.get(y).idom != node) {
+                df.add(y);
+            }
+        }
+        // this loop compute df_up
+        for (DomNode child : node.children) {
+            computeDF(child);
+            for (BasicBlock w : domFrontier.get(child.block)) {
+                if (!node.dominates(w) || w == node.block) {
+                    df.add(w);
+                }
+            }
+        }
+
+        domFrontier.put(node.block, df);
     }
 
     private void dfs(BasicBlock father, BasicBlock child) {

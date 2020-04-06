@@ -16,7 +16,7 @@ public class MxOptimizer {
     private ArrayList<FuncOptimManager> funcOptimizers;
     public MxOptimizer(Module topModule, MXLogger logger) {
         this.TopModule = topModule;
-        this.logger = logger;
+        MxOptimizer.logger = logger;
         funcOptimizers = new ArrayList<>();
         for (Function function : TopModule.getFunctionMap().values()) {
             if (!function.isExternal())
@@ -30,8 +30,14 @@ public class MxOptimizer {
         }
     }
 
+    private void mem2reg() {
+        for (FuncOptimManager optimizer : funcOptimizers) {
+            optimizer.mem2reg();
+        }
+    }
+
     public void optimize() {
         buildDomTrees();
-
+        mem2reg();
     }
 }
