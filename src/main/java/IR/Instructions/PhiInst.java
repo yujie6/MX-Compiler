@@ -22,6 +22,11 @@ public class PhiInst extends Instruction {
         this.blockList.add(basicBlock);
     }
 
+    public void removeBranch(int index) {
+        blockList.remove(index);
+        this.UseList.remove(index);
+    }
+
     public BasicBlock getBlock(int index) {
         return blockList.get(index);
     }

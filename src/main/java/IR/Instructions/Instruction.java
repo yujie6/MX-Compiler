@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import IR.*;
 import IR.Constants.Constant;
+import Optim.MxOptimizer;
 
 public abstract class Instruction extends User {
     static protected int regNum = 1;
@@ -21,7 +22,7 @@ public abstract class Instruction extends User {
         this.Parent = parent;
         this.Opcode = instType;
 
-        if (   !(instType.equals(InstType.br) || instType.equals(InstType.store))   ) {
+        if (!(instType.equals(InstType.br) || instType.equals(InstType.store))) {
             this.RegisterID = "%" + regNum;
             regNum += 1;
         }
@@ -48,12 +49,25 @@ public abstract class Instruction extends User {
     }
 
     public void eraseFromParent() {
+        if (this.prev != null) this.prev.next = this.next;
+        if (this.next != null) this.next.prev = this.prev;
         this.Parent.getInstList().remove(this);
     }
 
     public void replaceAllUsesWith(Value replaceValue) {
         for (User U : this.UserList) {
-
+            replaceValue.UserList.add(U);
+            boolean replaceDone = false;
+            for (Use use : U.UseList) {
+                if (use.getVal() == this) {
+                    use.setVal(replaceValue);
+                    replaceDone = true;
+                }
+            }
+            if (!replaceDone) {
+                MxOptimizer.logger.severe("Replacing value fail!");
+                System.exit(1);
+            }
         }
     }
 

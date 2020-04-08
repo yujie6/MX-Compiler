@@ -8,21 +8,23 @@ import IR.GlobalVariable;
 import IR.Types.AggregateType;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
+import IR.Use;
 import IR.Value;
 
 import java.util.ArrayList;
 
 public class GetPtrInst extends Instruction {
-    private ArrayList<Value> offsets;
-    private Value aggregateValue;
     private IRBaseType baseAggregateType;
     private IRBaseType elementType;
 
     public GetPtrInst(BasicBlock parent, Value aggregateValue, ArrayList<Value> offsets,
                       IRBaseType elementType) {
         super(parent, InstType.getelementptr);
-        this.offsets = offsets;
-        this.aggregateValue = aggregateValue;
+        this.UseList.add(new Use(aggregateValue, this));
+        for (Value offset : offsets) {
+            this.UseList.add(new Use(offset, this));
+        }
+
 
         if (aggregateValue.getType() instanceof PointerType) {
             this.baseAggregateType = ((PointerType) aggregateValue.getType()).getBaseType();
@@ -37,10 +39,10 @@ public class GetPtrInst extends Instruction {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getRegisterID());
-        if (aggregateValue instanceof GlobalVariable) {
+        if (getAggregateValue() instanceof GlobalVariable) {
             // global string const
-            if (((GlobalVariable) aggregateValue).getInitValue() instanceof StringConst) {
-                GlobalVariable gvar = (GlobalVariable) aggregateValue;
+            if (((GlobalVariable) getAggregateValue()).getInitValue() instanceof StringConst) {
+                GlobalVariable gvar = (GlobalVariable) getAggregateValue();
                 ans.append(" = getelementptr inbounds ");
 
                 ans.append("[").append(((StringConst) gvar.getInitValue()).getStrSize());
@@ -48,7 +50,7 @@ public class GetPtrInst extends Instruction {
 
                 ans.append("[").append(((StringConst) gvar.getInitValue()).getStrSize());
                 ans.append(" x ").append("i8]* @").append(gvar.getIdentifier());
-                for (Value off_t : offsets) {
+                for (Value off_t : getOffsets()) {
                     ans.append(", ").append(off_t.getType().toString()).append(" ");
                     ans.append(getRightValueLabel(off_t));
                 }
@@ -61,10 +63,10 @@ public class GetPtrInst extends Instruction {
 
         ans.append(" = getelementptr inbounds ");
         ans.append(baseAggregateType.toString()).append(", ");
-        ans.append(aggregateValue.getType());
+        ans.append(getAggregateValue().getType());
         ans.append(" ");
-        ans.append(getRightValueLabel(aggregateValue));
-        for (Value off_t : offsets) {
+        ans.append(getRightValueLabel(getAggregateValue()));
+        for (Value off_t : getOffsets()) {
             ans.append(", ").append(off_t.getType().toString()).append(" ");
             ans.append(getRightValueLabel(off_t));
         }
@@ -74,7 +76,7 @@ public class GetPtrInst extends Instruction {
     }
 
     public boolean hasAllZeroOffsets() {
-        for (Value var : offsets) {
+        for (Value var : getOffsets()) {
             if (var instanceof IntConst) {
                 if ( ((IntConst) var).ConstValue != 0) {
                     return false;
@@ -87,10 +89,14 @@ public class GetPtrInst extends Instruction {
     }
 
     public Value getAggregateValue() {
-        return aggregateValue;
+        return this.UseList.get(0).getVal();
     }
 
     public ArrayList<Value> getOffsets() {
+        ArrayList<Value> offsets = new ArrayList<>();
+        for (int i = 1; i < this.UseList.size(); i++) {
+            offsets.add(this.UseList.get(i).getVal());
+        }
         return offsets;
     }
 

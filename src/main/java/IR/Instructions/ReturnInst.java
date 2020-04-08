@@ -12,7 +12,8 @@ public class ReturnInst extends Instruction {
         super(parent, InstType.ret);
         this.Opcode = InstType.ret;
         this.RetType = retType;
-        this.UseList.add(new Use(retValue, this));
+        if (retValue != null)
+            this.UseList.add(new Use(retValue, this));
     }
 
     public IRBaseType getRetType() {
@@ -23,16 +24,12 @@ public class ReturnInst extends Instruction {
         return UseList.get(0).getVal();
     }
 
-    private String getRetRegID() {
-        return ((Instruction)getRetValue()).RegisterID;
-    }
-
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder("ret ");
         ans.append(getRetType().toString()).append(" ");
         if (!getRetType().toString().equals("void")) {
-            ans.append(getRetRegID());
+            ans.append(getRightValueLabel(getRetValue()));
         }
         return ans.toString();
     }

@@ -68,7 +68,8 @@ check {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/custom/optim1.mx"]
+    // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t14.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/custom/optim2.mx"]
     // options.warnings = false
 }
 

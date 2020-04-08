@@ -7,12 +7,17 @@ import IR.Value;
 
 public class BranchInst extends Instruction {
 
-
+    private boolean hasElse;
     public BranchInst(BasicBlock parent, Value condition, BasicBlock thenBlock, BasicBlock elseBlock) {
         super(parent, InstType.br);
-        this.UseList.add(new Use(condition, this));
+        this.hasElse = false;
+        if (condition != null) {
+            this.hasElse = true;
+            this.UseList.add(new Use(condition, this));
+        }
         this.UseList.add(new Use(thenBlock, this));
-        this.UseList.add(new Use(elseBlock, this));
+        if (elseBlock != null)
+            this.UseList.add(new Use(elseBlock, this));
         parent.addSuccessor(thenBlock);
         thenBlock.addPredecessor(parent);
         if (elseBlock != null) {
@@ -23,7 +28,8 @@ public class BranchInst extends Instruction {
     }
 
     public BasicBlock getThenBlock() {
-        return (BasicBlock) this.UseList.get(1).getVal();
+        if (hasElse) return (BasicBlock) this.UseList.get(1).getVal();
+        return (BasicBlock) this.UseList.get(0).getVal();
     }
 
     public BasicBlock getElseBlock() {
@@ -32,6 +38,7 @@ public class BranchInst extends Instruction {
     }
 
     public Value getCondition() {
+        if (!hasElse) return null;
         return this.UseList.get(0).getVal();
     }
 
@@ -42,8 +49,7 @@ public class BranchInst extends Instruction {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder("br ");
-        if (getCondition() != null) {
-            assert getElseBlock() != null;
+        if (hasElse) {
             ans.append(getCondition().getType().toString()).append(" ");
             ans.append(getCondLabel()).append(", label %");
             ans.append(getThenBlock().getLabel()).append(", label %");

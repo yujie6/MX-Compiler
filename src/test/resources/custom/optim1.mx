@@ -17,6 +17,7 @@ Origin Package: Codeforces 4A #57460997
 int w;
 int main(){
     w = getInt();
+    int a, b, c;
     if (w%2==0) {
         if (w>2)
             print("YES");

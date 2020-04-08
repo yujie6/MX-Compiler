@@ -14,10 +14,6 @@ public class CFGSimplifier extends Pass {
         this.TopModule = topModule;
     }
 
-    @Override
-    public Object visit(BasicBlock node) {
-        return null;
-    }
 
     private void merge(BasicBlock father, BasicBlock child) {
         father.RemoveTailInst();
@@ -26,7 +22,6 @@ public class CFGSimplifier extends Pass {
         }
     }
 
-    @Override
     public Object visit(Function node) {
         boolean changed = false;
         for (BasicBlock curBasicBlock = node.getHeadBlock(); curBasicBlock != node.getTailBlock();

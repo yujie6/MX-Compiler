@@ -24,6 +24,10 @@ public class Use {
         var.UserList.add(user);
     }
 
+    public void setVal(Value val) {
+        Val = val;
+    }
+
     public Use getPrev() {
         return prev;
     }

@@ -1,0 +1,12 @@
+int main()
+{
+  int len = 2;
+  int [] data = new int [len];
+  data[0] = 2;
+  data[1] = 3;
+  int i, s = 0;
+  for (i = 0; i < len; ++i) {
+    s = s + data[i];
+  }
+  return s;
+}

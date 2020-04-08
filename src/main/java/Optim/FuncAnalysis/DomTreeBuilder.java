@@ -63,6 +63,7 @@ public class DomTreeBuilder {
     public DomTreeBuilder(Function function) {
         domTree = new HashMap<>();
         this.function = function;
+        this.domFrontier = new HashMap<>();
     }
 
     public void init() {
