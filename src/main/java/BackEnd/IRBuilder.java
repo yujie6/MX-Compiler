@@ -806,11 +806,20 @@ public class IRBuilder implements ASTVisitor {
             logger.severe("exit now");
             System.exit(1);
         }
+        boolean constantFold = LHS instanceof IntConst && RHS instanceof IntConst;
+        int lValue = 0, rValue = 0;
+        if (constantFold) {
+            lValue = ((IntConst) LHS).ConstValue;
+            rValue = ((IntConst) RHS).ConstValue;
+        }
         switch (bop) {
             case ADD: {
                 if (LHS.getType().equals(Module.I32)) {
+                    if (constantFold) {
+                        return new IntConst(lValue + rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, LHS, RHS);
-                    curBasicBlock.AddInstAtTail(instance); // TODO store to symbol table
+                    curBasicBlock.AddInstAtTail(instance);
                     return instance;
                 } else if (LHS.getType().equals(Module.STRING)) {
                     // str add, need function call
@@ -833,6 +842,9 @@ public class IRBuilder implements ASTVisitor {
                     logger.severe("Use sub on non integer type.", node.GetLocation());
                     System.exit(1);
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue - rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sub, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
@@ -843,6 +855,9 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use mul on non integer type.", node.GetLocation());
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue * rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
@@ -853,6 +868,9 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use div on non integer type.", node.GetLocation());
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue / rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.sdiv, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
@@ -863,6 +881,9 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use mod on non integer type.", node.GetLocation());
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue % rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.srem, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
@@ -873,6 +894,9 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use left shift on non integer type.", node.GetLocation());
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue << rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shl, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;
@@ -883,6 +907,9 @@ public class IRBuilder implements ASTVisitor {
                 if (!LHS.getType().equals(Module.I32)) {
                     logger.warning("Use right shift on non integer type.", node.GetLocation());
                 } else {
+                    if (constantFold) {
+                        return new IntConst(lValue >> rValue);
+                    }
                     BinOpInst instance = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.shr, LHS, RHS);
                     curBasicBlock.AddInstAtTail(instance);
                     return instance;

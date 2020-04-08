@@ -2,8 +2,7 @@ package Optim;
 
 import IR.Function;
 import IR.Module;
-import Optim.FuncAnalysis.DomTreeBuilder;
-import Optim.FuncAnalysis.FuncOptimManager;
+import Optim.Transformation.DeadFuncElim;
 import Tools.MXLogger;
 
 import java.util.ArrayList;
@@ -37,6 +36,7 @@ public class MxOptimizer {
     }
 
     public void optimize() {
+        (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
         mem2reg();
     }

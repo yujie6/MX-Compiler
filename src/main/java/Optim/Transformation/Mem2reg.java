@@ -1,8 +1,10 @@
-package Optim;
+package Optim.Transformation;
 
 import IR.*;
 import IR.Instructions.*;
 import Optim.FuncAnalysis.DomTreeBuilder;
+import Optim.MxOptimizer;
+import Optim.Pass;
 
 import java.util.*;
 

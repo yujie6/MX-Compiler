@@ -1,7 +1,8 @@
-package Optim.FuncAnalysis;
+package Optim;
 
 import IR.Function;
-import Optim.Mem2reg;
+import Optim.FuncAnalysis.DomTreeBuilder;
+import Optim.Transformation.Mem2reg;
 
 public class FuncOptimManager {
     private Function function;

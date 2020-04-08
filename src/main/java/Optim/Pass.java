@@ -6,5 +6,5 @@ import IR.IRVisitor;
 
 public abstract class Pass {
 
-    abstract boolean optimize();
+    public abstract boolean optimize();
 }

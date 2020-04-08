@@ -1,9 +1,10 @@
-package Optim;
+package Optim.Transformation;
 
 import IR.BasicBlock;
 import IR.Function;
 import IR.Instructions.Instruction;
 import IR.Module;
+import Optim.Pass;
 
 public class CFGSimplifier extends Pass {
 
@@ -38,7 +39,7 @@ public class CFGSimplifier extends Pass {
     }
 
     @Override
-    boolean optimize() {
+    public boolean optimize() {
         boolean changed = false;
         for (Function func : TopModule.getFunctionMap().values()) {
             if (!func.isExternal())
