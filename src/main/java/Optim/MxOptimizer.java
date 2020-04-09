@@ -29,9 +29,27 @@ public class MxOptimizer {
         }
     }
 
+    private void buildControlDependenceGraph() {
+        for (FuncOptimManager optimizer : funcOptimizers) {
+            optimizer.buildControlDependenceGraph();;
+        }
+    }
+
     private void mem2reg() {
         for (FuncOptimManager optimizer : funcOptimizers) {
             optimizer.mem2reg();
+        }
+    }
+
+    private void deadCodeElimination () {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.deadCodeElimination();
+        }
+    }
+
+    private void aggressiveDeadCodeElimination() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.adce();
         }
     }
 
@@ -39,5 +57,7 @@ public class MxOptimizer {
         (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
         mem2reg();
+        // deadCodeElimination();
+        // aggressiveDeadCodeElimination();
     }
 }

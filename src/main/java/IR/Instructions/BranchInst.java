@@ -27,6 +27,10 @@ public class BranchInst extends Instruction {
         this.type = null; // shall change to label type;
     }
 
+    public boolean isHasElse() {
+        return hasElse;
+    }
+
     public BasicBlock getThenBlock() {
         if (hasElse) return (BasicBlock) this.UseList.get(1).getVal();
         return (BasicBlock) this.UseList.get(0).getVal();

@@ -90,7 +90,7 @@ public class LLVMTest {
     }
 
 
-    @Test
+    @Test(timeout=1000)
     public void testCodegen() throws IOException, InterruptedException {
         int diffResult = RunTestFile(this.testClass + this.TestNumber + ".mx");
         assertEquals(diffResult, 0);

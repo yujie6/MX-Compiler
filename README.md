@@ -26,7 +26,8 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
-* CFG Simplify
+* Liveness Analysis
 * Dead code elimination
-* Function inline
+* Common subexpression elimination
+* ...
 

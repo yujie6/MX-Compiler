@@ -6,6 +6,10 @@ import IR.Instructions.Instruction;
 import IR.Module;
 import Optim.Pass;
 
+/**
+ * The SimplifyCFG (SCFG) plugin tries to find or create basic blocks that can be entirely deleted from a
+ * function.
+ */
 public class CFGSimplifier extends Pass {
 
 

@@ -12,15 +12,7 @@ import java.util.LinkedHashSet;
 /**
  * Create dominator tree by Lengauer Tarjan Algorithm
  *
- * Dominators Lemma: If rdom(v) = v, then idom(v)
- * = sdom(v). Else, idom(v) = idom(rdom(v))
- *
- * relative dominator:
- * a vertex x ≠ sdom(v) on the path in T from
- * sdom(v) to v such that sdom(x) is minimum, i.e. path minimal with sdom as weight
- *
- * maintain a compressed version of the part of
- * D visited so far: all (p(v),v) with v visited
+ * And build post dom tree for dependence graph
  *
  */
 public class DomTreeBuilder {
@@ -37,28 +29,6 @@ public class DomTreeBuilder {
     BasicBlock[] vertex;
     LinkedHashSet<Integer>[] bucket;
     private int dfn, sum;
-
-    public class DomNode {
-        public DomNode idom;
-        public ArrayList<DomNode> children;
-        public BasicBlock block;
-        public DomNode(BasicBlock block1) {
-            this.block = block1;
-            this.children = new ArrayList<>();
-        }
-
-        public boolean dominates(DomNode other) {
-            return children.contains(other);
-        }
-
-        public boolean dominates(BasicBlock other) {
-            return children.contains(domTree.get(other));
-        }
-
-        public void addChild(DomNode child) {
-            children.add(child);
-        }
-    }
 
     public DomTreeBuilder(Function function) {
         domTree = new HashMap<>();
@@ -102,7 +72,7 @@ public class DomTreeBuilder {
     }
 
     public boolean dominates(BasicBlock defBB, BasicBlock useBB) {
-        return domTree.get(defBB).dominates(useBB);
+        return domTree.get(defBB).dominates(domTree.get(useBB));
     }
 
 
@@ -189,7 +159,7 @@ public class DomTreeBuilder {
         for (DomNode child : node.children) {
             computeDF(child);
             for (BasicBlock w : domFrontier.get(child.block)) {
-                if (!node.dominates(w) || w == node.block) {
+                if (!node.dominates(domTree.get(w)) || w == node.block) {
                     df.add(w);
                 }
             }

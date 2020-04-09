@@ -30,9 +30,11 @@ public class MXCC {
 
     static MXLogger logger;
     private static int debugLevel;
+    private static int optimLevel;
 
     public MXCC() {
         debugLevel = 1;
+        optimLevel = 0;
         logger = new MXLogger(getLogLevel());
     }
 
@@ -98,6 +100,10 @@ public class MXCC {
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
         Module LLVMTopModule = GetIRModule(ast, globalScope);
+
+        MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
+        optimizer.optimize();
+
         PrintLLVMIR(LLVMTopModule, "Basic1");
     }
 
@@ -249,10 +255,22 @@ public class MXCC {
             return;
         }
         Module LLVMTopModule = GetIRModule(ast, globalScope);
-        PrintLLVMIR(LLVMTopModule, "Basic1");
-        MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
-        optimizer.optimize();
-        PrintLLVMIR(LLVMTopModule, "optim");
+        optimLevel = 1;
+        switch (optimLevel) {
+            case 0: {
+                PrintLLVMIR(LLVMTopModule, "Basic1");
+                MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
+                optimizer.optimize();
+                PrintLLVMIR(LLVMTopModule, "optim");
+                break;
+            }
+            case 1: {
+                MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
+                optimizer.optimize();
+                PrintLLVMIR(LLVMTopModule, "Basic1");
+                break;
+            }
+        }
         // codegen part
     }
 }
