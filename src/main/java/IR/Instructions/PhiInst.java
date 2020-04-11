@@ -10,21 +10,29 @@ import java.util.ArrayList;
 public class PhiInst extends Instruction {
 
     private ArrayList<BasicBlock> blockList;
+    private int branchNum;
 
     public PhiInst(BasicBlock parent, IRBaseType type) {
         super(parent, InstType.phi);
         this.blockList = new ArrayList<>();
         this.type = type;
+        this.branchNum = 0;
     }
 
     public void AddPhiBranch(BasicBlock basicBlock, Value var) {
         this.UseList.add(new Use(var, this));
         this.blockList.add(basicBlock);
+        this.branchNum += 1;
     }
 
     public void removeBranch(int index) {
         blockList.remove(index);
         this.UseList.remove(index);
+        this.branchNum -= 1;
+    }
+
+    public int getBranchNum() {
+        return branchNum;
     }
 
     public BasicBlock getBlock(int index) {
