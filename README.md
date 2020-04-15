@@ -26,8 +26,10 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
+* Loop invariant code motion
+* Strength Reduction
+* Induction Variable Recognition
+* Some non-trivial optimizations
 * Liveness Analysis
-* Dead code elimination
-* Common subexpression elimination
 * ...
 

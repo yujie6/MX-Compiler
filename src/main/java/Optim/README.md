@@ -3,12 +3,14 @@
 ## 1. Optimizations done
 * dominator tree build
 * mem2reg
+* dead function elimination
 * naive dead code elimination 
 * aggressive dead code elimination
+* common subexpression elimination
 
 ## 2. Optimizations to be done 
-* common subexpression elimination
 * loop invariant code motion
+* Strength Reduction
 
 ## 3. FAQ about optimizations
 ### 3.1 Is there a need to use dce after mem2reg
