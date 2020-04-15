@@ -43,7 +43,7 @@ public class MxOptimizer {
 
     private void deadCodeElimination () {
         for (FuncOptimManager optimManager : funcOptimizers) {
-            optimManager.deadCodeElimination();
+            optimManager.dce();
         }
     }
 
@@ -53,11 +53,18 @@ public class MxOptimizer {
         }
     }
 
+    private void commonSubexpressionElimination() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.cse();
+        }
+    }
+
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
         mem2reg();
         // deadCodeElimination();
         // aggressiveDeadCodeElimination();
+        // commonSubexpressionElimination();
     }
 }

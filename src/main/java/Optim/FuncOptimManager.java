@@ -4,6 +4,7 @@ import IR.Function;
 import Optim.FuncAnalysis.CDGBuilder;
 import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.Transformation.AggrDeadCodeElim;
+import Optim.Transformation.CommonSubexElim;
 import Optim.Transformation.DeadCodeElim;
 import Optim.Transformation.Mem2reg;
 
@@ -14,6 +15,7 @@ public class FuncOptimManager {
     private Mem2reg mem2reg;
     private DeadCodeElim dce;
     private AggrDeadCodeElim adce;
+    private CommonSubexElim cse;
 
     public FuncOptimManager(Function func) {
         this.function = func;
@@ -22,6 +24,7 @@ public class FuncOptimManager {
         dce = new DeadCodeElim(function);
         cdgBuilder = new CDGBuilder(function);
         adce = new AggrDeadCodeElim(function, cdgBuilder);
+        cse = new CommonSubexElim(function, domTreeBuilder);
     }
 
     public void buildControlDependenceGraph() {
@@ -32,7 +35,7 @@ public class FuncOptimManager {
         adce.optimize();
     }
 
-    public void deadCodeElimination() {
+    public void dce() {
         dce.optimize();
     }
 
@@ -42,5 +45,9 @@ public class FuncOptimManager {
 
     public void mem2reg() {
         this.mem2reg.optimize();
+    }
+
+    public void cse() {
+        cse.optimize();
     }
 }

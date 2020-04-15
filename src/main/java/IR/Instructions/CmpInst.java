@@ -52,4 +52,12 @@ public class CmpInst extends Instruction {
         return ans.toString();
     }
 
+    public String getFullOpcode () {
+        return "icmp " + SubOpcode.toString();
+    }
+
+    @Override
+    public boolean isCommutative() {
+        return SubOpcode.equals(CmpOperation.eq) || SubOpcode.equals(CmpOperation.ne);
+    }
 }

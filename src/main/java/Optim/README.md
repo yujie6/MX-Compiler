@@ -4,10 +4,10 @@
 * dominator tree build
 * mem2reg
 * naive dead code elimination 
+* aggressive dead code elimination
 
 ## 2. Optimizations to be done 
 * common subexpression elimination
-* aggressive dead code elimination
 * loop invariant code motion
 
 ## 3. FAQ about optimizations

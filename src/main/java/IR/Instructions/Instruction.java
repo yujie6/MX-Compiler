@@ -7,7 +7,7 @@ import Optim.MxOptimizer;
 public abstract class Instruction extends User {
     static protected int regNum = 1;
     protected BasicBlock Parent;
-    protected InstType Opcode;
+    public InstType Opcode;
     protected Instruction prev, next;
     protected String RegisterID;
 
@@ -69,6 +69,12 @@ public abstract class Instruction extends User {
                 System.exit(1);
             }
         }
+    }
+
+    public boolean isCommutative() {
+        return Opcode.equals(InstType.add) || Opcode.equals(InstType.xor) ||
+                Opcode.equals(InstType.and) || Opcode.equals(InstType.mul) ||
+                Opcode.equals(InstType.or);
     }
 
     public boolean isTerminalInst() {

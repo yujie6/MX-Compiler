@@ -58,20 +58,8 @@ public class DomTreeBuilder {
         computeDF();
     }
 
-    public boolean dominates(Instruction def, Instruction user) {
-        BasicBlock defBB = def.getParent();
-        BasicBlock userBB = user.getParent();
-        if (def == user)
-            return false;
-
-        return true;
-    }
-
-    public boolean dominates(Instruction def, BasicBlock useBB) {
-        return true;
-    }
-
     public boolean dominates(BasicBlock defBB, BasicBlock useBB) {
+        if (defBB == useBB) return true;
         return domTree.get(defBB).dominates(domTree.get(useBB));
     }
 
