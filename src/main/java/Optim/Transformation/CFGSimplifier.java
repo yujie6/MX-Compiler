@@ -6,6 +6,8 @@ import IR.Instructions.Instruction;
 import IR.Module;
 import Optim.Pass;
 
+import java.util.LinkedList;
+
 /**
  * The SimplifyCFG (SCFG) plugin tries to find or create basic blocks that can be entirely deleted from a
  * function.
@@ -13,10 +15,10 @@ import Optim.Pass;
 public class CFGSimplifier extends Pass {
 
 
-    private Module TopModule;
+    private Function function;
 
-    public CFGSimplifier(Module topModule) {
-        this.TopModule = topModule;
+    public CFGSimplifier(Function function1) {
+        this.function = function1;
     }
 
 
@@ -42,12 +44,20 @@ public class CFGSimplifier extends Pass {
         return changed;
     }
 
+
     @Override
     public boolean optimize() {
         boolean changed = false;
-        for (Function func : TopModule.getFunctionMap().values()) {
-            if (!func.isExternal())
-                changed |= (boolean) visit(func);
+        LinkedList<BasicBlock> workList = new LinkedList<>(function.getBlockList());
+        while (!workList.isEmpty()) {
+            BasicBlock BB = workList.pop();
+            if (BB.predecessors.size() == 0 && BB != function.getHeadBlock()) {
+                for (BasicBlock succ : BB.successors) {
+                    succ.predecessors.remove(BB);
+                    workList.add(succ);
+                }
+                function.removeBlock(BB);
+            }
         }
         return changed;
     }

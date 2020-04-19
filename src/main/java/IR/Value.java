@@ -3,6 +3,8 @@ package IR;
 import IR.Types.IRBaseType;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+
 /**
  * This is a very important LLVM class. It is the base class of all values
  * computed by a program that may be used as operands to other values. Value is
@@ -24,7 +26,7 @@ public abstract class Value extends IRBaseNode {
 
     protected IRBaseType type;
 
-    public ArrayList<User> UserList;
+    public HashSet<User> UserList;
 
     public enum ValueType {
         INSTRUCTION,
@@ -37,7 +39,7 @@ public abstract class Value extends IRBaseNode {
     }
 
     public Value(ValueType vTy) {
-        this.UserList = new ArrayList<>();
+        this.UserList = new HashSet<>();
         this.VTy = vTy;
     }
 

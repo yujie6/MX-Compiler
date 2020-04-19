@@ -115,6 +115,12 @@ public class Function extends Value {
         TailBlock = basicBlock;
     }
 
+    public void removeBlock(BasicBlock BB) {
+        BB.getNext().setPrev(BB.getPrev());
+        BB.getPrev().setNext(BB.getNext());
+        BlockList.remove(BB);
+    }
+
     public void initialize() {
         BasicBlock head = new BasicBlock(this, "_head_block");
         AddBlockAtTail(head);

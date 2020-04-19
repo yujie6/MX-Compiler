@@ -61,6 +61,7 @@ public abstract class Instruction extends User {
             for (Use use : U.UseList) {
                 if (use.getVal() == this) {
                     use.setVal(replaceValue);
+                    replaceValue.UserList.add(U);
                     replaceDone = true;
                 }
             }
@@ -69,6 +70,7 @@ public abstract class Instruction extends User {
                 System.exit(1);
             }
         }
+        this.UserList.clear();
     }
 
     public boolean isCommutative() {

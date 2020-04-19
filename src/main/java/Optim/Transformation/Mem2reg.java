@@ -35,6 +35,7 @@ public class Mem2reg extends Pass {
         LoadInst onlyLoad;
         BasicBlock onlyBlock;
         boolean onlyUsedInOneBlock;
+        boolean isStoreOnce;
 
         public AllocaInfo() {
             definingBlocks = new LinkedHashSet<>();
@@ -46,6 +47,7 @@ public class Mem2reg extends Pass {
             usingBlocks.clear();
             onlyLoad = null;
             onlyStore = null;
+            isStoreOnce = true;
             onlyUsedInOneBlock = true;
         }
 
@@ -53,6 +55,7 @@ public class Mem2reg extends Pass {
             clear();
             for (User U : AI.UserList) {
                 if (U instanceof StoreInst) {
+                    if (onlyStore != null) isStoreOnce = false;
                     onlyStore = (StoreInst) U;
                     definingBlocks.add(((StoreInst) U).getParent());
                 } else if (U instanceof LoadInst) {
@@ -79,7 +82,7 @@ public class Mem2reg extends Pass {
                 return false;
             }
         }
-        return true;
+        return !AI.getBaseType().isClassType();
     }
 
     private boolean promoteMemoryToRegister(Function func) {
@@ -150,7 +153,7 @@ public class Mem2reg extends Pass {
                 continue;
             }
 
-            if (info.definingBlocks.size() == 1) {
+            if (info.definingBlocks.size() == 1 && info.isStoreOnce) {
                 boolean success = rewriteSingleStoreAlloca(AI, info);
                 if (success) {
                     RemoveFromAllocasList(i);
@@ -249,7 +252,7 @@ public class Mem2reg extends Pass {
                         phiBlocks.add(Y);
                     }
                     if (!(info.definingBlocks.contains(Y))) {
-                        phiWaitList.add(Y);
+                        if (BB != Y) phiWaitList.add(Y);
                     }
                 }
             }

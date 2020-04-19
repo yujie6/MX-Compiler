@@ -11,6 +11,7 @@ public class FuncOptimManager {
     private Function function;
     private DomTreeBuilder domTreeBuilder;
     private LoopAnalysis LA;
+    private CFGSimplifier cfgSimplifier;
 
     private CDGBuilder cdgBuilder;
     private Mem2reg mem2reg;
@@ -21,6 +22,7 @@ public class FuncOptimManager {
 
     public FuncOptimManager(Function func) {
         this.function = func;
+        cfgSimplifier = new CFGSimplifier(function);
         domTreeBuilder = new DomTreeBuilder(function);
         LA = new LoopAnalysis(function, domTreeBuilder);
         mem2reg = new Mem2reg(function, domTreeBuilder);
@@ -53,6 +55,10 @@ public class FuncOptimManager {
 
     public void mem2reg() {
         this.mem2reg.optimize();
+    }
+
+    public void cfgSimplify() {
+        this.cfgSimplifier.optimize();
     }
 
     public void cse() {

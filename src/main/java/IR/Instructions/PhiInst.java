@@ -1,6 +1,8 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
+import IR.Constants.IntConst;
+import IR.Constants.NullConst;
 import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
@@ -20,6 +22,13 @@ public class PhiInst extends Instruction {
     }
 
     public void AddPhiBranch(BasicBlock basicBlock, Value var) {
+        if (var == null) {
+            if (this.type.isIntegerType()) {
+                var = new IntConst(0);
+            } else if (this.type.isPointerType()) {
+                var = new NullConst(this.type);
+            }
+        }
         this.UseList.add(new Use(var, this));
         this.blockList.add(basicBlock);
         this.branchNum += 1;

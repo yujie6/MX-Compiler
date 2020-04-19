@@ -25,6 +25,7 @@ public class MxOptimizer {
 
     private void buildDomTrees() {
         for (FuncOptimManager optimizer : funcOptimizers) {
+            optimizer.cfgSimplify();
             optimizer.buildDomTree();
         }
     }
@@ -56,6 +57,12 @@ public class MxOptimizer {
     private void commonSubexpressionElimination() {
         for (FuncOptimManager optimManager : funcOptimizers) {
             optimManager.cse();
+        }
+    }
+
+    private void cfgSimplify() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.cfgSimplify();
         }
     }
 

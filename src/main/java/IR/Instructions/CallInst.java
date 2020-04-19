@@ -14,7 +14,7 @@ public class CallInst extends Instruction {
 
     public CallInst(BasicBlock parent, Function function, ArrayList<Value> paras) {
         super(parent, InstType.call);
-        this.UseList.add(new Use(function, this));;
+        this.UseList.add(new Use(function, this));
         this.ArgumentList = paras;
         this.type = function.getFunctionType().getReturnType();
         for (Value para : paras) {
@@ -34,6 +34,10 @@ public class CallInst extends Instruction {
         return ArgumentList;
     }
 
+    public Value getArgument(int index) {
+        return this.UseList.get(index + 1).getVal();
+    }
+
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
@@ -44,10 +48,10 @@ public class CallInst extends Instruction {
         }
         ans.append(getCalledFunction().getIdentifier()).append("(");
         if (!ArgumentList.isEmpty()) {
-            Value var = ArgumentList.get(0);
+            Value var = getArgument(0);
             ans.append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
             for (int i = 1; i < ArgumentList.size(); i++) {
-                var = ArgumentList.get(i);
+                var = getArgument(i);
                 ans.append(", ").append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
             }
         }

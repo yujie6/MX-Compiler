@@ -365,8 +365,6 @@ public class IRBuilder implements ASTVisitor {
         curBasicBlock = MergeBlock;
         curFunction.AddBlockAtTail(MergeBlock);
 
-        // TODO: put block (or label) at symbol table
-
         return null;
     }
 

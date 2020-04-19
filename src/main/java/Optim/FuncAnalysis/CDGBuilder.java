@@ -30,14 +30,14 @@ public class CDGBuilder  {
 
     public CDGBuilder(Function function1) {
         this.function = function1;
+    }
+
+    public void build() {
         entryBlock = new BasicBlock(null, "entryNode");
         entryBlock.successors.add(function.getHeadBlock());
         entryBlock.successors.add(function.getRetBlock());
         function.getHeadBlock().predecessors.add(entryBlock);
         function.getRetBlock().predecessors.add(entryBlock);
-    }
-
-    public void build() {
         init();
         dfs(null, function.getRetBlock());
         computePostIdom();

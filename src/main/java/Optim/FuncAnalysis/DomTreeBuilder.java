@@ -69,6 +69,9 @@ public class DomTreeBuilder {
     }
 
     private int Eval(BasicBlock v) {
+        if (v.dfnOrder == -1) {
+            return v.dfnOrder;
+        }
         BasicBlock A = a[v.dfnOrder];
         if (A == null) return v.dfnOrder;
         Compress(v);
@@ -89,6 +92,9 @@ public class DomTreeBuilder {
         // Compute sdom and rdom by reverse order
         for (int i = sum - 1; i > 0; i--) {
             BasicBlock p = parent[i];
+            if (vertex[i] == null || vertex[i].predecessors == null) {
+                MxOptimizer.logger.severe("Encounter null");
+            }
             for (BasicBlock v : vertex[i].predecessors) {
                 int u = Eval(v);
                 if (sdom[i].dfnOrder > sdom[u].dfnOrder) {
