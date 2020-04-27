@@ -87,6 +87,7 @@ public class AggrDeadCodeElim extends Pass {
         boolean changed = false;
         for (BasicBlock BB : function.getBlockList()) {
             for (Instruction inst : BB.getInstList()) {
+                // TODO read book and re-implement
                 if (inst instanceof BranchInst) {
                     if (((BranchInst) inst).isHasElse()) {
                         // remove one branch & delete the other block

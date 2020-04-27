@@ -38,6 +38,7 @@ public class FuncOptimManager {
     }
 
     public void adce() {
+        cdgBuilder.build();
         adce.optimize();
     }
 

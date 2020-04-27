@@ -1,14 +1,14 @@
 package Compiler;
 
 import AST.MxProgramNode;
-import BackEnd.IRBuilder;
-import BackEnd.IRPrinter;
+import BackEnd.*;
 import Frontend.ASTBuilder;
 import Frontend.GlobalScopeBuilder;
 import Frontend.Scope;
 import Frontend.SemanticChecker;
 import IR.Module;
 import Optim.MxOptimizer;
+import Target.RVModule;
 import Tools.MXError;
 import Tools.MXLogger;
 import Tools.SyntaxErrorListener;
@@ -147,6 +147,16 @@ public class MXCC {
         return (Module) irBuilder.visit(ast);
     }
 
+    private static RVModule GetRISCVModule(Module LLVMTopModule) {
+        EdgeSplitter edgeSplitter = new EdgeSplitter(LLVMTopModule, logger);
+        SSADestructor ssaDestructor = new SSADestructor(LLVMTopModule, logger);
+        edgeSplitter.optimize();
+        ssaDestructor.optimize();
+
+        InstSelector instSelector = new InstSelector(LLVMTopModule, logger);
+        return instSelector.getRiscvTopModule();
+    }
+
     private static void SemanticCheck(Scope globalScope, MxProgramNode ast) {
         (new SemanticChecker(globalScope, logger)).visit(ast);
     }
@@ -255,13 +265,15 @@ public class MXCC {
             return;
         }
         Module LLVMTopModule = GetIRModule(ast, globalScope);
-        optimLevel = 1;
+        optimLevel = 0;
         switch (optimLevel) {
             case 0: {
                 PrintLLVMIR(LLVMTopModule, "Basic1");
                 MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
                 optimizer.optimize();
                 PrintLLVMIR(LLVMTopModule, "optim");
+                RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
+
                 break;
             }
             case 1: {

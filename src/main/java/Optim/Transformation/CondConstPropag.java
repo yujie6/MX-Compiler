@@ -5,6 +5,7 @@ import IR.Constants.IntConst;
 import IR.Function;
 import IR.Instructions.*;
 import IR.Value;
+import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.HashMap;
@@ -13,9 +14,8 @@ import java.util.LinkedList;
 /**
  * This file implement conditional constant propagation
  */
-public class CondConstPropag extends Pass {
+public class CondConstPropag extends FunctionPass {
 
-    private Function function;
     private HashMap<BasicBlock, Boolean> Executed;
     private HashMap<Instruction, status> statusMap;
     private LinkedList<BasicBlock> blockWorkList;
@@ -38,7 +38,7 @@ public class CondConstPropag extends Pass {
     }
 
     public CondConstPropag(Function function) {
-        this.function = function;
+        super(function);
         this.statusMap = new HashMap<>();
         for (BasicBlock BB : function.getBlockList()) {
             Executed.put(BB, false);

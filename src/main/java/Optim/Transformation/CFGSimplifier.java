@@ -4,6 +4,7 @@ import IR.BasicBlock;
 import IR.Function;
 import IR.Instructions.Instruction;
 import IR.Module;
+import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.LinkedList;
@@ -12,13 +13,11 @@ import java.util.LinkedList;
  * The SimplifyCFG (SCFG) plugin tries to find or create basic blocks that can be entirely deleted from a
  * function.
  */
-public class CFGSimplifier extends Pass {
+public class CFGSimplifier extends FunctionPass {
 
-
-    private Function function;
 
     public CFGSimplifier(Function function1) {
-        this.function = function1;
+        super(function1);
     }
 
 

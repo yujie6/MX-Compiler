@@ -9,13 +9,13 @@ import IR.Value;
 import Optim.FuncAnalysis.DomNode;
 import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.FuncOptimManager;
+import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.HashMap;
 
-public class CommonSubexElim extends Pass {
+public class CommonSubexElim extends FunctionPass {
 
-    private Function function;
     private HashMap<expr, Instruction> exprMap;
     private DomTreeBuilder dm;
 
@@ -60,7 +60,7 @@ public class CommonSubexElim extends Pass {
     }
 
     public CommonSubexElim(Function function1, DomTreeBuilder dm1) {
-        this.function = function1;
+        super(function1);
         this.exprMap = new HashMap<>();
         this.dm = dm1;
     }

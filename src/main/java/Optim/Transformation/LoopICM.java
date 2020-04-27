@@ -9,6 +9,7 @@ import IR.User;
 import IR.Value;
 import Optim.FuncAnalysis.Loop;
 import Optim.FuncAnalysis.LoopAnalysis;
+import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.HashSet;
@@ -17,16 +18,15 @@ import java.util.LinkedList;
 /**
  * Implementing loop invariant code motion
  */
-public class LoopICM extends Pass {
+public class LoopICM extends FunctionPass {
 
-    private Function function;
     private LoopAnalysis LA;
     private LinkedList<Instruction> workList;
     private HashSet<Instruction> invariants;
 
     public LoopICM (Function function, LoopAnalysis LA) {
+        super(function);
         this.LA = LA;
-        this.function = function;
         workList = new LinkedList<>();
         invariants = new HashSet<>();
     }

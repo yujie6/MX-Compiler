@@ -24,7 +24,7 @@ public class BasicBlock extends Value {
     private String Identifier;
     private LinkedList<Instruction> InstList;
     private BasicBlock prev, next;
-    public int dfnOrder;
+    public int dfnOrder, postDfnOrder;
     private Instruction HeadInst, TailInst;
 
     private static int BlockNum = 1;
@@ -47,6 +47,7 @@ public class BasicBlock extends Value {
         Label = String.valueOf(BlockNum);
         BlockNum += 1;
         this.dfnOrder = -1;
+        this.postDfnOrder = -1;
     }
 
     public void addSuccessor(BasicBlock basicBlock) {

@@ -5,17 +5,17 @@ import IR.Function;
 import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
+import Optim.ModulePass;
 import Optim.Pass;
 
 import java.util.HashMap;
 
-public class DeadFuncElim extends Pass {
+public class DeadFuncElim extends ModulePass {
 
-    private Module TopModule;
     private HashMap<String, Boolean> deadFunctions;
 
     public DeadFuncElim(Module topModule) {
-        this.TopModule = topModule;
+        super(topModule);
         deadFunctions = new HashMap<>();
     }
 

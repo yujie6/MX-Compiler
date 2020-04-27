@@ -66,12 +66,19 @@ public class MxOptimizer {
         }
     }
 
+    private void loopInvariantCodeMotion() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.licm();
+        }
+    }
+
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
         mem2reg();
-        // deadCodeElimination();
+        deadCodeElimination();
         // aggressiveDeadCodeElimination();
         // commonSubexpressionElimination();
+        // loopInvariantCodeMotion();
     }
 }

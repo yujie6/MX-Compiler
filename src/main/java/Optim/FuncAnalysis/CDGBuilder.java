@@ -10,7 +10,7 @@ import java.util.LinkedHashSet;
 /**
  * This file implements control dependence graph builder
  */
-public class CDGBuilder  {
+public class CDGBuilder {
     public Function function;
 
 
@@ -30,6 +30,8 @@ public class CDGBuilder  {
 
     public CDGBuilder(Function function1) {
         this.function = function1;
+        postDomTree = new HashMap<>();
+        postDomFrontier = new HashMap<>();
     }
 
     public void build() {
@@ -75,24 +77,27 @@ public class CDGBuilder  {
     private void computePostIdom() {
         for (int i = sum - 1; i > 0; i--) {
             BasicBlock p = parent[i];
+            if (vertex[i] == null || vertex[i].successors == null) {
+                System.out.println("it's fine");
+            }
             for (BasicBlock v : vertex[i].successors) {
                 int u = Eval(v);
-                if (sdom[i].dfnOrder > sdom[u].dfnOrder) {
+                if (sdom[i].postDfnOrder > sdom[u].postDfnOrder) {
                     sdom[i] = sdom[u];
                 }
             }
-            bucket[sdom[i].dfnOrder].add(i);
-            Link(p.dfnOrder, i);
-            for (int v : bucket[p.dfnOrder]) {
+            bucket[sdom[i].postDfnOrder].add(i);
+            Link(p.postDfnOrder, i);
+            for (int v : bucket[p.postDfnOrder]) {
                 int u = Eval(vertex[v]);
-                idom[v] = sdom[u].dfnOrder < sdom[v].dfnOrder ? vertex[u] : p;
+                idom[v] = sdom[u].postDfnOrder < sdom[v].postDfnOrder ? vertex[u] : p;
             }
-            bucket[p.dfnOrder].clear();
+            bucket[p.postDfnOrder].clear();
         }
 
         for (int i = 1; i < sum; i++) {
             if (idom[i] != sdom[i]) {
-                idom[i] = idom[idom[i].dfnOrder];
+                idom[i] = idom[idom[i].postDfnOrder];
             }
         }
         idom[0] = null;
@@ -137,31 +142,31 @@ public class CDGBuilder  {
     }
 
     private int Eval(BasicBlock v) {
-        BasicBlock A = a[v.dfnOrder];
-        if (A == null) return v.dfnOrder;
+        BasicBlock A = a[v.postDfnOrder];
+        if (A == null) return v.postDfnOrder;
         Compress(v);
-        return best[v.dfnOrder].dfnOrder;
+        return best[v.postDfnOrder].postDfnOrder;
     }
 
     private void Compress(BasicBlock v) {
-        BasicBlock A = a[v.dfnOrder];
-        if (a[A.dfnOrder] == null) return;
+        BasicBlock A = a[v.postDfnOrder];
+        if (a[A.postDfnOrder] == null) return;
         Compress(A);
-        if (sdom[best[v.dfnOrder].dfnOrder].dfnOrder > sdom[best[A.dfnOrder].dfnOrder].dfnOrder) {
-            best[v.dfnOrder] = best[A.dfnOrder];
+        if (sdom[best[v.postDfnOrder].postDfnOrder].postDfnOrder > sdom[best[A.postDfnOrder].postDfnOrder].postDfnOrder) {
+            best[v.postDfnOrder] = best[A.postDfnOrder];
         }
-        a[v.dfnOrder] = a[A.dfnOrder];
+        a[v.postDfnOrder] = a[A.postDfnOrder];
     }
 
     private void dfs(BasicBlock father, BasicBlock child) {
-        if (child.dfnOrder == -1) {
+        if (child.postDfnOrder == -1) {
             vertex[dfn] = child;
             parent[dfn] = father;
             sdom[dfn] = child;
             best[dfn] = child;
             a[dfn] = null;
             bucket[dfn].clear();
-            child.dfnOrder = dfn;
+            child.postDfnOrder = dfn;
             dfn += 1;
             for (BasicBlock bb : child.predecessors) {
                 dfs(child, bb);

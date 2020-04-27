@@ -3,6 +3,7 @@ package Optim.Transformation;
 import IR.*;
 import IR.Instructions.*;
 import Optim.FuncAnalysis.DomTreeBuilder;
+import Optim.FunctionPass;
 import Optim.MxOptimizer;
 import Optim.Pass;
 
@@ -12,9 +13,8 @@ import java.util.*;
  * This file exposes an interface to promote alloca instructions to SSA
  * registers, by using the SSA construction algorithm.
  */
-public class Mem2reg extends Pass {
+public class Mem2reg extends FunctionPass {
 
-    private Function function;
     ArrayList<AllocaInst> allocaInsts;
     private int NumPromoted;
     DomTreeBuilder domBuilder;
@@ -22,8 +22,9 @@ public class Mem2reg extends Pass {
     private HashMap<BasicBlock, HashMap<AllocaInst, PhiInst>> NewPhiNodes = new HashMap<>();
 
     public Mem2reg(Function function1, DomTreeBuilder dm) {
-        this.function = function1;
+        super(function1);
         this.domBuilder = dm;
+        this.NumPromoted = 0;
         visited = new HashSet<>();
         allocaInsts = new ArrayList<>();
     }
@@ -94,10 +95,9 @@ public class Mem2reg extends Pass {
                     allocaInsts.add((AllocaInst) inst);
         }
 
-
+        NumPromoted = allocaInsts.size();
         changed |= PromoteMemToReg();
         NumPromoted += allocaInsts.size();
-        MxOptimizer.logger.fine("Mem2reg on function '" + function.getIdentifier() + "' done");
         return changed;
     }
 
@@ -188,7 +188,7 @@ public class Mem2reg extends Pass {
         }
 
         // EliminateNullPhi();
-        return changed;
+        return allocaInsts.size() > 0;
     }
 
     private void EliminateNullPhi() {
@@ -324,6 +324,10 @@ public class Mem2reg extends Pass {
 
     @Override
     public boolean optimize() {
-        return promoteMemoryToRegister(function);
+        boolean success = promoteMemoryToRegister(function);
+        if (success)
+            MxOptimizer.logger.info("Mem2reg runs on function '" + function.getIdentifier() + "', with "
+            + NumPromoted + " alloca promoted!");
+        return success;
     }
 }
