@@ -14,7 +14,8 @@ public abstract class Instruction extends User {
     public enum InstType {
         alloca, br, call, load, store, phi, ret, bitcast, sext,
         icmp, getelementptr,
-        add, sub, mul, sdiv, shl, shr, srem, and, or, xor
+        add, sub, mul, sdiv, shl, shr, srem, and, or, xor,
+        copy
     }
 
     public Instruction(BasicBlock parent, InstType instType) {
@@ -22,7 +23,8 @@ public abstract class Instruction extends User {
         this.Parent = parent;
         this.Opcode = instType;
 
-        if (!(instType.equals(InstType.br) || instType.equals(InstType.store))) {
+        if (!(instType.equals(InstType.br) || instType.equals(InstType.store) ||
+                instType.equals(InstType.copy))) {
             this.RegisterID = "%" + regNum;
             regNum += 1;
         }

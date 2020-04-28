@@ -147,14 +147,14 @@ public class MXCC {
         return (Module) irBuilder.visit(ast);
     }
 
-    private static RVModule GetRISCVModule(Module LLVMTopModule) {
-        EdgeSplitter edgeSplitter = new EdgeSplitter(LLVMTopModule, logger);
+    private static RVModule GetRISCVModule(Module LLVMTopModule) throws IOException {
+
         SSADestructor ssaDestructor = new SSADestructor(LLVMTopModule, logger);
-        edgeSplitter.optimize();
         ssaDestructor.optimize();
+        PrintDestructedIR(LLVMTopModule, "destruct");
 
         InstSelector instSelector = new InstSelector(LLVMTopModule, logger);
-        return instSelector.getRiscvTopModule();
+        return instSelector.getRISCVTopModule();
     }
 
     private static void SemanticCheck(Scope globalScope, MxProgramNode ast) {
@@ -164,6 +164,12 @@ public class MXCC {
     private static void PrintLLVMIR(Module irModule, String name) throws IOException {
         IRPrinter printer = new IRPrinter(logger, name);
         printer.setPrintMode(1);
+        printer.Print(irModule);
+    }
+
+    private static void PrintDestructedIR(Module irModule, String name) throws IOException {
+        IRPrinter printer = new IRPrinter(logger, name);
+        printer.setPrintMode(2);
         printer.Print(irModule);
     }
 

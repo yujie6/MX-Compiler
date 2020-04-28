@@ -115,6 +115,15 @@ public class BasicBlock extends Value {
         InstList.addFirst(inst);
     }
 
+    public void AddInstBeforeBranch(Instruction inst) {
+        Instruction br = getTailInst();
+        br.getPrev().setNext(inst);
+        inst.setPrev(br.getPrev());
+        inst.setNext(br);
+        br.setPrev(inst);
+        InstList.add( InstList.size() - 1, inst); // where would you add ?
+    }
+
     public boolean endWithBranch() {
         return TailInst instanceof BranchInst;
     }

@@ -3,6 +3,7 @@ package BackEnd;
 import IR.*;
 import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
+import IR.Instructions.PhiInst;
 import IR.Module;
 import IR.Types.StructureType;
 import Tools.MXLogger;
@@ -30,7 +31,7 @@ public class IRPrinter implements IRVisitor {
 
     private void WriteLLVM(String str) {
         if (str == null) return;
-        if (PrintMode == 1) {
+        if (PrintMode >= 1) {
             try {
                 bufw.write(_indentMap[indentLevel]);
                 bufw.write(str);
@@ -83,6 +84,9 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM(node.getLabel() + ":  ;" + node.getIdentifier() + "\n");
             this.indentLevel += 1;
             for (Instruction inst : node.getInstList()) {
+                if (PrintMode == 2 && inst instanceof PhiInst) {
+                    continue;
+                }
                 WriteLLVM(inst.toString());
             }
 
@@ -132,7 +136,7 @@ public class IRPrinter implements IRVisitor {
 
 
     public Object visit(Module node) {
-        if (PrintMode == 1 && isAssignLabel) {
+        if (PrintMode >= 1 && isAssignLabel) {
             logger.info("Print IR to disk.");
         } else if (PrintMode == 0 && isAssignLabel){
             logger.info("Print IR to std out.");

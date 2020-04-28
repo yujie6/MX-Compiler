@@ -8,6 +8,7 @@ import IR.Value;
 public class BranchInst extends Instruction {
 
     private boolean hasElse;
+
     public BranchInst(BasicBlock parent, Value condition, BasicBlock thenBlock, BasicBlock elseBlock) {
         super(parent, InstType.br);
         this.hasElse = false;
@@ -41,13 +42,35 @@ public class BranchInst extends Instruction {
         return (BasicBlock) this.UseList.get(2).getVal();
     }
 
+    public void replaceSuccBlock(BasicBlock original, BasicBlock replaceBB) {
+        BasicBlock fa = this.Parent;
+        if (fa.successors.contains(original)) {
+            fa.successors.remove(original);
+            fa.successors.add(replaceBB);
+            original.predecessors.remove(fa);
+            replaceBB.predecessors.add(fa);
+
+        } else System.exit(2);
+
+        if (hasElse) {
+            if (getThenBlock() == original) {
+                this.UseList.set(1, new Use(replaceBB, this));
+            } else if (getElseBlock() == original) {
+                this.UseList.set(2, new Use(replaceBB, this));
+            } else System.exit(3);
+        } else {
+            this.UseList.set(0, new Use(replaceBB, this));
+        }
+
+    }
+
     public Value getCondition() {
         if (!hasElse) return null;
         return this.UseList.get(0).getVal();
     }
 
     public String getCondLabel() {
-        return ((Instruction)getCondition() ).RegisterID;
+        return ((Instruction) getCondition()).RegisterID;
     }
 
     @Override

@@ -2,10 +2,17 @@ package BackEnd;
 
 import IR.BasicBlock;
 import IR.Function;
+import IR.Instructions.BranchInst;
+import IR.Instructions.CopyInst;
+import IR.Instructions.Instruction;
+import IR.Instructions.PhiInst;
 import IR.Module;
+import IR.Value;
 import Optim.ModulePass;
 import Tools.MXLogger;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -16,7 +23,11 @@ import java.util.LinkedList;
 public class EdgeSplitter extends ModulePass {
 
     private LinkedList<CriticalEdge> criticalEdgeList;
+    private HashMap<CriticalEdge, BasicBlock> splitBBMap;
+    private HashMap<BasicBlock, LinkedList<CopyInst>> copyInstsMap;
     private MXLogger logger;
+
+
     private class CriticalEdge {
         public BasicBlock A, B;
 
@@ -33,33 +44,69 @@ public class EdgeSplitter extends ModulePass {
     public EdgeSplitter(Module TopModule, MXLogger logger) {
         super(TopModule);
         this.criticalEdgeList = new LinkedList<>();
+        this.splitBBMap = new HashMap<>();
         this.logger = logger;
+        this.copyInstsMap = new HashMap<>();
+    }
+
+    public HashMap<BasicBlock, LinkedList<CopyInst>> getCopyInsts() {
+        return this.copyInstsMap;
     }
 
     private void splitEdge(CriticalEdge edge) {
         BasicBlock splitter = new BasicBlock(edge.getParent(), "edge splitter");
-
+        BranchInst branch = (BranchInst) edge.A.getTailInst();
+        splitBBMap.put(edge, splitter);
+        branch.replaceSuccBlock(edge.B, splitter);
+        splitter.AddInstAtTail(new BranchInst(splitter, null, edge.B, null));
     }
 
     private boolean splitEdge(Function function) {
-        boolean changed = false;
+        int splitEdgeNum = 0;
+        int copyInstNum = 0;
         for (BasicBlock BB : function.getBlockList()) {
-            for (BasicBlock succ : BB.successors) {
-                if (succ.predecessors.size() > 1 && BB.successors.size() > 1) {
-                    criticalEdgeList.add(new CriticalEdge(BB, succ));
+            splitEdgeNum += criticalEdgeList.size();
+            criticalEdgeList.clear();
+            for (BasicBlock pred : BB.predecessors) {
+                if (pred.predecessors.size() > 1 && BB.successors.size() > 1) {
+                    criticalEdgeList.add(new CriticalEdge(pred, BB));
                 }
             }
+
+            for (CriticalEdge edge : criticalEdgeList) {
+                splitEdge(edge);
+            }
+
+            Instruction inst = BB.getHeadInst();
+            LinkedList<CopyInst> copyInsts = new LinkedList<>();
+            while (inst instanceof PhiInst) {
+                PhiInst phi = (PhiInst) inst;
+                copyInstNum += phi.getBranchNum();
+                for (int i = 0; i < phi.getBranchNum(); i++) {
+                    BasicBlock pred = phi.getBlock(i);
+                    Value copyValue = phi.getValue(i);
+                    CopyInst copyInst = new CopyInst(pred, phi, copyValue, true);
+                    copyInsts.add(copyInst);
+                    pred.AddInstBeforeBranch(copyInst);
+                }
+                // phi.eraseFromParent(); no need to erase, just do not print it
+                inst = inst.getNext();
+            }
+            copyInstsMap.put(BB, copyInsts);
         }
-        changed = criticalEdgeList.size() > 0;
-        if (changed) {
-            logger.info("function '" + function.getIdentifier() + "' has " + criticalEdgeList.size() +
+
+        for (var entry : splitBBMap.entrySet()) {
+            function.AddBlockAfter(entry.getKey().A, entry.getValue());
+        }
+
+        if (splitEdgeNum > 0) {
+            logger.info("function '" + function.getIdentifier() + "' has " + splitEdgeNum +
                     " critical edges to be split");
+            logger.info("function '" + function.getIdentifier() + "' has " + copyInstNum +
+                    " copy insts added");
+            return true;
         }
-        while (!criticalEdgeList.isEmpty()) {
-            CriticalEdge edge = criticalEdgeList.pop();
-            splitEdge(edge);
-        }
-        return changed;
+        return false;
     }
 
     @Override

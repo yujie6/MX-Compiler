@@ -115,6 +115,15 @@ public class Function extends Value {
         TailBlock = basicBlock;
     }
 
+    public void AddBlockAfter(BasicBlock fa, BasicBlock basicBlock) {
+        int index = BlockList.indexOf(fa);
+        fa.getNext().setPrev(basicBlock);
+        basicBlock.setNext(fa.getNext());
+        basicBlock.setPrev(fa);
+        fa.setNext(basicBlock);
+        BlockList.add(index + 1, basicBlock);
+    }
+
     public void removeBlock(BasicBlock BB) {
         BB.getNext().setPrev(BB.getPrev());
         BB.getPrev().setNext(BB.getNext());

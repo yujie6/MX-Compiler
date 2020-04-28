@@ -16,8 +16,6 @@ import Tools.MXLogger;
 public class InstSelector implements IRVisitor {
 
     private RVModule riscvTopModule;
-    private RVFunction curFunction;
-    private RVBlock curBlock;
     private Module IRModule;
     private MXLogger logger;
 
@@ -32,20 +30,22 @@ public class InstSelector implements IRVisitor {
         }
     }
 
-    public RVModule getRiscvTopModule() {
+    public RVModule getRISCVTopModule() {
         return riscvTopModule;
     }
 
     @Override
     public Object visit(BasicBlock node) {
         RVBlock rvBlock = new RVBlock(node);
+
+
+
         return rvBlock;
     }
 
     @Override
     public Object visit(Function node) {
         RVFunction rvFunction = new RVFunction(node);
-        curFunction = rvFunction;
         for (BasicBlock BB : node.getBlockList()) {
             RVBlock rvBlock = (RVBlock) visit(BB);
             rvFunction.addRVBlock(rvBlock);
