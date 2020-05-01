@@ -149,11 +149,6 @@ public class Function extends Value {
         }
     }
 
-    @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
-        visitor.visit(this);
-    }
-
     public BasicBlock getRetBlock() {
         return RetBlock;
     }
@@ -176,5 +171,10 @@ public class Function extends Value {
 
     public void setThisExpr(Value thisExpr) {
         this.thisExpr = thisExpr;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return null;
     }
 }

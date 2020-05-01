@@ -2,15 +2,16 @@ package Target.RVInstructions;
 
 public enum RVOpcode {
     add, sub,
+    mul, div, rem, // rv32 m extension
     slt, sltu,
     and, or, xor,
-    sll, slr, sra,
-    jal, jalr,
+    sll, srl, sra,
+    jal, jalr, j, // some fake instructions
     auipc,
-    addi, slti, sltiu, andi, xori, ori,
-    xlli, srli, srai, lui,
+    addi, slti, sltiu, andi, xori, ori, subi,
+    slli, srli, srai, lui,
     beq, bne, blt, bltu, bge, bgeu,
     lw, lh, lb, lhu, lbu,
-    sw, sh, sb
+    sw, sh, ret, sb
 }
 

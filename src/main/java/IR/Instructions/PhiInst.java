@@ -3,6 +3,7 @@ package IR.Instructions;
 import IR.BasicBlock;
 import IR.Constants.IntConst;
 import IR.Constants.NullConst;
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
@@ -67,5 +68,10 @@ public class PhiInst extends Instruction {
         }
         ans.append("\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

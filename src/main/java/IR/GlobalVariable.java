@@ -27,8 +27,9 @@ public class GlobalVariable extends Value {
     }
 
     @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
+    public Object accept(IRVisitor<Object> visitor) {
         // this func shall never be used
+        return null;
     }
 
     @Override

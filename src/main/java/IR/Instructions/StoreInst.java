@@ -3,6 +3,7 @@ package IR.Instructions;
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
 import IR.Constants.Constant;
+import IR.IRVisitor;
 import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
@@ -47,5 +48,10 @@ public class StoreInst extends Instruction {
         ans.append( getRightValueLabel(getStoreDest()) );
         ans.append(", align 8\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

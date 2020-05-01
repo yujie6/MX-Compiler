@@ -1,5 +1,6 @@
 package IR.Constants;
 
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.User;
 
@@ -17,4 +18,9 @@ public abstract class Constant extends User {
     }
 
     public abstract Object getValue();
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return null;
+    }
 }

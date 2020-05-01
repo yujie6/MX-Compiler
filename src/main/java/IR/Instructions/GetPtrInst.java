@@ -1,15 +1,12 @@
 package IR.Instructions;
 
 import BackEnd.IRBuilder;
-import IR.BasicBlock;
+import IR.*;
 import IR.Constants.IntConst;
 import IR.Constants.StringConst;
-import IR.GlobalVariable;
 import IR.Types.AggregateType;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
-import IR.Use;
-import IR.Value;
 
 import java.util.ArrayList;
 
@@ -106,5 +103,10 @@ public class GetPtrInst extends Instruction {
 
     public IRBaseType getElementType() {
         return elementType;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

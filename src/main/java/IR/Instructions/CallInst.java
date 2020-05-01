@@ -1,9 +1,6 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.Function;
-import IR.Use;
-import IR.Value;
+import IR.*;
 
 import java.util.ArrayList;
 
@@ -57,5 +54,10 @@ public class CallInst extends Instruction {
         }
         ans.append(")\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

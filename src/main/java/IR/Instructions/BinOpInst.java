@@ -1,11 +1,11 @@
 package IR.Instructions;
 
 
-import IR.BasicBlock;
+import IR.*;
 import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
 import Tools.Operators;
+
+import java.io.IOException;
 
 public class BinOpInst extends Instruction {
 
@@ -31,5 +31,10 @@ public class BinOpInst extends Instruction {
         ans.append( getRightValueLabel(getLHS()) ).append(", ");
         ans.append( getRightValueLabel(getRHS()) ).append("\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

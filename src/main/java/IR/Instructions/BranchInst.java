@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.IRVisitor;
 import IR.Use;
 import IR.Value;
 
@@ -86,5 +87,10 @@ public class BranchInst extends Instruction {
         }
         ans.append("\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

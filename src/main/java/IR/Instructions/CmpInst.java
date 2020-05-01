@@ -1,14 +1,17 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
-import Tools.Operators;
+import IR.*;
 import IR.Module;
+import IR.Types.IRBaseType;
+import Tools.Operators;
 
 public class CmpInst extends Instruction {
     private CmpOperation SubOpcode;
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
+    }
 
     enum CmpOperation {
         eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,

@@ -11,7 +11,7 @@ package IR;
 
 import java.util.ArrayList;
 
-public class User extends Value {
+public abstract class User extends Value {
 
     public ArrayList<Use> UseList;
 
@@ -24,9 +24,4 @@ public class User extends Value {
         return UseList;
     }
 
-
-    @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
-
-    }
 }

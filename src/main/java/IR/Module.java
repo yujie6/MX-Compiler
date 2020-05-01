@@ -324,11 +324,6 @@ public class Module extends Value {
         GlobalVarMap.put(globalVariable.getIdentifier(), globalVariable);
     }
 
-    @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) throws IOException {
-
-    }
-
     public HashMap<String, BasicBlock> getLabelMap() {
         return LabelMap;
     }
@@ -339,5 +334,10 @@ public class Module extends Value {
 
     public void setStringConstMap(HashMap<String, GlobalVariable> stringConstMap) {
         StringConstMap = stringConstMap;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return null;
     }
 }

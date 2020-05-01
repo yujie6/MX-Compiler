@@ -129,8 +129,8 @@ public class BasicBlock extends Value {
     }
 
     @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
-        visitor.visit(this);
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 
     public BasicBlock getPrev() {

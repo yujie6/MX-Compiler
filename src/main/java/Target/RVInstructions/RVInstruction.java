@@ -24,4 +24,6 @@ public abstract class RVInstruction {
     public String getOpcode() {
         return opcode.toString();
     }
+
+    public abstract String toString();
 }

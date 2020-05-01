@@ -1,6 +1,7 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
@@ -32,5 +33,10 @@ public class ReturnInst extends Instruction {
             ans.append(getRightValueLabel(getRetValue()));
         }
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

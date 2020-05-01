@@ -1,6 +1,7 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
@@ -31,5 +32,10 @@ public class BitCastInst extends Instruction {
 
     public IRBaseType getTargetType() {
         return TargetType;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

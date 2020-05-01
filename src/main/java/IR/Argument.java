@@ -39,12 +39,12 @@ public class Argument extends Value {
         return ArgType;
     }
 
-    @Override
-    public void accept(IRVisitor<IRBaseNode> visitor) {
-
-    }
-
     public String getName() {
         return name;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return null;
     }
 }

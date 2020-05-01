@@ -1,9 +1,7 @@
 package BackEnd;
 
 import IR.*;
-import IR.Instructions.CallInst;
-import IR.Instructions.Instruction;
-import IR.Instructions.PhiInst;
+import IR.Instructions.*;
 import IR.Module;
 import IR.Types.StructureType;
 import Tools.MXLogger;
@@ -131,6 +129,71 @@ public class IRPrinter implements IRVisitor {
             curFunction = null;
             WriteLLVM("}\n");
         }
+        return null;
+    }
+
+    @Override
+    public Object visit(AllocaInst allocaInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(BinOpInst binOpInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(BitCastInst bitCastInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(BranchInst branchInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(CallInst callInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(CmpInst cmpInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(CopyInst copyInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(GetPtrInst getPtrInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(LoadInst loadInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(ReturnInst returnInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(PhiInst phiInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(SextInst sextInst) {
+        return null;
+    }
+
+    @Override
+    public Object visit(StoreInst storeInst) {
         return null;
     }
 

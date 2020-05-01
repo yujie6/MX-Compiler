@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
 import IR.Use;
@@ -35,5 +36,10 @@ public class LoadInst extends Instruction {
         ans.append(  getRightValueLabel(getLoadAddr()) );
         ans.append(", align 8\n");
         return ans.toString();
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }

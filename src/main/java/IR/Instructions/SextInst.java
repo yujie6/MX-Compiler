@@ -1,6 +1,7 @@
 package IR.Instructions;
 
 import IR.BasicBlock;
+import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Use;
 import IR.Value;
@@ -31,5 +32,10 @@ public class SextInst extends Instruction {
 
     public IRBaseType getBaseType() {
         return BaseType;
+    }
+
+    @Override
+    public Object accept(IRVisitor<Object> visitor) {
+        return visitor.visit(this);
     }
 }
