@@ -4,25 +4,34 @@ import Target.Immediate;
 import Target.RVBlock;
 import Target.RVInstructions.RVOpcode;
 import Target.RVOperand;
+import Target.VirtualReg;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.*;
 
 public class RVBranch extends RVInstruction {
 
-    RVOperand LHS, RHS;
+    VirtualReg LHS, RHS;
     Immediate offset;
 
 
     public RVBranch(RVOpcode opcode, RVBlock rvBlock, RVOperand lhs, RVOperand rhs) {
         super(opcode, rvBlock);
-        this.RHS = rhs;
-        this.LHS = lhs;
+        this.RHS = (VirtualReg) rhs;
+        this.LHS = (VirtualReg) lhs;
     }
 
     public void setOffset(Immediate offset) {
         this.offset = offset;
+    }
+
+    @Override
+    public ArrayList<VirtualReg> getUseRegs() {
+        return new ArrayList<>(List.of(LHS, RHS));
+    }
+
+    @Override
+    public VirtualReg getDefReg() {
+        return null;
     }
 
     @Override

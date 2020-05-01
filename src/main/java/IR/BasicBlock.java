@@ -104,6 +104,9 @@ public class BasicBlock extends Value {
         TailInst.setNext(null);
     }
 
+    public boolean isEntryBlock() {
+        return this == getParent().getHeadBlock();
+    }
     public void AddInstAtTop(Instruction inst) {
         if (isEmpty()) {
             TailInst = inst;

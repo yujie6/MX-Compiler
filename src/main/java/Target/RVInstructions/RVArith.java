@@ -4,17 +4,30 @@ import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RVArith extends RVInstruction {
 
-    RVOperand LHS, RHS;
+    VirtualReg LHS, RHS;
     VirtualReg destReg;
 
 
     public RVArith(RVOpcode opcode, RVBlock rvBlock, RVOperand lhs, RVOperand rhs, VirtualReg dest) {
         super(opcode, rvBlock);
-        this.LHS = lhs;
-        this.RHS = rhs;
+        this.LHS = (VirtualReg) lhs;
+        this.RHS = (VirtualReg) rhs;
         this.destReg = dest;
+    }
+
+    @Override
+    public ArrayList<VirtualReg> getUseRegs() {
+        return new ArrayList<>(List.of(LHS, RHS));
+    }
+
+    @Override
+    public VirtualReg getDefReg() {
+        return destReg;
     }
 
     @Override

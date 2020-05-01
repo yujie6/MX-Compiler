@@ -1,6 +1,9 @@
 package Target.RVInstructions;
 
 import Target.RVBlock;
+import Target.VirtualReg;
+
+import java.util.ArrayList;
 
 public abstract class RVInstruction {
     private RVOpcode opcode;
@@ -10,6 +13,9 @@ public abstract class RVInstruction {
         this.opcode = opcode;
         this.parentBB = rvBlock;
     }
+
+    public abstract ArrayList<VirtualReg> getUseRegs();
+    public abstract VirtualReg getDefReg();
 
     public boolean isBranch() {
         return opcode.equals(RVOpcode.bne) || opcode.equals(RVOpcode.beq) ||

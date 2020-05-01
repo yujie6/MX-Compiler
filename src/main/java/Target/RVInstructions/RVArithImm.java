@@ -5,6 +5,9 @@ import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class RVArithImm extends RVInstruction {
 
     RVOperand srcReg;
@@ -28,6 +31,17 @@ public class RVArithImm extends RVInstruction {
             this.imm = ((Immediate) RHS);
         }
         this.destReg = destReg;
+    }
+
+
+    @Override
+    public ArrayList<VirtualReg> getUseRegs() {
+        return new ArrayList<>(List.of( (VirtualReg) srcReg));
+    }
+
+    @Override
+    public VirtualReg getDefReg() {
+        return destReg;
     }
 
 

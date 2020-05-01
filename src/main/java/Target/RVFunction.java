@@ -7,7 +7,9 @@ import java.util.ArrayList;
 public class RVFunction {
 
     Function irFunction;
+    String identifier;
     ArrayList<RVBlock> rvBlockList;
+    boolean isExternal;
     int deltaStack;
 
 
@@ -15,6 +17,15 @@ public class RVFunction {
         this.irFunction = function;
         this.rvBlockList = new ArrayList<>();
         this.deltaStack = 0;
+        this.identifier = function.getIdentifier();
+    }
+
+    public ArrayList<RVBlock> getRvBlockList() {
+        return rvBlockList;
+    }
+
+    public String getIdentifier() {
+        return identifier;
     }
 
     public int allocaOnStack() {

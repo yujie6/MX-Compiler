@@ -3,6 +3,7 @@ package BackEnd;
 
 import IR.*;
 import IR.Constants.Constant;
+import IR.Constants.IntConst;
 import IR.Instructions.*;
 import IR.Module;
 import Target.*;
@@ -25,6 +26,7 @@ public class InstSelector implements IRVisitor {
     private HashMap<BasicBlock, RVBlock> rvBlockMap;
     private HashMap<Instruction, VirtualReg> virtualRegMap;
     private HashMap<AllocaInst, RVAddr> allocaMap;
+    private HashMap<Argument, VirtualReg> argumentMap;
     private HashMap<String, VirtualReg> fakePhyRegMap;
     final private Immediate ZERO = new Immediate(0);
 
@@ -35,11 +37,13 @@ public class InstSelector implements IRVisitor {
         this.logger = logger;
         this.rvBlockMap = new HashMap<>();
         this.fakePhyRegMap = new HashMap<>();
+        this.argumentMap = new HashMap<>();
         for (String name : RVTargetInfo.regNames) {
             VirtualReg fakeReg = new VirtualReg(name);
             fakePhyRegMap.put(name, fakeReg);
         }
         for (Function function : IRModule.getFunctionMap().values()) {
+            this.argumentMap.clear();
             if (function.isExternal()) {
                 continue;
             }
@@ -79,10 +83,15 @@ public class InstSelector implements IRVisitor {
     }
 
     private RVOperand getRVOperand(Value irValue) {
-        if (irValue instanceof Instruction) {
+        if (irValue instanceof Argument) {
+            return argumentMap.get(irValue);
+        } else if (irValue instanceof Instruction) {
             return getVirtualReg((Instruction) irValue);
         } else if (irValue instanceof Constant) {
             // return imm
+            if (irValue instanceof IntConst) {
+                return new Immediate(((IntConst) irValue).ConstValue);
+            }
         }
         return null;
     }
@@ -90,6 +99,25 @@ public class InstSelector implements IRVisitor {
     @Override
     public Object visit(BasicBlock node) {
         RVBlock rvBlock = getRVBlock(node);
+        for (BasicBlock pred : node.predecessors) {
+            rvBlock.predecessors.add(rvBlockMap.get(pred));
+        }
+        for (BasicBlock succ : node.successors) {
+            rvBlock.successors.add(rvBlockMap.get(succ));
+        }
+        if (node.isEntryBlock()) {
+            // Store argument on stack
+            int index = 0;
+            for (Argument arg : node.getParent().getParameterList()) {
+                if (index < 8) {
+                    VirtualReg argReg = getFakeReg("a" + index);
+                    argumentMap.put(arg, argReg);
+                } else {
+
+                }
+                index += 1;
+            }
+        }
         for (Instruction inst : node.getInstList()) {
             inst.accept(this);
         }
