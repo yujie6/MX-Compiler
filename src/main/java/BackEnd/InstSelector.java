@@ -27,8 +27,8 @@ public class InstSelector implements IRVisitor {
     private HashMap<Instruction, VirtualReg> virtualRegMap;
     private HashMap<AllocaInst, RVAddr> allocaMap;
     private HashMap<Argument, VirtualReg> argumentMap;
-    private HashMap<String, VirtualReg> fakePhyRegMap;
-    final private Immediate ZERO = new Immediate(0);
+    static public HashMap<String, VirtualReg> fakePhyRegMap;
+    static final private Immediate ZERO = new Immediate(0);
 
 
     public InstSelector(Module IRModule, MXLogger logger) {
@@ -36,7 +36,7 @@ public class InstSelector implements IRVisitor {
         this.IRModule = IRModule;
         this.logger = logger;
         this.rvBlockMap = new HashMap<>();
-        this.fakePhyRegMap = new HashMap<>();
+        fakePhyRegMap = new HashMap<>();
         this.argumentMap = new HashMap<>();
         for (String name : RVTargetInfo.regNames) {
             VirtualReg fakeReg = new VirtualReg(name);
@@ -75,7 +75,7 @@ public class InstSelector implements IRVisitor {
     }
 
     private RVInstruction getMoveInst(RVOperand src, VirtualReg dest) {
-        return new RVArithImm(RVOpcode.addi, curBlock, src, ZERO, dest);
+        return new RVMove(curBlock, (VirtualReg) src, dest);
     }
 
     private RVBlock getRVBlock(BasicBlock BB) {

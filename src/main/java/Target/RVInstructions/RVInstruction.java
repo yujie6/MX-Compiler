@@ -15,7 +15,7 @@ public abstract class RVInstruction {
     }
 
     public abstract ArrayList<VirtualReg> getUseRegs();
-    public abstract VirtualReg getDefReg();
+    public abstract ArrayList<VirtualReg> getDefRegs();
 
     public boolean isBranch() {
         return opcode.equals(RVOpcode.bne) || opcode.equals(RVOpcode.beq) ||

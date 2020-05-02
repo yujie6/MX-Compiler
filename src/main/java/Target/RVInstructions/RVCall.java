@@ -5,23 +5,19 @@ import Target.VirtualReg;
 
 import java.util.ArrayList;
 
-public class RVJump extends RVInstruction {
-
-    RVBlock targetBB;
-
-    public RVJump(RVOpcode opcode, RVBlock rvBlock, RVBlock target) {
+public class RVCall extends RVInstruction{
+    public RVCall(RVOpcode opcode, RVBlock rvBlock) {
         super(opcode, rvBlock);
-        this.targetBB = target;
     }
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>();
+        return null;
     }
 
     @Override
     public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+        return null;
     }
 
     @Override

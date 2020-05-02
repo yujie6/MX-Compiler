@@ -2,7 +2,6 @@ package Target.RVInstructions;
 
 import Target.Immediate;
 import Target.RVBlock;
-import Target.RVInstructions.RVOpcode;
 import Target.RVOperand;
 import Target.VirtualReg;
 
@@ -30,8 +29,8 @@ public class RVBranch extends RVInstruction {
     }
 
     @Override
-    public VirtualReg getDefReg() {
-        return null;
+    public ArrayList<VirtualReg> getDefRegs() {
+        return new ArrayList<>();
     }
 
     @Override

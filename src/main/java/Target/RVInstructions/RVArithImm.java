@@ -40,8 +40,8 @@ public class RVArithImm extends RVInstruction {
     }
 
     @Override
-    public VirtualReg getDefReg() {
-        return destReg;
+    public ArrayList<VirtualReg> getDefRegs() {
+        return new ArrayList<>(List.of(destReg));
     }
 
 

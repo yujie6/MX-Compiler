@@ -1,6 +1,5 @@
 package BackEnd;
 
-import IR.Instructions.Instruction;
 import Target.*;
 import Target.RVInstructions.RVInstruction;
 
@@ -61,8 +60,8 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
         for (RVInstruction inst : rvBlock.rvInstList) {
             rvBlock.gen.addAll(inst.getUseRegs());
 
-            if (inst.getDefReg() != null) {
-                rvBlock.kill.add(inst.getDefReg());
+            if (inst.getDefRegs() != null) {
+                rvBlock.kill.add(inst.getDefRegs());
             }
         }
         return null;

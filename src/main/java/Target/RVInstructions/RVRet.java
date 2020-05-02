@@ -17,8 +17,9 @@ public class RVRet extends RVInstruction {
     }
 
     @Override
-    public VirtualReg getDefReg() {
-        return null;
+    public
+    ArrayList<VirtualReg> getDefRegs() {
+        return new ArrayList<>();
     }
 
     @Override

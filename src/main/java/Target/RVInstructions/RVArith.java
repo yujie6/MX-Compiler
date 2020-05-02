@@ -26,8 +26,8 @@ public class RVArith extends RVInstruction {
     }
 
     @Override
-    public VirtualReg getDefReg() {
-        return destReg;
+    public ArrayList<VirtualReg> getDefRegs() {
+        return new ArrayList<>(List.of(destReg));
     }
 
     @Override

@@ -1,6 +1,5 @@
 package Target.RVInstructions;
 
-import IR.BasicBlock;
 import Target.RVAddr;
 import Target.RVBlock;
 import Target.RVOperand;
@@ -28,8 +27,8 @@ public class RVLoad extends RVInstruction {
     }
 
     @Override
-    public VirtualReg getDefReg() {
-        return destReg;
+    public ArrayList<VirtualReg> getDefRegs() {
+        return new ArrayList<>(List.of(destReg));
     }
 
     @Override
