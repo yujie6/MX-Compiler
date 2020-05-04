@@ -10,7 +10,8 @@ public class VirtualReg extends RVOperand {
     String identifier;
     public int degree;
     public HashSet<VirtualReg> neighbors;
-
+    public VirtualReg alias;
+    public int color;
 
     public VirtualReg(Instruction inst) {
         this.identifier = inst.getRightValueLabel(inst);

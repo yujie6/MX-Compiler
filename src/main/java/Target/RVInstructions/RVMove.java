@@ -15,6 +15,14 @@ public class RVMove extends RVArithImm {
         super(RVOpcode.addi, rvBlock, src, ZERO, destReg);
     }
 
+    public VirtualReg getSrc() {
+        return (VirtualReg) this.srcReg;
+    }
+
+    public VirtualReg getDest() {
+        return this.destReg;
+    }
+
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
         return super.getUseRegs();
