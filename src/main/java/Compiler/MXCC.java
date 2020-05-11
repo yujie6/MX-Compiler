@@ -157,6 +157,11 @@ public class MXCC {
         return instSelector.getRISCVTopModule();
     }
 
+    private static void PrintRISCVAssembly(RVModule riscvTopModule) throws IOException {
+        AsmPrinter printer = new AsmPrinter(logger, "basic1");
+        printer.printAssembly(riscvTopModule);
+    }
+
     private static void SemanticCheck(Scope globalScope, MxProgramNode ast) {
         (new SemanticChecker(globalScope, logger)).visit(ast);
     }
@@ -279,7 +284,7 @@ public class MXCC {
                 optimizer.optimize();
                 PrintLLVMIR(LLVMTopModule, "optim");
                 RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
-
+                PrintRISCVAssembly(RISCVTopModule);
                 break;
             }
             case 1: {

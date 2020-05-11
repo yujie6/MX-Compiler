@@ -32,6 +32,9 @@ public class RVArith extends RVInstruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder(getOpcode());
+        ans.append("\t").append(destReg.toString()).append(",\t").append(LHS.toString());
+        ans.append(",\t").append(RHS.toString()).append("\n");
+        return ans.toString();
     }
 }

@@ -1,7 +1,6 @@
 package Target.RVInstructions;
 
-import Target.RVBlock;
-import Target.VirtualReg;
+import Target.*;
 
 import java.util.ArrayList;
 
@@ -29,6 +28,16 @@ public abstract class RVInstruction {
 
     public String getOpcode() {
         return opcode.toString();
+    }
+
+    public String getImmediate(RVOperand imm) {
+        if (imm instanceof Immediate) {
+            return imm.toString();
+        } else if (imm instanceof RVGlobal) {
+            return "%lo(" + ((RVGlobal) imm).getIdentifier() + ")";
+        } else {
+            return null;
+        }
     }
 
     public abstract String toString();

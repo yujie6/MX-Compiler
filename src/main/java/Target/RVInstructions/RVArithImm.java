@@ -1,17 +1,13 @@
 package Target.RVInstructions;
 
-import Target.Immediate;
-import Target.RVBlock;
-import Target.RVOperand;
-import Target.VirtualReg;
+import Target.*;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class RVArithImm extends RVInstruction {
 
-    RVOperand srcReg;
-    Immediate imm;
+    RVOperand srcReg, imm;
     VirtualReg destReg;
 
     public RVArithImm(RVOpcode opcode, RVBlock rvBlock, RVOperand src, Immediate imm, VirtualReg destReg) {
@@ -23,12 +19,12 @@ public class RVArithImm extends RVInstruction {
 
     public RVArithImm(RVOpcode opcode, RVBlock rvBlock, RVOperand LHS, RVOperand RHS, VirtualReg destReg) {
         super(opcode, rvBlock);
-        if (LHS instanceof Immediate) {
+        if (LHS instanceof Immediate || LHS instanceof RVGlobal) {
             this.srcReg = RHS;
-            this.imm = (Immediate) LHS;
-        } else if (RHS instanceof Immediate) {
+            this.imm = LHS;
+        } else if (RHS instanceof Immediate || RHS instanceof RVGlobal) {
             this.srcReg = LHS;
-            this.imm = ((Immediate) RHS);
+            this.imm = RHS;
         }
         this.destReg = destReg;
     }
@@ -48,6 +44,9 @@ public class RVArithImm extends RVInstruction {
     @Override
     public String toString() {
         // take care of subi
-        return null;
+        StringBuilder ans = new StringBuilder(getOpcode());
+        ans.append("\t").append(destReg.toString()).append(",\t").append(srcReg.toString());
+        ans.append(",\t").append(getImmediate(imm)).append("\n");
+        return ans.toString();
     }
 }

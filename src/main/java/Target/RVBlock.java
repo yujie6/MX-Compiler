@@ -3,12 +3,13 @@ package Target;
 import IR.BasicBlock;
 import Target.RVInstructions.RVInstruction;
 
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 
 public class RVBlock {
 
+    private static int rvBlockNum = 0;
+    private int BlockID;
     private BasicBlock irBlock;
     private String label;
     public LinkedList<RVInstruction> rvInstList;
@@ -29,12 +30,19 @@ public class RVBlock {
         this.liveOutSet = new HashSet<>();
         this.gen = new HashSet<>();
         this.kill = new HashSet<>();
-        this.predecessors= new HashSet<>();
+        this.predecessors = new HashSet<>();
         this.successors = new HashSet<>();
+        this.BlockID = rvBlockNum;
+        rvBlockNum++;
+    }
+
+    @Override
+    public String toString() {
+        return "." + label + BlockID;
     }
 
     public String getLabel() {
-        return label;
+        return "." + label + BlockID;
     }
 
     public void AddInst(RVInstruction inst) {

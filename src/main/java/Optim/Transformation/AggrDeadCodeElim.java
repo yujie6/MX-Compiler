@@ -5,14 +5,12 @@ import IR.Function;
 import IR.Instructions.*;
 import IR.Use;
 import Optim.FuncAnalysis.CDGBuilder;
-import Optim.FuncOptimManager;
 import Optim.Pass;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.Set;
-import java.util.stream.IntStream;
 
 
 /**
@@ -107,7 +105,7 @@ public class AggrDeadCodeElim extends Pass {
         if (inst instanceof StoreInst || inst instanceof ReturnInst) {
             return true;
         } else if (inst instanceof CallInst) {
-            Function calledFunc = ((CallInst) inst).getCalledFunction();
+            Function calledFunc = ((CallInst) inst).getCallee();
             return hasSideEffect(calledFunc);
         }
         return false;

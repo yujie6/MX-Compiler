@@ -40,7 +40,7 @@ public class SSADestructor extends ModulePass {
     }
 
     private void parallel2sequential(BasicBlock BB) {
-        if (BB.getIdentifier().equals("edge splitter")) return;
+        if (BB.getIdentifier().equals("edge_splitter")) return;
 
         copyInsts = edgeSplitter.getCopyInsts().get(BB);
         while (true) {

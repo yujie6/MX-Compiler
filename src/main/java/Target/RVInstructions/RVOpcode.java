@@ -6,8 +6,8 @@ public enum RVOpcode {
     slt, sltu,
     and, or, xor,
     sll, srl, sra,
-    jal, jalr, j, // some fake instructions
-    auipc,
+    jal, jalr, j, call, // some fake instructions
+    auipc, // used by call
     addi, slti, sltiu, andi, xori, ori, subi,
     slli, srli, srai, lui,
     beq, bne, blt, bltu, bge, bgeu,

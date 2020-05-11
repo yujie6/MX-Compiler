@@ -54,7 +54,7 @@ public class EdgeSplitter extends ModulePass {
     }
 
     private void splitEdge(CriticalEdge edge) {
-        BasicBlock splitter = new BasicBlock(edge.getParent(), "edge splitter");
+        BasicBlock splitter = new BasicBlock(edge.getParent(), "edge_splitter");
         BranchInst branch = (BranchInst) edge.A.getTailInst();
         splitBBMap.put(edge, splitter);
         branch.replaceSuccBlock(edge.B, splitter);

@@ -1,5 +1,6 @@
 package Target.RVInstructions;
 
+import Target.RVAddr;
 import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
@@ -9,17 +10,18 @@ import java.util.List;
 
 public class RVStore extends RVInstruction {
 
-    VirtualReg destAddr, src;
+    VirtualReg src;
+    RVAddr destAddr;
 
     public RVStore(RVOpcode opcode, RVBlock rvBlock, RVOperand src, RVOperand dest) {
         super(opcode, rvBlock);
         this.src = (VirtualReg) src;
-        this.destAddr = (VirtualReg) dest;
+        this.destAddr = (RVAddr) dest;
     }
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(src, destAddr));
+        return new ArrayList<>(List.of(src));
     }
 
     @Override
@@ -29,6 +31,9 @@ public class RVStore extends RVInstruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder("sw");
+        ans.append("\t").append(src.toString()).append(",\t");
+        ans.append(destAddr.toString()).append("\n");
+        return ans.toString();
     }
 }

@@ -1,13 +1,20 @@
 package Target.RVInstructions;
 
 import Target.RVBlock;
+import Target.RVFunction;
 import Target.VirtualReg;
 
 import java.util.ArrayList;
 
 public class RVCall extends RVInstruction{
-    public RVCall(RVOpcode opcode, RVBlock rvBlock) {
-        super(opcode, rvBlock);
+    private RVFunction callee;
+    public RVCall(RVBlock rvBlock, RVFunction callee) {
+        super(RVOpcode.call, rvBlock);
+        this.callee = callee;
+    }
+
+    public RVFunction getCallee() {
+        return callee;
     }
 
     @Override
@@ -22,6 +29,6 @@ public class RVCall extends RVInstruction{
 
     @Override
     public String toString() {
-        return null;
+        return "call " + callee.getIdentifier() + "\n";
     }
 }

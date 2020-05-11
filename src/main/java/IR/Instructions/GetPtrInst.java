@@ -97,6 +97,16 @@ public class GetPtrInst extends Instruction {
         return offsets;
     }
 
+    public int getTotalOffset() {
+        int s = 0;
+        for (Value var : getOffsets()) {
+            if (var instanceof IntConst) {
+                s += ((IntConst) var).ConstValue;
+            } else return -42;
+        }
+        return s;
+    }
+
     public IRBaseType getBaseAggregateType() {
         return baseAggregateType;
     }

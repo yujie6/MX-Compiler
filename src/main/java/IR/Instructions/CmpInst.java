@@ -6,14 +6,14 @@ import IR.Types.IRBaseType;
 import Tools.Operators;
 
 public class CmpInst extends Instruction {
-    private CmpOperation SubOpcode;
+    public CmpOperation SubOpcode;
 
     @Override
     public Object accept(IRVisitor<Object> visitor) {
         return visitor.visit(this);
     }
 
-    enum CmpOperation {
+    public enum CmpOperation {
         eq, ne, ugt, uge, ult, ule, sgt, sge, slt, sle,
     }
 

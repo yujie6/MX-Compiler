@@ -76,6 +76,8 @@ public abstract class IRBaseType {
         return BaseTypeName.equals(TypeID.PointerTyID);
     }
 
+    public boolean isVoidType() {return BaseTypeName.equals(TypeID.VoidTyID); }
+
     public boolean isClassType() {
         return BaseTypeName.equals(TypeID.StructTyID);
     }

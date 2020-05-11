@@ -6,7 +6,6 @@ import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import IR.Module;
 import Optim.ModulePass;
-import Optim.Pass;
 
 import java.util.HashMap;
 
@@ -49,7 +48,7 @@ public class DeadFuncElim extends ModulePass {
     private void visit(BasicBlock BB) {
         for (Instruction inst : BB.getInstList()) {
             if (inst instanceof CallInst) {
-                String funcName = ((CallInst) inst).getCalledFunction().getIdentifier();
+                String funcName = ((CallInst) inst).getCallee().getIdentifier();
                 deadFunctions.replace(funcName, false);
             }
         }

@@ -23,7 +23,7 @@ public class CallInst extends Instruction {
         return this.type.toString().equals("void");
     }
 
-    public Function getCalledFunction() {
+    public Function getCallee() {
         return (Function) this.UseList.get(0).getVal();
     }
 
@@ -43,7 +43,7 @@ public class CallInst extends Instruction {
         } else {
             ans.append( RegisterID).append(" = call ").append(this.type.toString()).append(" @");
         }
-        ans.append(getCalledFunction().getIdentifier()).append("(");
+        ans.append(getCallee().getIdentifier()).append("(");
         if (!ArgumentList.isEmpty()) {
             Value var = getArgument(0);
             ans.append(var.getType().toString()).append(" ").append(getRightValueLabel(var));

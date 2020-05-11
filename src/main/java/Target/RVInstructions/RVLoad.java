@@ -5,6 +5,7 @@ import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,9 +13,9 @@ public class RVLoad extends RVInstruction {
 
 
     private VirtualReg destReg;
-    private RVOperand srcAddr;
+    private RVAddr srcAddr;
 
-    public RVLoad(RVOpcode opcode, RVBlock rvBlock, VirtualReg dest, RVOperand src) {
+    public RVLoad(RVOpcode opcode, RVBlock rvBlock, VirtualReg dest, RVAddr src) {
         super(opcode, rvBlock);
         this.destReg = dest;
         this.srcAddr = src;
@@ -22,8 +23,7 @@ public class RVLoad extends RVInstruction {
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        if (srcAddr instanceof RVAddr) return new ArrayList<>();
-        return new ArrayList<>();
+        return new ArrayList<>(List.of(srcAddr.getBaseAddrReg()) );
     }
 
     @Override
@@ -33,6 +33,9 @@ public class RVLoad extends RVInstruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder(getOpcode());
+        ans.append("\t").append(destReg.toString()).append(",\t").append(srcAddr.toString());
+        ans.append("\n");
+        return ans.toString();
     }
 }

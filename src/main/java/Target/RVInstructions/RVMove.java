@@ -35,6 +35,17 @@ public class RVMove extends RVArithImm {
 
     @Override
     public String toString() {
-        return super.toString();
+        StringBuilder ans = new StringBuilder("mv\t");
+        ans.append(getDest().toString()).append(", ");
+        ans.append(getSrc().toString()).append("\n");
+        return ans.toString();
+    }
+
+    public String toAddi() {
+        StringBuilder ans = new StringBuilder(getOpcode());
+        ans.append("\t").append(destReg.toString()).append(",\t");
+        ans.append(srcReg.toString()).append(",\t");
+        ans.append(this.imm.toString()).append("\n");
+        return ans.toString();
     }
 }

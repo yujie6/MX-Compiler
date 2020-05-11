@@ -61,7 +61,7 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
             rvBlock.gen.addAll(inst.getUseRegs());
 
             if (inst.getDefRegs() != null) {
-                rvBlock.kill.add(inst.getDefRegs());
+                rvBlock.kill.addAll(inst.getDefRegs());
             }
         }
         return null;

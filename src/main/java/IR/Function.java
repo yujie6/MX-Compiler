@@ -131,9 +131,9 @@ public class Function extends Value {
     }
 
     public void initialize() {
-        BasicBlock head = new BasicBlock(this, "_head_block");
+        BasicBlock head = new BasicBlock(this, "head_block");
         AddBlockAtTail(head);
-        RetBlock = new BasicBlock(this, "_ret_block");
+        RetBlock = new BasicBlock(this, "ret_block");
         // AddBlockAtTail(RetBlock);
         IRBaseType RetType = functionType.getReturnType();
         if (RetType.getBaseTypeName() == IRBaseType.TypeID.VoidTyID) {

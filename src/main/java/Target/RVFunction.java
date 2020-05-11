@@ -18,6 +18,7 @@ public class RVFunction {
         this.rvBlockList = new ArrayList<>();
         this.deltaStack = 0;
         this.identifier = function.getIdentifier();
+        this.isExternal = function.isExternal();
     }
 
     public ArrayList<RVBlock> getRvBlockList() {

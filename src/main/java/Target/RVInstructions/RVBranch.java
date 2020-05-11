@@ -10,17 +10,14 @@ import java.util.*;
 public class RVBranch extends RVInstruction {
 
     VirtualReg LHS, RHS;
-    Immediate offset;
+    RVBlock target;
 
 
-    public RVBranch(RVOpcode opcode, RVBlock rvBlock, RVOperand lhs, RVOperand rhs) {
+    public RVBranch(RVOpcode opcode, RVBlock rvBlock, RVOperand lhs, RVOperand rhs, RVBlock target) {
         super(opcode, rvBlock);
         this.RHS = (VirtualReg) rhs;
         this.LHS = (VirtualReg) lhs;
-    }
-
-    public void setOffset(Immediate offset) {
-        this.offset = offset;
+        this.target = target;
     }
 
     @Override
@@ -35,6 +32,9 @@ public class RVBranch extends RVInstruction {
 
     @Override
     public String toString() {
-        return null;
+        StringBuilder ans = new StringBuilder(getOpcode());
+        ans.append("\t").append(LHS.toString()).append(",\t").append(RHS.toString());
+        ans.append(",\t").append(target.toString()).append("\n");
+        return ans.toString();
     }
 }

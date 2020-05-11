@@ -26,6 +26,6 @@ public class RVJump extends RVInstruction {
 
     @Override
     public String toString() {
-        return null;
+        return "j\t" + targetBB.toString() + "\n";
     }
 }

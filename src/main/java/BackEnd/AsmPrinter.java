@@ -76,9 +76,10 @@ public class AsmPrinter implements AsmVisitor {
     @Override
     public Object visit(RVBlock rvBlock) {
         if (!rvBlock.isEntryBlock) {
-            WriteAssembly("." + rvBlock.getLabel() + ":\n");
+            WriteAssembly(rvBlock.getLabel() + ":\n");
         }
         for (RVInstruction inst : rvBlock.rvInstList) {
+            WriteAssembly("\t");
             WriteAssembly(inst.toString());
         }
 
