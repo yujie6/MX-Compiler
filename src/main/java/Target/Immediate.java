@@ -8,6 +8,14 @@ public class Immediate extends RVOperand {
         this.value = val;
     }
 
+    public int getValue() {
+        return value;
+    }
+
+    public void setNegative() {
+        this.value = - this.value;
+    }
+
     @Override
     public String toString() {
         if (value == 0) return "zero";

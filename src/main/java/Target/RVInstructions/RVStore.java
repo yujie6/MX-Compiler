@@ -19,6 +19,12 @@ public class RVStore extends RVInstruction {
         this.destAddr = (RVAddr) dest;
     }
 
+    public RVStore(RVBlock rvBlock, RVOperand src, RVOperand dest) {
+        super(RVOpcode.sw, rvBlock);
+        this.src = (VirtualReg) src;
+        this.destAddr = (RVAddr) dest;
+    }
+
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
         return new ArrayList<>(List.of(src));

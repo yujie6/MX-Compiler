@@ -1,10 +1,7 @@
 package BackEnd;
 
-import Target.AsmVisitor;
-import Target.RVBlock;
-import Target.RVFunction;
+import Target.*;
 import Target.RVInstructions.RVInstruction;
-import Target.RVModule;
 import Tools.MXLogger;
 
 import java.io.BufferedWriter;
@@ -53,15 +50,29 @@ public class AsmPrinter implements AsmVisitor {
         indentLevel = 1;
         WriteAssembly(".text\n");
         WriteAssembly(".file\t" + this.fileName + ".mx\n");
-        for (RVFunction function : rvModule.rvFunctionList) {
+        for (RVFunction function : rvModule.rvFunctions) {
             visit(function);
+        }
+        WriteAssembly(".section\t.sdata,\"aw\",@progbits\n");
+        // .data is a read-write section containing global or static variables
+        for (RVGlobal rvGlobal : rvModule.rvGlobals) {
+            if (!rvGlobal.isStringConst) {
+                WriteAssembly(rvGlobal.toString());
+            }
+        }
+        // .rodata is a read-only section containing const variables
+        for (RVGlobal rvGlobal : rvModule.rvGlobals) {
+            if (rvGlobal.isStringConst) {
+                WriteAssembly(rvGlobal.toString());
+            }
         }
         return null;
     }
 
     @Override
     public Object visit(RVFunction rvFunction) {
-        WriteAssembly(".global\t" + rvFunction.getIdentifier() + "\n");
+        WriteAssembly(".global\t" + rvFunction.getIdentifier() +
+                "\t\t\t# -- Begin function main" + rvFunction.getIdentifier() + "\n");
         WriteAssembly(".p2align\t 2\n");
         WriteAssembly(".type\t" + rvFunction.getIdentifier() + ",@function\n");
         this.indentLevel = 0;
@@ -69,6 +80,7 @@ public class AsmPrinter implements AsmVisitor {
         for (RVBlock BB : rvFunction.getRvBlockList()) {
             visit(BB);
         }
+        WriteAssembly("\t\t\t# -- End function\n");
 
         return null;
     }

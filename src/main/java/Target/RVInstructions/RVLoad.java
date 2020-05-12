@@ -21,6 +21,12 @@ public class RVLoad extends RVInstruction {
         this.srcAddr = src;
     }
 
+    public RVLoad(RVBlock rvBlock, VirtualReg dest, RVAddr src) {
+        super(RVOpcode.lw, rvBlock);
+        this.destReg = dest;
+        this.srcAddr = src;
+    }
+
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
         return new ArrayList<>(List.of(srcAddr.getBaseAddrReg()) );

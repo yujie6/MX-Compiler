@@ -319,6 +319,7 @@ public class Mem2reg extends FunctionPass {
                 inst.eraseFromParent();
             }
         }
+        AI.eraseFromParent();
         return replaceVal != null;
     }
 

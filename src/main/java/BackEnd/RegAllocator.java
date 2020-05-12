@@ -157,9 +157,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
     @Override
     public Object visit(RVModule rvModule) {
-        for (RVFunction rvFunction : rvModule.rvFunctionList) {
+        for (RVFunction rvFunction : rvModule.rvFunctions) {
             visit(rvFunction);
-
         }
         return null;
     }

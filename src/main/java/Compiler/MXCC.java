@@ -154,7 +154,12 @@ public class MXCC {
         PrintDestructedIR(LLVMTopModule, "destruct");
 
         InstSelector instSelector = new InstSelector(LLVMTopModule, logger);
-        return instSelector.getRISCVTopModule();
+        RVModule module = instSelector.getRISCVTopModule();
+        LivenessBuilder livenessBuilder = new LivenessBuilder(module);
+        RegAllocator regAllocator = new RegAllocator(module);
+        livenessBuilder.run();
+        regAllocator.run();
+        return module;
     }
 
     private static void PrintRISCVAssembly(RVModule riscvTopModule) throws IOException {

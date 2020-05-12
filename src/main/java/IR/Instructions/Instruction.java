@@ -30,7 +30,7 @@ public abstract class Instruction extends User {
         }
     }
 
-    public String getRightValueLabel(Value rightValue) {
+    public static String getRightValueLabel(Value rightValue) {
         if (rightValue instanceof Constant) {
             return rightValue.toString();
         } else if (rightValue instanceof GlobalVariable) {

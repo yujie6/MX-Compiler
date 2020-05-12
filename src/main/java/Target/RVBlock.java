@@ -49,5 +49,9 @@ public class RVBlock {
         rvInstList.add(inst);
     }
 
+    public void AddInstAtTop(RVInstruction inst) {
+        rvInstList.addFirst(inst);
+    }
+
 
 }

@@ -1,8 +1,10 @@
 package Target;
 
 import BackEnd.InstSelector;
+import IR.Argument;
 import IR.GlobalVariable;
 import IR.Instructions.AllocaInst;
+import IR.Instructions.Instruction;
 
 public class RVAddr extends RVOperand {
     String identifier;
@@ -17,7 +19,16 @@ public class RVAddr extends RVOperand {
         this.onStack = true;
         this.isGlobal = false;
         this.allocaInst = allocaInst;
-        this.identifier = allocaInst.getRightValueLabel(allocaInst);
+        this.identifier = Instruction.getRightValueLabel(allocaInst);
+        this.offset = rvFunction.allocaOnStack();
+        this.baseAddrReg = InstSelector.fakePhyRegMap.get("sp");
+    }
+
+    public RVAddr(Argument arg, RVFunction rvFunction) {
+        // on stack
+        this.onStack = true;
+        this.isGlobal = false;
+        this.identifier = Instruction.getRightValueLabel(arg);
         this.offset = rvFunction.allocaOnStack();
         this.baseAddrReg = InstSelector.fakePhyRegMap.get("sp");
     }
@@ -36,13 +47,18 @@ public class RVAddr extends RVOperand {
         this.isGlobal = true;
     }
 
+    public void resetStackAddr(int deltaStack) {
+        this.baseAddrReg = InstSelector.fakePhyRegMap.get("s0");
+        // this.offset = deltaStack + this.offset;
+    }
+
     public VirtualReg getBaseAddrReg() {
         return baseAddrReg;
     }
 
     public String toString() {
         if (onStack)
-            return this.offset + "(sp)";
+            return this.offset + "(" + this.baseAddrReg.toString()+")";
         else if (isGlobal)
             return "%lo(" + this.identifier + ")(" + this.baseAddrReg.toString() + ")";
         else

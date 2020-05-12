@@ -18,7 +18,7 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
 
     @Override
     public Object visit(RVModule rvModule) {
-        for (RVFunction function : rvModule.rvFunctionList) {
+        for (RVFunction function : rvModule.rvFunctions) {
             visit(function);
         }
         return null;
@@ -69,6 +69,6 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
 
     @Override
     public void run() {
-
+        visit(TopModule);
     }
 }
