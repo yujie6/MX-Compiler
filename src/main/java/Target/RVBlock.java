@@ -10,7 +10,7 @@ public class RVBlock {
 
     private static int rvBlockNum = 0;
     private int BlockID;
-    private BasicBlock irBlock;
+    public BasicBlock irBlock;
     private String label;
     public LinkedList<RVInstruction> rvInstList;
     public boolean isEntryBlock;

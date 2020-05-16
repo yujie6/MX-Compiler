@@ -36,6 +36,20 @@ public class RVStore extends RVInstruction {
     }
 
     @Override
+    public void replaceDef(VirtualReg t) {
+        // never accessed
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        if (old == src) {
+            src = replaceVal;
+        } else {
+            // fail;
+        }
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder("sw");
         ans.append("\t").append(src.toString()).append(",\t");

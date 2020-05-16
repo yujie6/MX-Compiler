@@ -50,7 +50,7 @@ public class FuncOptimManager {
         domTreeBuilder.build();
     }
 
-    public void buildLoopTree() {
+    public void loopAnalysis() {
         LA.optimize();
     }
 

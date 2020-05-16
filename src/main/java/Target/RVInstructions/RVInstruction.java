@@ -15,6 +15,8 @@ public abstract class RVInstruction {
 
     public abstract ArrayList<VirtualReg> getUseRegs();
     public abstract ArrayList<VirtualReg> getDefRegs();
+    public abstract void replaceDef(VirtualReg t);
+    public abstract void replaceUse(VirtualReg old, VirtualReg replaceVal);
 
     public boolean isBranch() {
         return opcode.equals(RVOpcode.bne) || opcode.equals(RVOpcode.beq) ||
@@ -38,6 +40,20 @@ public abstract class RVInstruction {
         } else {
             return null;
         }
+    }
+
+    public void insertAfterMe(RVInstruction other) {
+        int index = parentBB.rvInstList.indexOf(this);
+        parentBB.rvInstList.add(index + 1, other);
+    }
+
+    public void insertBeforeMe(RVInstruction other) {
+        int index = parentBB.rvInstList.indexOf(this);
+        parentBB.rvInstList.add(index, other);
+    }
+
+    public RVBlock getParentBB() {
+        return parentBB;
     }
 
     public abstract String toString();

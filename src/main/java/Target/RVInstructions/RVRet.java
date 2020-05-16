@@ -23,6 +23,16 @@ public class RVRet extends RVInstruction {
     }
 
     @Override
+    public void replaceDef(VirtualReg t) {
+        // never accessed
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        // never
+    }
+
+    @Override
     public String toString() {
         return "ret\n";
     }

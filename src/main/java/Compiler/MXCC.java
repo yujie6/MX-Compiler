@@ -155,9 +155,7 @@ public class MXCC {
 
         InstSelector instSelector = new InstSelector(LLVMTopModule, logger);
         RVModule module = instSelector.getRISCVTopModule();
-        LivenessBuilder livenessBuilder = new LivenessBuilder(module);
         RegAllocator regAllocator = new RegAllocator(module);
-        livenessBuilder.run();
         regAllocator.run();
         return module;
     }

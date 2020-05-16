@@ -31,6 +31,18 @@ public class RVArith extends RVInstruction {
     }
 
     @Override
+    public void replaceDef(VirtualReg t) {
+        this.destReg = t;
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        if (old == LHS) {LHS = replaceVal; return;}
+        if (old == RHS) {RHS = replaceVal; return;}
+        // never here
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
         ans.append("\t").append(destReg.toString()).append(",\t").append(LHS.toString());

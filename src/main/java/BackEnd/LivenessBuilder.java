@@ -27,6 +27,8 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
     @Override
     public Object visit(RVFunction rvFunction) {
         for (RVBlock BB : rvFunction.getRvBlockList()) {
+            BB.liveOutSet.clear();
+            BB.liveInSet.clear();
             visit(BB);
         }
 

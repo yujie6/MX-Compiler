@@ -6,6 +6,7 @@ import IR.Instructions.LoadInst;
 import IR.Instructions.ReturnInst;
 import IR.Types.FunctionType;
 import IR.Types.IRBaseType;
+import Optim.FuncAnalysis.LoopAnalysis;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -29,6 +30,7 @@ public class Function extends Value {
     private Value RetValue, thisExpr;
     private ValueSymbolTable varSymTab;
     private boolean isExternal;
+    private LoopAnalysis LA;
 
     public ArrayList<BasicBlock> getBlockList() {
         return BlockList;
@@ -147,6 +149,14 @@ public class Function extends Value {
             RetBlock.AddInstAtTail(LoadedValue);
             RetBlock.AddInstAtTail(new ReturnInst(RetBlock, RetType, LoadedValue));
         }
+    }
+
+    public void setLA(LoopAnalysis LA) {
+        this.LA = LA;
+    }
+
+    public LoopAnalysis getLA() {
+        return LA;
     }
 
     public BasicBlock getRetBlock() {

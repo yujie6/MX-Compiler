@@ -1,7 +1,9 @@
 package Target.RVInstructions;
 
+import BackEnd.InstSelector;
 import Target.RVBlock;
 import Target.RVFunction;
+import Target.RVTargetInfo;
 import Target.VirtualReg;
 
 import java.util.ArrayList;
@@ -19,12 +21,30 @@ public class RVCall extends RVInstruction{
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return null;
+        ArrayList<VirtualReg> useRegs = new ArrayList<>();
+        for (int i = 0; i < callee.getArgNum() && i < 8; i++) {
+            useRegs.add(InstSelector.fakePhyRegMap.get("a" + i));
+        }
+        return useRegs;
     }
 
     @Override
     public ArrayList<VirtualReg> getDefRegs() {
-        return null;
+        ArrayList<VirtualReg> defRegs = new ArrayList<>();
+        for (String name : RVTargetInfo.callerSaves) {
+            defRegs.add(InstSelector.fakePhyRegMap.get(name));
+        }
+        return defRegs;
+    }
+
+    @Override
+    public void replaceDef(VirtualReg t) {
+        // this should never be accessed
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        // never
     }
 
     @Override

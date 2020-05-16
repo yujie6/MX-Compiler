@@ -31,6 +31,17 @@ public class RVBranch extends RVInstruction {
     }
 
     @Override
+    public void replaceDef(VirtualReg t) {
+        // this should never be accessed!
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        if (old == LHS) {LHS = replaceVal; return;}
+        if (old == RHS) {RHS = replaceVal; return;}
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
         ans.append("\t").append(LHS.toString()).append(",\t").append(RHS.toString());

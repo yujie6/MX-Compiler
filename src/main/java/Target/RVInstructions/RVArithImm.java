@@ -40,6 +40,20 @@ public class RVArithImm extends RVInstruction {
         return new ArrayList<>(List.of(destReg));
     }
 
+    @Override
+    public void replaceDef(VirtualReg t) {
+        this.destReg = t;
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        if (srcReg == old) {
+            srcReg = replaceVal;
+        } else {
+            // fail
+        }
+    }
+
 
     @Override
     public String toString() {

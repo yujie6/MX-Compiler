@@ -38,6 +38,16 @@ public class RVLoad extends RVInstruction {
     }
 
     @Override
+    public void replaceDef(VirtualReg t) {
+        this.destReg = t;
+    }
+
+    @Override
+    public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        // never
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
         ans.append("\t").append(destReg.toString()).append(",\t").append(srcAddr.toString());

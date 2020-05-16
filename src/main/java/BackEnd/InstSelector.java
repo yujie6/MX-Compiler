@@ -207,21 +207,18 @@ public class InstSelector implements IRVisitor {
             inst.accept(this);
         }
 
-        if (node.isEntryBlock()) {
-            Immediate deltaStack = new Immediate(curFunction.getDeltaStack());
-
-            for (var entry : this.rvAddrMap.entrySet()) {
-                if (entry.getKey() instanceof AllocaInst) {
-                    updateStackAddr(entry.getValue(), deltaStack.getValue());
-                }
-            }
-            for (RVAddr addr : this.argumentMap.values()) {
-                updateStackAddr(addr, deltaStack.getValue());
-            }
-            RVArithImm setStack = new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("sp"), deltaStack,
-                    getFakeReg("sp"));
-            curBlock.AddInstAtTop(setStack);
-        }
+//        if (node.isEntryBlock()) {
+//            Immediate deltaStack = new Immediate(curFunction.getDeltaStack());
+//
+//            for (var entry : this.rvAddrMap.entrySet()) {
+//                if (entry.getKey() instanceof AllocaInst) {
+//                    updateStackAddr(entry.getValue(), deltaStack.getValue());
+//                }
+//            }
+//            for (RVAddr addr : this.argumentMap.values()) {
+//                updateStackAddr(addr, deltaStack.getValue());
+//            }
+//        }
 
         return rvBlock;
     }
@@ -242,7 +239,7 @@ public class InstSelector implements IRVisitor {
         this.calleeSavedMap.clear();
         curBlock = rvBlockMap.get(node.getHeadBlock());
         for (String name : RVTargetInfo.calleeSaves) {
-            VirtualReg backup = new VirtualReg("fake_" + name);
+            VirtualReg backup = new VirtualReg("fake_" + name, false);
             VirtualReg calleeSavedReg = getFakeReg(name);
             this.calleeSavedMap.put(calleeSavedReg, backup);
             curBlock.AddInst(new RVMove(curBlock, calleeSavedReg, backup));

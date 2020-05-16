@@ -30,6 +30,7 @@ public class LoopAnalysis extends Pass {
 
     public LoopAnalysis(Function function, DomTreeBuilder dm1) {
         this.function = function;
+        function.setLA(this);
         this.dm = dm1;
         backEdges = new HashSet<>();
         visited = new HashSet<>();
@@ -103,5 +104,15 @@ public class LoopAnalysis extends Pass {
 
     public HashMap<BasicBlock, Loop> getNestedLoops() {
         return nestedLoops;
+    }
+
+    public int getLoopDepth(BasicBlock BB) {
+        Loop t = nestedLoops.get(BB);
+        int s = 0;
+        while (t != null) {
+            t = t.outerLoop;
+            s++;
+        }
+        return s;
     }
 }

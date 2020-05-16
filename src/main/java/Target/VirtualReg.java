@@ -9,15 +9,17 @@ public class VirtualReg extends RVOperand {
 
     public static int vRegNum = 0;
     String identifier;
-    public int degree;
-    private boolean preColored;
+    public int degree, spillCost = 0;
+    protected boolean preColored;
+    public boolean spillTemporary = false;
     public HashSet<VirtualReg> neighbors;
     public VirtualReg alias;
-    public int color;
-    private int RegID;
+    public PhyReg color;
+    protected int RegID;
+    public RVAddr stackAddress;
 
-    public VirtualReg(Instruction inst) {
-        this.identifier = inst.getRightValueLabel(inst);
+    public VirtualReg(String name) {
+        this.identifier = name;
         this.preColored = false;
         this.neighbors = new HashSet<>();
         this.degree = 0;
@@ -25,8 +27,8 @@ public class VirtualReg extends RVOperand {
         vRegNum += 1;
     }
 
-    public VirtualReg(String name) {
-        this.identifier = name;
+    public VirtualReg(Instruction inst) {
+        this.identifier = Instruction.getRightValueLabel(inst);
         this.preColored = false;
         this.neighbors = new HashSet<>();
         this.degree = 0;
@@ -49,7 +51,12 @@ public class VirtualReg extends RVOperand {
     @Override
     public String toString() {
         if (preColored) return this.identifier;
+        if (this.color != null) return this.color.identifier;
         return "x" + RegID;
+    }
+
+    public int getSpillCost() {
+        return spillCost / degree;
     }
 
     public String getIdentifier() {
