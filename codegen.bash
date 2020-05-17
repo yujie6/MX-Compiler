@@ -1,7 +1,8 @@
 #!/bin/zsh
+./build/install/Compiler/bin/Compiler -g 0 -o ./test.s <&0
 
 function run() {
-    ./build/install/Compiler/bin/Compiler -g 0 -i "$1" -o ./test.s
+    ./build/install/Compiler/bin/Compiler -g 0 -o ./test.s
 }
 
 function debug() {
@@ -27,8 +28,6 @@ function llvm() {
     llvm-link ${target} builtin-func.ll -o final.ll -S
     clang final.ll
 }
-
-run "$1"
 
 
 

@@ -68,7 +68,7 @@ public class LLVMTest {
         String fileName = "codegen/" + name;
         System.out.println("Ready to compile \'" + name + "\'");
         int exitCode = PrepareTestFile(rootDir + fileName);
-        mxcc.compile(rootDir + fileName);
+        mxcc.compile(rootDir + fileName, 1);
         ProcessBuilder builder = new ProcessBuilder();
         builder.directory(new File(rootDir));
         builder.command("bash", "test.sh");

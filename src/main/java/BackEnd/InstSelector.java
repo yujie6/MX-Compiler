@@ -84,6 +84,11 @@ public class InstSelector implements IRVisitor {
             return getVirtualReg((Instruction) val);
         } else if (val instanceof IntConst) {
             return getVirtualReg((IntConst) val);
+        } else if (val instanceof Argument) {
+            RVAddr argAddr = argumentMap.get(val);
+            VirtualReg tmp = new VirtualReg("argument");
+            curBlock.AddInst( new RVLoad(curBlock, tmp, argAddr));
+            return tmp;
         } else {
             logger.severe("Do not support this type!!");
             return null;

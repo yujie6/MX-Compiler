@@ -88,7 +88,7 @@ public class MXCC {
         return "Hello world.";
     }
 
-    public void compile(String fileName) throws IOException {
+    public void compile(String fileName, int llvm) throws IOException {
         CharStream input = null;
         fileName = fileName.replaceAll("\\s","");
         try {
@@ -105,6 +105,10 @@ public class MXCC {
         optimizer.optimize();
 
         PrintLLVMIR(LLVMTopModule, "Basic1");
+        if (llvm == 0) {
+            RVModule module = GetRISCVModule(LLVMTopModule);
+            PrintRISCVAssembly(module, "/tmp/test.s");
+        }
     }
 
     private static MxProgramNode GetAbstractSyntaxTree(CharStream input) {
