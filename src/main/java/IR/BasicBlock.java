@@ -1,6 +1,7 @@
 package IR;
 
 import IR.Instructions.BranchInst;
+import IR.Instructions.CopyInst;
 import IR.Instructions.Instruction;
 
 import java.util.ArrayList;
@@ -26,6 +27,7 @@ public class BasicBlock extends Value {
     private BasicBlock prev, next;
     public int dfnOrder, postDfnOrder;
     private Instruction HeadInst, TailInst;
+    private ArrayList<CopyInst> copyInsts;
 
     private static int BlockNum = 1;
     private String Label;
@@ -48,6 +50,7 @@ public class BasicBlock extends Value {
         BlockNum += 1;
         this.dfnOrder = -1;
         this.postDfnOrder = -1;
+        this.copyInsts = new ArrayList<>();
     }
 
     public void addSuccessor(BasicBlock basicBlock) {
@@ -120,8 +123,10 @@ public class BasicBlock extends Value {
 
     public void AddInstBeforeBranch(Instruction inst) {
         Instruction br = getTailInst();
-        br.getPrev().setNext(inst);
-        inst.setPrev(br.getPrev());
+        if (br.getPrev() != null) {
+            br.getPrev().setNext(inst);
+            inst.setPrev(br.getPrev());
+        }
         inst.setNext(br);
         br.setPrev(inst);
         InstList.add( InstList.size() - 1, inst); // where would you add ?
@@ -154,6 +159,14 @@ public class BasicBlock extends Value {
 
     public String getLabel() {
         return Label;
+    }
+
+    public ArrayList<CopyInst> getCopyInsts() {
+        return copyInsts;
+    }
+
+    public void addCopyInst(CopyInst copyInst) {
+        this.copyInsts.add(copyInst);
     }
 
     public void setLabel(String label) {

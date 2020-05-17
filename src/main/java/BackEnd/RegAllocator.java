@@ -43,7 +43,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
      */
     private Stack<VirtualReg> selectStack;
-    private final int K = 20; // allocatable registers
+    private int K; // allocatable registers
     private HashMap<VirtualReg, LinkedList<RVMove>> moveListMap;
     private RVFunction curFunction;
     private HashSet<PhyReg> allocatableRegs;
@@ -112,11 +112,14 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
             allocatableRegs.add(t);
             this.phyRegMap.put(name, t);
         }
+        this.K = this.allocatableRegs.size();
         this.phyRegMap.put("sp", new PhyReg("sp"));
+        this.phyRegMap.put("ra", new PhyReg("ra"));
         this.phyRegMap.put("tp", new PhyReg("tp"));
         this.phyRegMap.put("gp", new PhyReg("gp"));
-
+        this.preColored.forEach(v -> {v.color = phyRegMap.get(v.getIdentifier());} );
         this.livenessBuilder = new LivenessBuilder(TopModule);
+        this.livenessBuilder.run();
     }
 
     @Override
@@ -125,7 +128,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
     }
 
-    private PhyReg getPhyReg(String name ){
+    private PhyReg getPhyReg(String name) {
         return this.phyRegMap.get(name);
     }
 
@@ -139,8 +142,6 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         curFunction = rvFunction;
         logger.fine("Running on function " + rvFunction.getIdentifier() + " once");
         clear();
-
-        this.livenessBuilder.run();
         Build();
         MakeWorkList();
         do {
@@ -185,6 +186,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
         this.coloredNodes.clear();
         this.selectStack.clear();
+        this.spilledNodes.clear();
+        this.coalescedNodes.clear();
+        this.moveListMap.clear();
 
         for (VirtualReg t : initial) {
             t.spillCost = 0;
@@ -195,11 +199,51 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         }
     }
 
+    private void setUpStack(RVFunction rvFunction) {
+        curFunction = rvFunction;
+        if (curFunction.getDeltaStack() == 0) {
+            for (RVInstruction inst : rvFunction.getHeadBlock().rvInstList) {
+                if (inst instanceof RVArithImm) {
+                    RVArithImm addi = ((RVArithImm) inst);
+                    if (addi.isStoreSP() ) {
+                        addi.eraseFromParent();
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+
+        PhyReg sp = getPhyReg("sp");
+        Immediate deltaStack = new Immediate(curFunction.getDeltaStack());
+        RVBlock curBlock = curFunction.getRvBlockList().get(0);
+        RVArithImm setStack = new RVArithImm(RVOpcode.addi, curBlock, sp, deltaStack, sp);
+        deltaStack = new Immediate(-curFunction.getDeltaStack());
+
+        for (RVInstruction inst : curBlock.rvInstList) {
+            if (inst instanceof RVArithImm) {
+                RVArithImm addi = ((RVArithImm) inst);
+                if (addi.isStoreSP() ) {
+                    addi.setImm(deltaStack);
+                    break;
+                }
+            }
+        }
+
+        curBlock.AddInstAtTop(setStack);
+
+        RVArithImm resetStack = new RVArithImm(RVOpcode.addi, curBlock, sp, deltaStack, sp);
+        curBlock = curFunction.getRetBlock();
+        RVInstruction ret = curBlock.rvInstList.getLast();
+        ret.insertBeforeMe(resetStack);
+    }
+
 
     @Override
     public Object visit(RVModule rvModule) {
         for (RVFunction rvFunction : rvModule.rvFunctions) {
             visit(rvFunction);
+            setUpStack(rvFunction);
         }
         return null;
     }
@@ -208,7 +252,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
         for (RVBlock BB : curFunction.getRvBlockList()) {
             BasicBlock irBB = BB.irBlock;
-            int depth = curFunction.LA.getLoopDepth(irBB);;
+            int depth = curFunction.LA.getLoopDepth(irBB);
             for (RVInstruction inst : BB.rvInstList) {
                 for (VirtualReg use : inst.getUseRegs()) {
                     use.spillCost += Math.pow(10, depth);
@@ -223,11 +267,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 RVInstruction inst = BB.rvInstList.get(i);
                 if (inst instanceof RVMove) {
                     live.removeAll(inst.getUseRegs());
-                    HashSet<VirtualReg> tmp = new HashSet<>(inst.getDefRegs());
-                    tmp.addAll(inst.getUseRegs());
-                    for (VirtualReg n : tmp) {
-                        moveList(n).add((RVMove) inst);
-                    }
+                    inst.getDefRegs().forEach(v -> {moveList(v).add((RVMove) inst);});
+                    inst.getUseRegs().forEach(v -> {moveList(v).add((RVMove) inst);});
                     this.workListMoves.add((RVMove) inst);
                 }
                 live.addAll(inst.getDefRegs());
@@ -261,18 +302,16 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private HashSet<VirtualReg> getAdjacent(VirtualReg n) {
-        HashSet<VirtualReg> adj = new HashSet<>(n.neighbors);
-        adj.removeAll(selectStack);
-        adj.removeAll(coalescedNodes);
-        return adj;
+        return new HashSet<>(n.neighbors) {{
+            removeAll(selectStack); removeAll(coalescedNodes);
+        }};
     }
 
     private HashSet<RVMove> getNodeMoves(VirtualReg n) {
-        HashSet<RVMove> nodeMoves = new HashSet<>(moveList(n));
-        nodeMoves.removeIf(i -> {
-            return activeMoves.contains(i) || workListMoves.contains(i);
-        });
-        return nodeMoves;
+        return new HashSet<>(moveList(n)) {{
+            removeIf(i -> { return !activeMoves.contains(i) && ! workListMoves.contains(i); });
+        }};
+        // moveList \cap  (activeMoves \cup workListMoves)
     }
 
     private void MakeWorkList() {
@@ -305,15 +344,17 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     private void EnableMoves(Set<VirtualReg> nodes) {
         for (VirtualReg n : nodes) {
             for (RVMove m : getNodeMoves(n)) {
-                activeMoves.remove(m);
-                workListMoves.add(m);
+                if (activeMoves.contains(m)) {
+                    activeMoves.remove(m);
+                    workListMoves.add(m);
+                }
             }
         }
     }
 
     private void Simplify() {
         VirtualReg n = simplifyWorkList.pop();
-        this.selectStack.push(n);
+        if (!this.selectStack.contains(n)) this.selectStack.push(n);
         for (VirtualReg m : getAdjacent(n)) {
             DecrementDegree(m);
         }
@@ -344,7 +385,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
     private VirtualReg getAlias(VirtualReg n) {
         if (coalescedNodes.contains(n)) {
-            return getAlias(n.alias);
+            n.alias = getAlias(n.alias);
+            return n.alias;
         }
         return n;
     }
@@ -423,7 +465,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     private void freezeMoves(VirtualReg u) {
         for (RVMove m : getNodeMoves(u)) {
             VirtualReg x = m.getDest(), y = m.getSrc(), v;
-            if (getAlias(y) == u) {
+            if (getAlias(y) == getAlias(u)) {
                 v = getAlias(x);
             } else {
                 v = getAlias(y);
@@ -438,11 +480,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private void Freeze() {
-        if (!freezeWorkList.isEmpty()) {
-            VirtualReg u = freezeWorkList.pop();
-            simplifyWorkList.add(u);
-            freezeMoves(u);
-        }
+        VirtualReg u = freezeWorkList.pop();
+        simplifyWorkList.add(u);
+        freezeMoves(u);
     }
 
     private VirtualReg selectFavorite() {
@@ -492,11 +532,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         for (VirtualReg n : coalescedNodes) {
             n.color = getAlias(n).color;
         }
-    }
 
-    private void setUpStack() {
-
-
+        for (RVMove mv : coalescedMoves) {
+            if (mv.getDest().color == mv.getDefRegs().get(0).color)
+                mv.eraseFromParent();
+        }
     }
 
     private void RewriteProgram() {
@@ -506,6 +546,15 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         PhyReg sp = getPhyReg("sp");
         for (VirtualReg v : spilledNodes) {
             v.stackAddress = new RVAddr(sp, curFunction.allocaOnStack());
+        }
+
+        for (RVBlock BB : curFunction.getRvBlockList()) {
+            for (RVInstruction inst : BB.rvInstList) {
+                if (inst.getDefRegs().size() == 1) {
+                    VirtualReg dest = inst.getDefRegs().get(0);
+                    getAlias(dest);
+                }
+            }
         }
 
         for (RVBlock BB : curFunction.getRvBlockList()) {
@@ -530,11 +579,6 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 }
             }
         }
-
-        Immediate deltaStack = new Immediate(curFunction.getDeltaStack());
-        RVBlock curBlock = curFunction.getRvBlockList().get(0);
-        RVArithImm setStack = new RVArithImm(RVOpcode.addi, curBlock, sp, deltaStack, sp);
-        curBlock.AddInstAtTop(setStack);
 
         spilledNodes.clear();
         initial.clear();

@@ -52,6 +52,10 @@ public abstract class RVInstruction {
         parentBB.rvInstList.add(index, other);
     }
 
+    public void eraseFromParent() {
+        parentBB.rvInstList.remove(this);
+    }
+
     public RVBlock getParentBB() {
         return parentBB;
     }

@@ -101,7 +101,7 @@ public class IRPrinter implements IRVisitor {
         this.ValueID = 0;
         if (isAssignLabel) {
             this.ValueID += node.getParameterList().size();
-            BasicBlock head = node.getHeadBlock();
+            /*BasicBlock head = node.getHeadBlock();
             while (head != node.getTailBlock()) {
                 if (head.getInstList().size() != 0) {
                     head.setLabel(String.valueOf(ValueID));
@@ -109,6 +109,13 @@ public class IRPrinter implements IRVisitor {
                     visit(head);
                 }
                 head = head.getNext();
+            }*/
+            for (BasicBlock BB : node.getBlockList()) {
+                if (BB.getInstList().size() != 0 && BB != node.getRetBlock()) {
+                    BB.setLabel(String.valueOf(ValueID));
+                    ValueID += 1;
+                    visit(BB);
+                }
             }
             node.getRetBlock().setLabel(String.valueOf(ValueID));
             ValueID += 1;
@@ -118,12 +125,17 @@ public class IRPrinter implements IRVisitor {
             WriteLLVM("define dso_local ");
             WriteLLVM(node.getFunctionType().toString() + "{ \n");
             curFunction = node;
-            BasicBlock head = node.getHeadBlock();
+            /*BasicBlock head = node.getHeadBlock();
             while (head != node.getTailBlock()) {
                 if (head.getInstList().size() != 0) {
                     visit(head);
                 }
                 head = head.getNext();
+            }*/
+            for (BasicBlock BB : node.getBlockList()) {
+                if (BB.getInstList().size() != 0 && BB != node.getRetBlock()) {
+                    visit(BB);
+                }
             }
             visit(node.getRetBlock());
             curFunction = null;
@@ -200,7 +212,7 @@ public class IRPrinter implements IRVisitor {
 
     public Object visit(Module node) {
         if (PrintMode >= 1 && isAssignLabel) {
-            logger.info("Print IR to disk.");
+            logger.info("Print IR to \"" + filename + ".ll\"");
         } else if (PrintMode == 0 && isAssignLabel){
             logger.info("Print IR to std out.");
         }

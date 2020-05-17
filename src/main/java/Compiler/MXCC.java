@@ -160,8 +160,8 @@ public class MXCC {
         return module;
     }
 
-    private static void PrintRISCVAssembly(RVModule riscvTopModule) throws IOException {
-        AsmPrinter printer = new AsmPrinter(logger, "basic1");
+    private static void PrintRISCVAssembly(RVModule riscvTopModule, String path) throws IOException {
+        AsmPrinter printer = new AsmPrinter(logger, path);
         printer.printAssembly(riscvTopModule);
     }
 
@@ -249,12 +249,13 @@ public class MXCC {
 
         String inputFilePath = cmd.getOptionValue("input");
         String outputFilePath = cmd.getOptionValue("output");
-        String fileName = null;
+        String fileName = null, outFilePath = null;
 
         if (cmd.hasOption("i")) {
             fileName = inputFilePath.replaceAll("\\s","");
-        } else if (args.length == 1) {
-            fileName = null;
+        }
+        if (cmd.hasOption("o")) {
+            outFilePath = outputFilePath.replaceAll("\\s","");
         }
 
         CharStream input = null;
@@ -287,13 +288,20 @@ public class MXCC {
                 optimizer.optimize();
                 PrintLLVMIR(LLVMTopModule, "optim");
                 RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
-                PrintRISCVAssembly(RISCVTopModule);
+                PrintRISCVAssembly(RISCVTopModule, outFilePath);
                 break;
             }
             case 1: {
                 MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
                 optimizer.optimize();
                 PrintLLVMIR(LLVMTopModule, "Basic1");
+                break;
+            }
+            case 2: {
+                MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
+                optimizer.optimize();
+                RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
+                PrintRISCVAssembly(RISCVTopModule, outFilePath);
                 break;
             }
         }

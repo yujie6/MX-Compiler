@@ -24,7 +24,6 @@ public class EdgeSplitter extends ModulePass {
 
     private LinkedList<CriticalEdge> criticalEdgeList;
     private HashMap<CriticalEdge, BasicBlock> splitBBMap;
-    private HashMap<BasicBlock, LinkedList<CopyInst>> copyInstsMap;
     private MXLogger logger;
 
 
@@ -46,11 +45,6 @@ public class EdgeSplitter extends ModulePass {
         this.criticalEdgeList = new LinkedList<>();
         this.splitBBMap = new HashMap<>();
         this.logger = logger;
-        this.copyInstsMap = new HashMap<>();
-    }
-
-    public HashMap<BasicBlock, LinkedList<CopyInst>> getCopyInsts() {
-        return this.copyInstsMap;
     }
 
     private void splitEdge(CriticalEdge edge) {
@@ -77,27 +71,27 @@ public class EdgeSplitter extends ModulePass {
                 splitEdge(edge);
             }
 
-            Instruction inst = BB.getHeadInst();
+
             LinkedList<CopyInst> copyInsts = new LinkedList<>();
-            while (inst instanceof PhiInst) {
-                PhiInst phi = (PhiInst) inst;
-                copyInstNum += phi.getBranchNum();
-                for (int i = 0; i < phi.getBranchNum(); i++) {
-                    BasicBlock pred = phi.getBlock(i);
-                    Value copyValue = phi.getValue(i);
-                    CopyInst copyInst = new CopyInst(pred, phi, copyValue, true);
-                    copyInsts.add(copyInst);
-                    pred.AddInstBeforeBranch(copyInst);
+            for (Instruction inst : BB.getInstList()) {
+                if (inst instanceof PhiInst) {
+                    PhiInst phi = (PhiInst) inst;
+                    copyInstNum += phi.getBranchNum();
+                    for (int i = 0; i < phi.getBranchNum(); i++) {
+                        BasicBlock pred = phi.getBlock(i);
+                        Value copyValue = phi.getValue(i);
+                        CopyInst copyInst = new CopyInst(pred, phi, copyValue, true);
+                        pred.addCopyInst(copyInst);
+                        pred.AddInstBeforeBranch(copyInst);
+                    }
                 }
-                // phi.eraseFromParent(); no need to erase, just do not print it
-                inst = inst.getNext();
             }
-            copyInstsMap.put(BB, copyInsts);
         }
 
         for (var entry : splitBBMap.entrySet()) {
             function.AddBlockAfter(entry.getKey().A, entry.getValue());
         }
+
 
         if (splitEdgeNum > 0) {
             logger.info("function '" + function.getIdentifier() + "' has " + splitEdgeNum +

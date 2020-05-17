@@ -42,7 +42,7 @@ public class LUI extends RVInstruction {
         if (this.immediate instanceof RVGlobal) {
             ans.append("%hi(").append(((RVGlobal) immediate).getIdentifier()).append(")\n");
         } else {
-            ans.append("%hi(").append(immediate.toString()).append(")\n");
+            ans.append(immediate.toString()).append("\n");
         }
         return ans.toString();
     }

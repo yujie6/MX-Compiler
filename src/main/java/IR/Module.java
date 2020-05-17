@@ -116,12 +116,12 @@ public class Module extends Value {
 
         // malloc()
         ArrayList<Argument> malloc_paras = new ArrayList<>();
-        malloc_paras.add(new Argument(null, I64, 0, "size"));
+        malloc_paras.add(new Argument(null, I32, 0, "size"));
         Function _malloc = new Function("malloc", ADDR, malloc_paras, true);
         FunctionMap.put(_malloc.getIdentifier(), _malloc);
         // malloc_and_init()
         ArrayList<Argument> malloc_and_init_paras = new ArrayList<>();
-        malloc_and_init_paras.add(new Argument(null, I64, 0, "size"));
+        malloc_and_init_paras.add(new Argument(null, I32, 0, "size"));
         Function _malloc_and_init = new Function("_malloc_and_init", ADDR, malloc_and_init_paras, true);
         FunctionMap.put(_malloc_and_init.getIdentifier(), _malloc_and_init);
         // getString()

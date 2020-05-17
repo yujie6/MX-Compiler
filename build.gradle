@@ -68,8 +68,8 @@ check {
 }
 
 run {
-    // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e1.mx"]
-    args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/LearnLLVM/codegen/t.mx"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e2.mx", "-o", "/tmp/test.s"]
+    // args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/LearnLLVM/codegen/t.mx"]
     // options.warnings = false
 }
 

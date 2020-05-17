@@ -1,5 +1,6 @@
 package Target;
 
+import IR.Constants.IntConst;
 import IR.GlobalVariable;
 
 /**
@@ -13,10 +14,15 @@ import IR.GlobalVariable;
  */
 public class RVGlobal extends RVOperand { // can extends RVGlobal
     private String identifier, stringValue;
-    public boolean isStringConst;
+    public boolean isStringConst, hasInitValue = false;
+    private int initValue;
     public RVGlobal(GlobalVariable gvar) {
         this.identifier = gvar.getIdentifier();
         this.isStringConst = gvar.isStringConst;
+        if (gvar.getInitValue() instanceof IntConst) {
+            this.hasInitValue = true;
+            this.initValue = ((IntConst) gvar.getInitValue()).ConstValue;
+        }
         this.stringValue = isStringConst ? gvar.getInitValue().toString() : null;
     }
 
@@ -27,12 +33,14 @@ public class RVGlobal extends RVOperand { // can extends RVGlobal
             ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");
             ans.append(this.getIdentifier()).append(":\n");
             ans.append("\t.asciz\t").append(this.stringValue).append("\n");
-            ans.append("\t.size\t").append(this.stringValue.length() - 1).append("\n\n");
+            ans.append("\t.size\t").append(identifier).append(",\t").append(this.stringValue.length() - 1).append("\n\n");
         } else {
             ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");
             ans.append("\t.p2align\t2").append("\n");
-            // ans.append(".word").append("\n");
-            // .word 1 means init value
+            if (hasInitValue) {
+                ans.append("\t.word\t").append(initValue).append("\n");
+                // .word 1 means init value
+            }
             ans.append(this.getIdentifier()).append(":\n");
             ans.append("\t.size\t").append(4).append("\n\n");
         }

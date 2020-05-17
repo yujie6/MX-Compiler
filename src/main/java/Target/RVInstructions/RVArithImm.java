@@ -32,6 +32,9 @@ public class RVArithImm extends RVInstruction {
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
+        if (!(srcReg instanceof VirtualReg) ) {
+            System.out.println("damn");
+        }
         return new ArrayList<>(List.of( (VirtualReg) srcReg));
     }
 
@@ -52,6 +55,17 @@ public class RVArithImm extends RVInstruction {
         } else {
             // fail
         }
+    }
+
+    public boolean isStoreSP() {
+        if (imm.toString().equals("0") && destReg.toString().equals("s0") &&
+        srcReg.toString().equals("sp")) {
+            return true;
+        } return false;
+    }
+
+    public void setImm(Immediate imm1) {
+        this.imm = imm1;
     }
 
 

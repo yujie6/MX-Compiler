@@ -1,19 +1,34 @@
 #!/bin/zsh
-cd /home/yujie6/Documents/Compiler/MX-Compiler/src/main/c
-./compile-builtin.sh
-cp ./builtin-func.ll /tmp
-cd /tmp || exit
-# llc --march=riscv32 --mattr=+m ./builtin-func.ll -o ./builtin-func.s
-rm a.out
-# echo "Now ready to link!"
-if [[ $1 == "o" ]]
-then 
-		target=optim.ll
-		echo "Copmiler optim file"
-else
-		target=Basic1.ll
-fi
-llvm-link ${target} builtin-func.ll -o final.ll -S
-clang final.ll
-# llc --march=riscv32 --mattr=+m Basic1.ll -o /dev/stdout
-echo "LLVM generated with no error!"
+
+function run() {
+    ./build/install/Compiler/bin/Compiler -g 0 -i "$1" -o ./test.s
+}
+
+function debug() {
+    cd /home/yujie6/Documents/Compiler/MX-Compiler/src/main/c
+    ./compile-builtin.sh
+    cp ./builtin-func.ll /tmp
+    cp ./builtin.s /tmp
+    cd /tmp || exit
+    # llc --march=riscv32 --mattr=+m ./builtin-func.ll -o ./builtin-func.s
+    ravel --oj-mode 1>/tmp/ravel.out 2>/tmp/ravel.err
+    cat /tmp/ravel.out /tmp/ravel.err | less
+    wait
+}
+
+function llvm() {
+    if [[ $1 == "o" ]]
+    then
+        target=optim.ll
+        echo "Copmiler optim file"
+    else
+        target=Basic1.ll
+    fi
+    llvm-link ${target} builtin-func.ll -o final.ll -S
+    clang final.ll
+}
+
+run "$1"
+
+
+

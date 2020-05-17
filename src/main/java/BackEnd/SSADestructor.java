@@ -42,7 +42,7 @@ public class SSADestructor extends ModulePass {
     private void parallel2sequential(BasicBlock BB) {
         if (BB.getIdentifier().equals("edge_splitter")) return;
 
-        copyInsts = edgeSplitter.getCopyInsts().get(BB);
+        copyInsts = new LinkedList<>(BB.getCopyInsts());
         while (true) {
             CopyInst copyInst = getPCopy();
             if (copyInst == null) break;
@@ -54,7 +54,7 @@ public class SSADestructor extends ModulePass {
                 copyInst.isParallel = false;
                 simpleCopyList.add(copyInst);
             } else {
-                Instruction tmpRegister = new PhiInst(BB, new LocalRegister());
+                Instruction tmpRegister = new PhiInst(BB, new LocalRegister()); // freshly created vairable
                 CopyInst tmpCopy = new CopyInst(BB, tmpRegister, copyInst.getSrc(), false);
                 BB.AddInstBeforeBranch(tmpRegister);
                 simpleCopyList.add(tmpCopy);

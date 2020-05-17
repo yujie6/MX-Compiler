@@ -1,8 +1,5 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-void* _malloc_and_init(int size) {
+void* _malloc_and_init(long size) {
     char * addr = (char *) malloc(size);
     memset(addr, 0, size);
     return addr;
@@ -36,29 +33,37 @@ int getInt() {
     return n;
 }
 
-char* toString(int v) {
-    if (v == 0){
-            char *r = (char *)malloc(sizeof(char) * 2);
-            r[0] = '0'; r[1] = '\0';
-            return r;
-        }
-        short digits[10];
-        short neg = v < 0;
-        if (neg) v=-v;
-        short len = 0;
-        while (v>0){
-            digits[len++] = v%10;
-            v/=10;
-        }
-        char *r = (char *)malloc(sizeof(char) * (len + neg + 1));
-        short p = 0;
-        if (neg) r[0] = '-';
-        while (p < len){
-            r[p + neg] = digits[len - p - 1] + '0';
-            ++p;
-        }
-        r[len + neg] = '\0';
-        return r;
+char* toString(int i) {
+    if (i == 0) {
+        char* res = (char*)malloc(sizeof(char) * 2);
+        res[0] = '0';
+        res[1] = '\0';
+        return res;
+    }
+
+    char s[10];
+    char neg, len = 0;
+    if (i > 0)
+        neg = 0;
+    else {
+        neg = 1;
+        i = -i;
+    }
+    while (i > 0) {
+        s[len++] = i % 10;
+        i /= 10;
+    }
+
+    char* res = (char*)malloc(sizeof(char) * (neg + len + 1));
+    if (neg > 0)
+        res[0] = '-';
+    char p = 0;
+    while (p < len) {
+        res[p + neg] = s[len - p - 1] + '0';
+        p++;
+    }
+    res[len + neg] = '\0';
+    return res;
 }
 
 char* __string_concatenate(char* str1, char* str2) {

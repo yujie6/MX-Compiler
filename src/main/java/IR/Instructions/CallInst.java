@@ -6,13 +6,9 @@ import java.util.ArrayList;
 
 public class CallInst extends Instruction {
 
-    private ArrayList<Value> ArgumentList;
-
-
     public CallInst(BasicBlock parent, Function function, ArrayList<Value> paras) {
         super(parent, InstType.call);
         this.UseList.add(new Use(function, this));
-        this.ArgumentList = paras;
         this.type = function.getFunctionType().getReturnType();
         for (Value para : paras) {
             this.UseList.add(new Use(para, this));
@@ -28,7 +24,11 @@ public class CallInst extends Instruction {
     }
 
     public ArrayList<Value> getArgumentList() {
-        return ArgumentList;
+        ArrayList<Value> args = new ArrayList<>();
+        for (int i = 0; i < getCallee().getParameterList().size(); i++) {
+            args.add(getArgument(i));
+        }
+        return args;
     }
 
     public Value getArgument(int index) {
@@ -44,11 +44,12 @@ public class CallInst extends Instruction {
             ans.append( RegisterID).append(" = call ").append(this.type.toString()).append(" @");
         }
         ans.append(getCallee().getIdentifier()).append("(");
-        if (!ArgumentList.isEmpty()) {
-            Value var = getArgument(0);
+        ArrayList<Value> argList = getArgumentList();
+        if (!argList.isEmpty()) {
+            Value var = argList.get(0);
             ans.append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
-            for (int i = 1; i < ArgumentList.size(); i++) {
-                var = getArgument(i);
+            for (int i = 1; i < argList.size(); i++) {
+                var = argList.get(i);
                 ans.append(", ").append(var.getType().toString()).append(" ").append(getRightValueLabel(var));
             }
         }

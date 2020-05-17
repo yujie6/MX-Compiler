@@ -29,10 +29,10 @@ public class AsmPrinter implements AsmVisitor {
     }
 
 
-    public AsmPrinter(MXLogger logger, String fileName) throws IOException {
+    public AsmPrinter(MXLogger logger, String filePath) throws IOException {
         this.logger = logger;
-        this.fileName = fileName;
-        writer = new FileWriter("/tmp/" + fileName + ".s");
+        this.fileName = filePath;
+        writer = new FileWriter(filePath);
         this.bufw = new BufferedWriter(writer);
         this.indentLevel = 0;
     }
@@ -42,14 +42,14 @@ public class AsmPrinter implements AsmVisitor {
         this.TopModule = topModule;
         visit(topModule);
         bufw.flush();
-        logger.info("Assembly print to '/tmp/" + this.fileName + ".s' successfully!");
+        logger.info("Assembly print to '" + this.fileName + "' successfully!");
     }
 
     @Override
     public Object visit(RVModule rvModule) {
         indentLevel = 1;
-        WriteAssembly(".text\n");
-        WriteAssembly(".file\t" + this.fileName + ".mx\n");
+        WriteAssembly("\t.text\n");
+        WriteAssembly("\t.file\t\"" + this.fileName.replaceAll(".mx", ".c") + "\"\n");
         for (RVFunction function : rvModule.rvFunctions) {
             visit(function);
         }
@@ -69,18 +69,26 @@ public class AsmPrinter implements AsmVisitor {
         return null;
     }
 
+    private int functionNum = 0;
+
     @Override
     public Object visit(RVFunction rvFunction) {
-        WriteAssembly(".global\t" + rvFunction.getIdentifier() +
-                "\t\t\t# -- Begin function main" + rvFunction.getIdentifier() + "\n");
-        WriteAssembly(".p2align\t 2\n");
-        WriteAssembly(".type\t" + rvFunction.getIdentifier() + ",@function\n");
+
+        WriteAssembly("\t.globl\t" + rvFunction.getIdentifier() +
+                "\t\t\t# -- Begin function " + rvFunction.getIdentifier() + "\n");
+        WriteAssembly("\t.p2align\t 2\n");
+        WriteAssembly("\t.type\t" + rvFunction.getIdentifier() + ",@function\n");
         this.indentLevel = 0;
         WriteAssembly(rvFunction.getIdentifier() + ":\n");
         for (RVBlock BB : rvFunction.getRvBlockList()) {
             visit(BB);
         }
-        WriteAssembly("\t\t\t# -- End function\n");
+        WriteAssembly(".Lfunc_end" + functionNum + ":\n");
+
+        WriteAssembly("\t.size\t" + rvFunction.getIdentifier() + ",\t" + ".Lfunc_end" + functionNum +
+                "-" + rvFunction.getIdentifier() + "\n");
+        functionNum += 1;
+        WriteAssembly("\t\t\t\t\t\t\t# -- End function\n");
 
         return null;
     }

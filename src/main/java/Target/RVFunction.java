@@ -37,6 +37,14 @@ public class RVFunction {
         return this.deltaStack;
     }
 
+    public RVBlock getHeadBlock() {
+        return rvBlockList.get(0);
+    }
+
+    public RVBlock getRetBlock() {
+        return rvBlockList.get(rvBlockList.size() - 1);
+    }
+
     public int getDeltaStack() {
         return deltaStack;
     }

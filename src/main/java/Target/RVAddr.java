@@ -58,7 +58,7 @@ public class RVAddr extends RVOperand {
 
     public String toString() {
         if (onStack)
-            return this.offset + "(" + this.baseAddrReg.toString()+")";
+            return this.offset + "(s0)";
         else if (isGlobal)
             return "%lo(" + this.identifier + ")(" + this.baseAddrReg.toString() + ")";
         else

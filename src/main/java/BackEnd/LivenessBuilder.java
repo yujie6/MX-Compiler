@@ -39,19 +39,17 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
                 HashSet<VirtualReg> oldLiveOutSet = new HashSet<>(BB.liveOutSet);
                 BB.liveInSet.clear();
                 BB.liveOutSet.clear();
-                for (RVBlock pred : BB.predecessors) {
-                    BB.liveInSet.addAll(pred.liveOutSet);
+                BB.liveInSet.addAll(oldLiveOutSet);
+                BB.liveInSet.removeAll(BB.kill);
+                BB.liveInSet.addAll(BB.gen);
+                for (RVBlock succ : BB.successors) {
+                    BB.liveOutSet.addAll(succ.liveInSet);
                 }
-
-                BB.liveOutSet.addAll(BB.gen);
-                HashSet<VirtualReg> tmp = new HashSet<>(BB.liveInSet);
-                tmp.removeAll(BB.kill);
-                BB.liveOutSet.addAll(tmp);
                 if (!(oldLiveInSet.equals(BB.liveInSet) && oldLiveOutSet.equals(BB.liveOutSet))) {
                     changed = true;
                 }
             }
-            if (changed) break;
+            if (!changed) break;
         }
 
         return null;
@@ -59,9 +57,10 @@ public class LivenessBuilder extends RVPass implements AsmVisitor {
 
     @Override
     public Object visit(RVBlock rvBlock) {
+        rvBlock.gen.clear();
+        rvBlock.kill.clear();
         for (RVInstruction inst : rvBlock.rvInstList) {
-            rvBlock.gen.addAll(inst.getUseRegs());
-
+            rvBlock.gen.addAll(new HashSet<>(inst.getUseRegs()) {{removeAll(rvBlock.kill); }});
             if (inst.getDefRegs() != null) {
                 rvBlock.kill.addAll(inst.getDefRegs());
             }
