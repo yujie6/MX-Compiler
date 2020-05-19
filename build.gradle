@@ -68,7 +68,7 @@ check {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e8.mx", "-o", "/tmp/test.s"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/e3.mx", "-o", "/tmp/test.s"]
     // args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/LearnLLVM/codegen/t.mx"]
     // options.warnings = false
 }

@@ -84,10 +84,6 @@ public class MXCC {
         return options;
     }
 
-    public String getGreeting() {
-        return "Hello world.";
-    }
-
     public void compile(String fileName, int llvm) throws IOException {
         CharStream input = null;
         fileName = fileName.replaceAll("\\s","");

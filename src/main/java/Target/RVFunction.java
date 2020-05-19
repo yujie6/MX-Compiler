@@ -12,7 +12,7 @@ public class RVFunction {
     ArrayList<RVBlock> rvBlockList;
     boolean isExternal;
     public LoopAnalysis LA;
-    int deltaStack;
+    public int deltaStack;
 
 
     public RVFunction(Function function) {

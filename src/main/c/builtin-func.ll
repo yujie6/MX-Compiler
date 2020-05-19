@@ -9,18 +9,20 @@ target triple = "x86_64-pc-linux-gnu"
 @.str.3 = private unnamed_addr constant [4 x i8] c"%d\0A\00", align 1
 
 ; Function Attrs: noinline nounwind optnone sspstrong uwtable
-define dso_local i8* @_malloc_and_init(i64) #0 {
-  %2 = alloca i64, align 8
+define dso_local i8* @_malloc_and_init(i32) #0 {
+  %2 = alloca i32, align 4
   %3 = alloca i8*, align 8
-  store i64 %0, i64* %2, align 8
-  %4 = load i64, i64* %2, align 8
-  %5 = call noalias i8* @malloc(i64 %4) #4
-  store i8* %5, i8** %3, align 8
-  %6 = load i8*, i8** %3, align 8
-  %7 = load i64, i64* %2, align 8
-  call void @llvm.memset.p0i8.i64(i8* align 1 %6, i8 0, i64 %7, i1 false)
-  %8 = load i8*, i8** %3, align 8
-  ret i8* %8
+  store i32 %0, i32* %2, align 4
+  %4 = load i32, i32* %2, align 4
+  %5 = sext i32 %4 to i64
+  %6 = call noalias i8* @malloc(i64 %5) #4
+  store i8* %6, i8** %3, align 8
+  %7 = load i8*, i8** %3, align 8
+  %8 = load i32, i32* %2, align 4
+  %9 = sext i32 %8 to i64
+  call void @llvm.memset.p0i8.i64(i8* align 1 %7, i8 0, i64 %9, i1 false)
+  %10 = load i8*, i8** %3, align 8
+  ret i8* %10
 }
 
 ; Function Attrs: nounwind

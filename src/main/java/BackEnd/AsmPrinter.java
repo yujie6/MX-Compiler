@@ -60,8 +60,11 @@ public class AsmPrinter implements AsmVisitor {
                 WriteAssembly(rvGlobal.toString());
             }
         }
+
+        // WriteAssembly("\t.section\t.rodata.str1.1,\"aMS\",@progbits,1\n");
         // .rodata is a read-only section containing const variables
-        for (RVGlobal rvGlobal : rvModule.rvGlobals) {
+        for (int i = rvModule.rvGlobals.size() - 1; i >= 0; i--) {
+            RVGlobal rvGlobal = rvModule.rvGlobals.get(i);
             if (rvGlobal.isStringConst) {
                 WriteAssembly(rvGlobal.toString());
             }

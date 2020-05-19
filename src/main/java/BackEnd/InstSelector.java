@@ -219,20 +219,6 @@ public class InstSelector implements IRVisitor {
         for (Instruction inst : node.getInstList()) {
             inst.accept(this);
         }
-
-//        if (node.isEntryBlock()) {
-//            Immediate deltaStack = new Immediate(curFunction.getDeltaStack());
-//
-//            for (var entry : this.rvAddrMap.entrySet()) {
-//                if (entry.getKey() instanceof AllocaInst) {
-//                    updateStackAddr(entry.getValue(), deltaStack.getValue());
-//                }
-//            }
-//            for (RVAddr addr : this.argumentMap.values()) {
-//                updateStackAddr(addr, deltaStack.getValue());
-//            }
-//        }
-
         return rvBlock;
     }
 
@@ -257,7 +243,12 @@ public class InstSelector implements IRVisitor {
             this.calleeSavedMap.put(calleeSavedReg, backup);
             curBlock.AddInst(new RVMove(curBlock, calleeSavedReg, backup));
         }
-        curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("sp"), ZERO, getFakeReg("s0")));
+        VirtualReg backup = new VirtualReg("fake_ra", false);
+        VirtualReg calleeSavedReg = getFakeReg("ra");
+        this.calleeSavedMap.put(calleeSavedReg, backup);
+        curBlock.AddInst(new RVMove(curBlock, calleeSavedReg, backup));
+
+//        curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("sp"), ZERO, getFakeReg("s0")));
 
         for (BasicBlock BB : node.getBlockList()) {
             visit(BB);
@@ -411,6 +402,11 @@ public class InstSelector implements IRVisitor {
                     default:
                         throw new IllegalStateException("Unexpected value: " + ((CmpInst) cond).SubOpcode);
                 }
+            } else {
+                VirtualReg t = getVirtualReg(cond);
+                curBlock.AddInst(new RVBranch(RVOpcode.bne, curBlock, t, getFakeReg("zero"),
+                        getRVBlock(branchInst.getThenBlock())));
+                curBlock.AddInst(new RVJump(RVOpcode.j, curBlock, getRVBlock(branchInst.getElseBlock())));
             }
         } else {
             curBlock.AddInst(new RVJump(RVOpcode.j, curBlock, getRVBlock(branchInst.getThenBlock())));
@@ -479,9 +475,11 @@ public class InstSelector implements IRVisitor {
             return null;
         } else {
             if (getPtrInst.getOffsets().size() == 1 ) {
-                Value offset = getPtrInst.getOffsets().get(0); // must be instruction
+                Value offset = getPtrInst.getOffsets().get(0); // must be instruction (actually offset * 4)
                 RVArith add = new RVArith(RVOpcode.add, curBlock, baseAddr, getVirtualReg(offset), tmp);
+                RVArith mul = new RVArith(RVOpcode.mul, curBlock, tmp, getVirtualReg(new Immediate(4)), tmp);
                 curBlock.AddInst(add);
+                curBlock.AddInst(mul);
                 this.virtualRegMap.put(getPtrInst, tmp);
                 return null;
             }
@@ -497,11 +495,11 @@ public class InstSelector implements IRVisitor {
         if (addr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
             LUI lui = new LUI(curBlock, tmp, addr);
-            addr = new RVAddr((RVGlobal) addr, tmp); // should load
+            addr = new RVAddr((RVGlobal) addr, tmp, curFunction); // should load
             curBlock.AddInst(lui);
         } else if (!(addr instanceof RVAddr)) {
             if (addr instanceof VirtualReg)
-                addr = new RVAddr((VirtualReg) addr, 0);
+                addr = new RVAddr((VirtualReg) addr, 0, curFunction);
             else logger.severe("load address not processed!");
         }
         VirtualReg dest = getVirtualReg(loadInst);
@@ -534,6 +532,9 @@ public class InstSelector implements IRVisitor {
         Value val = sextInst.getExtendValue();
         if (val instanceof Instruction) {
             this.virtualRegMap.put(sextInst, getVirtualReg(((Instruction) val)));
+        } else if (val instanceof IntConst) {
+            VirtualReg v = getVirtualReg(new Immediate(((IntConst) val).ConstValue));
+            this.virtualRegMap.put(sextInst, v);
         }
         return null;
     }
@@ -548,10 +549,10 @@ public class InstSelector implements IRVisitor {
         if (destAddr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
             LUI lui = new LUI(curBlock, tmp, destAddr);
-            destAddr = new RVAddr((RVGlobal) destAddr, tmp); // should load
+            destAddr = new RVAddr((RVGlobal) destAddr, tmp, curFunction); // should load
             curBlock.AddInst(lui);
         } else if (storeInst.getStoreValue() instanceof Instruction) {
-            destAddr = new RVAddr(getVirtualReg(storeInst.getStoreValue()), 0);
+            destAddr = new RVAddr(getVirtualReg(storeInst.getStoreDest()), 0, curFunction);
         }
         curBlock.AddInst(new RVStore(curBlock, src, destAddr));
 

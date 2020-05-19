@@ -30,21 +30,47 @@ public class RVGlobal extends RVOperand { // can extends RVGlobal
     public String toString() {
         StringBuilder ans = new StringBuilder();
         if (isStringConst) {
-            ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");
+            // ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");
+            ans.append("\t.type\t").append(identifier).append(",@object\t\t\t#@").append(identifier).append("\n");
+            ans.append("\t.section\t.rodata\n");
             ans.append(this.getIdentifier()).append(":\n");
-            ans.append("\t.asciz\t").append(this.stringValue).append("\n");
+            ans.append("\t.asciz\t").append(asmTransform(this.stringValue)).append("\n");
             ans.append("\t.size\t").append(identifier).append(",\t").append(this.stringValue.length() - 1).append("\n\n");
         } else {
             ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");
             ans.append("\t.p2align\t2").append("\n");
+
+            ans.append(this.getIdentifier()).append(":\n");
             if (hasInitValue) {
                 ans.append("\t.word\t").append(initValue).append("\n");
-                // .word 1 means init value
-            }
-            ans.append(this.getIdentifier()).append(":\n");
-            ans.append("\t.size\t").append(4).append("\n\n");
+            } else ans.append("\t.word\t").append(0).append("\n");
+            // ans.append("\t.size\t").append(4).append("\n\n");
         }
         return ans.toString();
+    }
+
+    public static String asmTransform(String in) {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < in.length(); i++) {
+            switch (in.charAt(i)) {
+                case '\n':
+                    ret.append("\\n");
+                    break;
+                case '\t':
+                    ret.append("\\t");
+                    break;
+                case '\\':
+                    ret.append("\\\\");
+                    break;
+                case '\0':
+                    ret.append("\\0");
+                    break;
+                default:
+                    ret.append(in.charAt(i));
+                    break;
+            }
+        }
+        return ret.toString();
     }
 
     public String getIdentifier() {

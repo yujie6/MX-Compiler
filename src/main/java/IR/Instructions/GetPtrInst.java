@@ -104,7 +104,7 @@ public class GetPtrInst extends Instruction {
                 s += ((IntConst) var).ConstValue;
             } else return -42;
         }
-        return s;
+        return s * 4;
     }
 
     public IRBaseType getBaseAggregateType() {

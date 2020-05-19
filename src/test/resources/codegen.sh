@@ -6,7 +6,7 @@ cp ./builtin.s /tmp
 cd /tmp || exit
 echo "Preparation done"
 mv ./test.out ans.txt
-ravel --keep-debug-info --oj-mode && cat test.out
+ravel --oj-mode
 echo >> test.in
 echo >> ans.txt
 diff -B -b ./ans.txt ./test.out

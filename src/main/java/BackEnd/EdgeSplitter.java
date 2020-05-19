@@ -71,8 +71,6 @@ public class EdgeSplitter extends ModulePass {
                 splitEdge(edge);
             }
 
-
-            LinkedList<CopyInst> copyInsts = new LinkedList<>();
             for (Instruction inst : BB.getInstList()) {
                 if (inst instanceof PhiInst) {
                     PhiInst phi = (PhiInst) inst;
@@ -91,6 +89,7 @@ public class EdgeSplitter extends ModulePass {
         for (var entry : splitBBMap.entrySet()) {
             function.AddBlockAfter(entry.getKey().A, entry.getValue());
         }
+        splitBBMap.clear();
 
 
         if (splitEdgeNum > 0) {

@@ -52,11 +52,17 @@ public class VirtualReg extends RVOperand {
         this.degree = 0;
         this.alias = null;
         this.stackAddress = null;
+        this.color = null;
     }
 
     public void addNeighbor(VirtualReg neighbor) {
         this.neighbors.add(neighbor);
         this.degree ++;
+    }
+
+
+    public boolean equals(VirtualReg other) {
+        return toString().equals(other.toString());
     }
 
     @Override
