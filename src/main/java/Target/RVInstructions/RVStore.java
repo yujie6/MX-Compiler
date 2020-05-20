@@ -42,10 +42,12 @@ public class RVStore extends RVInstruction {
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        if (old == src) {
+        if (old.equals(src)) {
             src = replaceVal;
+        } else if (old.equals(destAddr.getBaseAddrReg())){
+            destAddr.setBaseAddrReg(replaceVal);
         } else {
-            // fail;
+            // fail
         }
     }
 

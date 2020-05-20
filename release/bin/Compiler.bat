@@ -79,7 +79,7 @@ set CMD_LINE_ARGS=%*
 :execute
 @rem Setup the command line
 
-set CLASSPATH=%APP_HOME%\lib\Compiler.jar;%APP_HOME%\lib\antlr4-4.7.1.jar;%APP_HOME%\lib\antlr4-runtime-4.7.1.jar;%APP_HOME%\lib\commons-cli-1.3.1.jar;%APP_HOME%\lib\ST4-4.0.8.jar;%APP_HOME%\lib\antlr-runtime-3.5.2.jar;%APP_HOME%\lib\org.abego.treelayout.core-1.0.3.jar;%APP_HOME%\lib\javax.json-1.0.4.jar;%APP_HOME%\lib\icu4j-58.2.jar
+set CLASSPATH=%APP_HOME%\lib\Compiler.jar;%APP_HOME%\lib\antlr4-4.7.1.jar;%APP_HOME%\lib\antlr4-runtime-4.7.1.jar;%APP_HOME%\lib\commons-cli-1.3.1.jar;%APP_HOME%\lib\commons-io-2.6.jar;%APP_HOME%\lib\ST4-4.0.8.jar;%APP_HOME%\lib\antlr-runtime-3.5.2.jar;%APP_HOME%\lib\org.abego.treelayout.core-1.0.3.jar;%APP_HOME%\lib\javax.json-1.0.4.jar;%APP_HOME%\lib\icu4j-58.2.jar
 
 @rem Execute Compiler
 "%JAVA_EXE%" %DEFAULT_JVM_OPTS% %JAVA_OPTS% %COMPILER_OPTS%  -classpath "%CLASSPATH%" Compiler.MXCC %CMD_LINE_ARGS%

@@ -1188,11 +1188,10 @@ define dso_local i32 @__array_size(i8*) #0 {
   %2 = alloca i8*, align 8
   store i8* %0, i8** %2, align 8
   %3 = load i8*, i8** %2, align 8
-  %4 = bitcast i8* %3 to i64*
-  %5 = getelementptr inbounds i64, i64* %4, i64 -1
-  %6 = load i64, i64* %5, align 8
-  %7 = trunc i64 %6 to i32
-  ret i32 %7
+  %4 = bitcast i8* %3 to i32*
+  %5 = getelementptr inbounds i32, i32* %4, i64 -1
+  %6 = load i32, i32* %5, align 4
+  ret i32 %6
 }
 
 attributes #0 = { noinline nounwind optnone sspstrong uwtable "correctly-rounded-divide-sqrt-fp-math"="false" "disable-tail-calls"="false" "less-precise-fpmad"="false" "min-legal-vector-width"="0" "no-frame-pointer-elim"="true" "no-frame-pointer-elim-non-leaf" "no-infs-fp-math"="false" "no-jump-tables"="false" "no-nans-fp-math"="false" "no-signed-zeros-fp-math"="false" "no-trapping-math"="false" "stack-protector-buffer-size"="8" "target-cpu"="x86-64" "target-features"="+cx8,+fxsr,+mmx,+sse,+sse2,+x87" "unsafe-fp-math"="false" "use-soft-float"="false" }

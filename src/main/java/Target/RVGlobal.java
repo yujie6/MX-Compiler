@@ -34,7 +34,7 @@ public class RVGlobal extends RVOperand { // can extends RVGlobal
             ans.append("\t.type\t").append(identifier).append(",@object\t\t\t#@").append(identifier).append("\n");
             ans.append("\t.section\t.rodata\n");
             ans.append(this.getIdentifier()).append(":\n");
-            ans.append("\t.asciz\t").append(asmTransform(this.stringValue)).append("\n");
+            ans.append("\t.asciz\t").append(this.stringValue).append("\n");
             ans.append("\t.size\t").append(identifier).append(",\t").append(this.stringValue.length() - 1).append("\n\n");
         } else {
             ans.append("\t.globl\t").append(identifier).append("\t\t\t#@").append(identifier).append("\n");

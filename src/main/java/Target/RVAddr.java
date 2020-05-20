@@ -55,9 +55,8 @@ public class RVAddr extends RVOperand {
         this.function = rvFunction;
     }
 
-    public void resetStackAddr(int deltaStack) {
-        this.baseAddrReg = InstSelector.fakePhyRegMap.get("s0");
-        // this.offset = deltaStack + this.offset;
+    public void setBaseAddrReg(VirtualReg baseAddrReg) {
+        this.baseAddrReg = baseAddrReg;
     }
 
     public VirtualReg getBaseAddrReg() {

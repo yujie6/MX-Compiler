@@ -33,7 +33,7 @@ public class RVArithImm extends RVInstruction {
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
         if (!(srcReg instanceof VirtualReg) ) {
-            System.out.println("damn");
+
         }
         return new ArrayList<>(List.of( (VirtualReg) srcReg));
     }

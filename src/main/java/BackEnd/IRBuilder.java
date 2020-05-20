@@ -599,7 +599,7 @@ public class IRBuilder implements ASTVisitor {
         StoreInst stArraySize = new StoreInst(curBasicBlock, arraySizeInt64, ArraySizeAddr);
         BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, new PointerType(arrayBaseType));
         ArrayList<Value> offsets = new ArrayList<>();
-        offsets.add(new IntConst(8 / arrayUnitSize));
+        offsets.add(new IntConst(1)); // 8 / arrayUnitSize
         GetPtrInst arrayBaseAddr = new GetPtrInst(curBasicBlock, array_addr, offsets, arrayBaseType);
 
         curBasicBlock.AddInstAtTail(ArraySizeAddr);

@@ -44,7 +44,9 @@ public class RVLoad extends RVInstruction {
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        // never
+        if (srcAddr.getBaseAddrReg().equals(old)) {
+            srcAddr.setBaseAddrReg(replaceVal);
+        }
     }
 
     @Override

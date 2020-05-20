@@ -1200,7 +1200,7 @@ __array_size:                           # @__array_size
 	addi	s0, sp, 16
 	sw	a0, -12(s0)
 	lw	a0, -12(s0)
-	lw	a0, -8(a0)
+	lw	a0, -4(a0)
 	lw	s0, 8(sp)
 	lw	ra, 12(sp)
 	addi	sp, sp, 16

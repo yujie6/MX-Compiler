@@ -5,6 +5,7 @@ import IR.*;
 import IR.Constants.BoolConst;
 import IR.Constants.Constant;
 import IR.Constants.IntConst;
+import IR.Constants.NullConst;
 import IR.Instructions.*;
 import IR.Module;
 import Target.*;
@@ -271,6 +272,9 @@ public class InstSelector implements IRVisitor {
         RVOperand LHS = getRVOperand(binOpInst.getLHS());
         VirtualReg dest = getVirtualReg(binOpInst);
         boolean hasImm = (RHS instanceof Immediate) || (LHS instanceof Immediate);
+        if ((RHS instanceof Immediate) && (LHS instanceof Immediate)) {
+            RHS = getVirtualReg((Immediate) RHS);
+        }
         switch (binOpInst.Opcode) {
             case add: {
                 if (hasImm) curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, LHS, RHS, dest));
@@ -469,7 +473,8 @@ public class InstSelector implements IRVisitor {
             }
             case sle: {
                 curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, RHS, LHS, tmp) );
-                curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                // curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                curBlock.AddInst( new RVArithImm(RVOpcode.xori, curBlock, tmp, new Immediate(1), tmp));
                 break;
             }
             case slt: {
@@ -478,7 +483,8 @@ public class InstSelector implements IRVisitor {
             }
             case sge: {
                 curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, LHS, RHS, tmp) );
-                curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                // curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                curBlock.AddInst( new RVArithImm(RVOpcode.xori, curBlock, tmp, new Immediate(1), tmp));
                 break;
             }
             case sgt: {
@@ -495,6 +501,9 @@ public class InstSelector implements IRVisitor {
     public Object visit(CopyInst copyInst) {
         if (copyInst.isParallel) {
             logger.severe("SSA destruction fail");
+        }
+        if (copyInst.getSrc() instanceof NullConst) {
+            copyInst.replaceSrc(new IntConst(0));
         }
         RVOperand src = getRVOperand(copyInst.getSrc());
         RVOperand dest = getRVOperand(copyInst.getDest());
@@ -603,7 +612,7 @@ public class InstSelector implements IRVisitor {
             LUI lui = new LUI(curBlock, tmp, destAddr);
             destAddr = new RVAddr((RVGlobal) destAddr, tmp, curFunction); // should load
             curBlock.AddInst(lui);
-        } else if (storeInst.getStoreValue() instanceof Instruction) {
+        } else if (storeInst.getStoreDest() instanceof Instruction) {
             destAddr = new RVAddr(getVirtualReg(storeInst.getStoreDest()), 0, curFunction);
         }
         curBlock.AddInst(new RVStore(curBlock, src, destAddr));
