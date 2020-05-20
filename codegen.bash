@@ -1,5 +1,5 @@
 #!/bin/zsh
-./build/install/Compiler/bin/Compiler -g 0 -o ./output.s <&0
+./release/bin/Compiler -g 0 -o ./output.s <&0
 
 function run() {
     ./build/install/Compiler/bin/Compiler -g 0 -o ./test.s
