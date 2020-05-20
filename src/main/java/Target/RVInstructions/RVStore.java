@@ -27,7 +27,7 @@ public class RVStore extends RVInstruction {
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(src));
+        return new ArrayList<>(List.of(src, destAddr.getBaseAddrReg()));
     }
 
     @Override

@@ -58,6 +58,9 @@ public class VirtualReg extends RVOperand {
     public void addNeighbor(VirtualReg neighbor) {
         this.neighbors.add(neighbor);
         this.degree ++;
+        /*if (this.neighbors.size() != this.degree) {
+            System.out.println("Fuck off");
+        }*/
     }
 
 

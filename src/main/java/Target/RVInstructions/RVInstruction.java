@@ -56,6 +56,12 @@ public abstract class RVInstruction {
         parentBB.rvInstList.remove(this);
     }
 
+    public void replaceWith(RVInstruction other) {
+        int index = parentBB.rvInstList.indexOf(this);
+        parentBB.rvInstList.remove(this);
+        parentBB.rvInstList.add(index, other);
+    }
+
     public RVBlock getParentBB() {
         return parentBB;
     }

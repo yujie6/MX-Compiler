@@ -37,8 +37,8 @@ public class RVBranch extends RVInstruction {
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        if (old == LHS) {LHS = replaceVal; return;}
-        if (old == RHS) {RHS = replaceVal; return;}
+        if (old.equals(LHS)) {LHS = replaceVal; }
+        if (old.equals(RHS)) {RHS = replaceVal; }
     }
 
     @Override

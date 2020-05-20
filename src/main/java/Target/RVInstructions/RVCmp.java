@@ -1,28 +1,23 @@
 package Target.RVInstructions;
 
 import Target.RVBlock;
-import Target.RVOperand;
 import Target.VirtualReg;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class RVArith extends RVInstruction {
+public class RVCmp extends RVInstruction {
+    VirtualReg srcReg, destReg;
 
-    VirtualReg LHS, RHS;
-    VirtualReg destReg;
-
-
-    public RVArith(RVOpcode opcode, RVBlock rvBlock, RVOperand lhs, RVOperand rhs, VirtualReg dest) {
+    public RVCmp(RVOpcode opcode, RVBlock rvBlock, VirtualReg src, VirtualReg dest) {
         super(opcode, rvBlock);
-        this.LHS = (VirtualReg) lhs;
-        this.RHS = (VirtualReg) rhs;
+        this.srcReg = src;
         this.destReg = dest;
     }
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(LHS, RHS));
+        return new ArrayList<>(List.of(srcReg));
     }
 
     @Override
@@ -32,21 +27,24 @@ public class RVArith extends RVInstruction {
 
     @Override
     public void replaceDef(VirtualReg t) {
-        this.destReg = t;
+        if (t.equals(destReg)) {
+            this.destReg = t;
+        }
     }
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        if (old.equals(LHS)) {LHS = replaceVal; }
-        if (old.equals(RHS)) {RHS = replaceVal; }
-        // never here
+        if (srcReg.equals(old)) {
+            this.srcReg = replaceVal;
+        }
     }
 
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
-        ans.append("\t").append(destReg.toString()).append(",\t").append(LHS.toString());
-        ans.append(",\t").append(RHS.toString()).append("\n");
+        ans.append("\t").append(destReg.toString());
+        ans.append("\t").append(srcReg.toString());
+        ans.append("\n");
         return ans.toString();
     }
 }

@@ -32,7 +32,7 @@ public class CodegenSingle {
     @Test
     public void debugCustomTest() throws IOException, InterruptedException {
         mxcc = new MXCC();
-        int diffResult = RunTestFile("e2.mx");
+        int diffResult = RunTestFile("e1.mx");
         assertEquals(0, diffResult);
     }
 

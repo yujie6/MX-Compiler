@@ -17,12 +17,12 @@ public class LUI extends RVInstruction {
 
     @Override
     public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(destReg));
+        return new ArrayList<>();
     }
 
     @Override
     public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+        return new ArrayList<>(List.of(destReg));
     }
 
     @Override

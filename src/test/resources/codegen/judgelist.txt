@@ -1,3 +1,5 @@
+./e1.mx
+./e2.mx
 ./e8.mx
 ./t9.mx
 ./t8.mx
@@ -6,7 +8,6 @@
 ./t50.mx
 ./t35.mx
 ./t64.mx
-./e2.mx
 ./t25.mx
 ./t11.mx
 ./t40.mx
@@ -51,7 +52,6 @@
 ./t4.mx
 ./t53.mx
 ./t67.mx
-./e1.mx
 ./t36.mx
 ./t26.mx
 ./t43.mx

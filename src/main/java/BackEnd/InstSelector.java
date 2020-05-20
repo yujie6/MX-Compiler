@@ -287,9 +287,13 @@ public class InstSelector implements IRVisitor {
             }
             case sub: {
                 if (hasImm) {
-                    if (RHS instanceof Immediate) ((Immediate) RHS).setNegative();
-                    if (LHS instanceof Immediate) ((Immediate) LHS).setNegative();
-                    curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, LHS, RHS, dest));
+                    if (RHS instanceof Immediate) {
+                        ((Immediate) RHS).setNegative();
+                        curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, LHS, RHS, dest));
+                    } else if (LHS instanceof Immediate) {
+                        LHS = getVirtualReg((Immediate) LHS);
+                        curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, dest));
+                    }
                 } else curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, dest));
                 break;
             }
@@ -431,13 +435,59 @@ public class InstSelector implements IRVisitor {
         curBlock.AddInst(new RVCall(curBlock, getRVFunction(callInst.getCallee())));
         if (!callInst.isVoid()) {
             // VirtualReg callRetVal = getVirtualReg(callInst);
-            this.virtualRegMap.put(callInst, getFakeReg("a0"));
+            VirtualReg tmp = new VirtualReg("hold a0");
+            curBlock.AddInst(getMoveInst(getFakeReg("a0"), tmp) );
+            this.virtualRegMap.put(callInst, tmp);
         }
         return null;
     }
 
     @Override
     public Object visit(CmpInst cmpInst) {
+        int index = cmpInst.getParent().getInstList().indexOf(cmpInst);
+        if (cmpInst.getParent().getInstList().get(index + 1) instanceof BranchInst) {
+            return null;
+        }
+        VirtualReg tmp = new VirtualReg("tmp for cmp");
+        VirtualReg LHS = getVirtualReg(cmpInst.getLHS());
+        VirtualReg RHS = getVirtualReg(cmpInst.getRHS());
+        // could fix some cases of imm
+        // boolean hasImm = (RHS instanceof Immediate) || (LHS instanceof Immediate);
+        switch (cmpInst.SubOpcode) {
+            case eq: {
+                // use xor
+                VirtualReg delta = new VirtualReg("A minus B");
+                curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, delta));
+                curBlock.AddInst(new RVCmp(RVOpcode.seqz, curBlock, delta, tmp));
+                break;
+            }
+            case ne: {
+                VirtualReg delta = new VirtualReg("A minus B");
+                curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, delta));
+                curBlock.AddInst(new RVCmp(RVOpcode.snez, curBlock, delta, tmp));
+                break;
+            }
+            case sle: {
+                curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, RHS, LHS, tmp) );
+                curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                break;
+            }
+            case slt: {
+                curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, LHS, RHS, tmp) );
+                break;
+            }
+            case sge: {
+                curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, LHS, RHS, tmp) );
+                curBlock.AddInst( new RVCmp(RVOpcode.not, curBlock, tmp, tmp));
+                break;
+            }
+            case sgt: {
+                curBlock.AddInst( new RVArith(RVOpcode.slt, curBlock, RHS, LHS, tmp) );
+                break;
+            }
+
+        }
+        this.virtualRegMap.put(cmpInst, tmp);
         return null;
     }
 
@@ -476,10 +526,12 @@ public class InstSelector implements IRVisitor {
         } else {
             if (getPtrInst.getOffsets().size() == 1 ) {
                 Value offset = getPtrInst.getOffsets().get(0); // must be instruction (actually offset * 4)
-                RVArith add = new RVArith(RVOpcode.add, curBlock, baseAddr, getVirtualReg(offset), tmp);
-                RVArith mul = new RVArith(RVOpcode.mul, curBlock, tmp, getVirtualReg(new Immediate(4)), tmp);
+
+                RVArithImm slli = new RVArithImm(RVOpcode.slli, curBlock, getVirtualReg(offset), new Immediate(2), tmp);
+                RVArith add = new RVArith(RVOpcode.add, curBlock, baseAddr, tmp, tmp);
+
+                curBlock.AddInst(slli);
                 curBlock.AddInst(add);
-                curBlock.AddInst(mul);
                 this.virtualRegMap.put(getPtrInst, tmp);
                 return null;
             }

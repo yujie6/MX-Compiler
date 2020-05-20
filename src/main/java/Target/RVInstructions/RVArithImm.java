@@ -50,18 +50,12 @@ public class RVArithImm extends RVInstruction {
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        if (srcReg == old) {
+        if (srcReg .equals(old)) {
             srcReg = replaceVal;
         } else {
             // fail
+            System.out.println("This should never happen(RVArithImm replaceUse)");
         }
-    }
-
-    public boolean isStoreSP() {
-        if (imm.toString().equals("0") && destReg.toString().equals("s0") &&
-        srcReg.toString().equals("sp")) {
-            return true;
-        } return false;
     }
 
     public void setImm(Immediate imm1) {

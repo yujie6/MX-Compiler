@@ -12,6 +12,8 @@ public enum RVOpcode {
     slli, srli, srai, lui,
     beq, bne, blt, bltu, bge, bgeu,
     lw, lh, lb, lhu, lbu,
-    sw, sh, ret, sb
+    sw, sh, ret, sb,
+    seqz, snez, sltz, sgtz, not
 }
+// {seqz, snez, sltz, sgtz} rd, rs
 
