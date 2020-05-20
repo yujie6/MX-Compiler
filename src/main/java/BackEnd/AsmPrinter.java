@@ -86,11 +86,11 @@ public class AsmPrinter implements AsmVisitor {
         for (RVBlock BB : rvFunction.getRvBlockList()) {
             visit(BB);
         }
-        WriteAssembly(".Lfunc_end" + functionNum + ":\n");
-
-        WriteAssembly("\t.size\t" + rvFunction.getIdentifier() + ",\t" + ".Lfunc_end" + functionNum +
-                "-" + rvFunction.getIdentifier() + "\n");
-        functionNum += 1;
+//        WriteAssembly(".Lfunc_end" + functionNum + ":\n");
+//
+//        WriteAssembly("\t.size\t" + rvFunction.getIdentifier() + ",\t" + ".Lfunc_end" + functionNum +
+//                "-" + rvFunction.getIdentifier() + "\n");
+//        functionNum += 1;
         WriteAssembly("\t\t\t\t\t\t\t# -- End function\n");
 
         return null;
