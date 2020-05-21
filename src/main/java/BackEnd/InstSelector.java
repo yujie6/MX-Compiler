@@ -31,7 +31,7 @@ public class InstSelector implements IRVisitor {
     private HashMap<Instruction, VirtualReg> virtualRegMap;
     private HashMap<Instruction, RVAddr> rvAddrMap;
     private HashMap<GlobalVariable, RVGlobal> globalVarMap;
-    private HashMap<Argument, RVAddr> argumentMap;
+    private HashMap<Argument, RVOperand> argumentMap;
     private HashMap<VirtualReg, VirtualReg> calleeSavedMap;
     static public HashMap<String, VirtualReg> fakePhyRegMap;
     static final private Immediate ZERO = new Immediate(0);
@@ -85,11 +85,19 @@ public class InstSelector implements IRVisitor {
             return getVirtualReg((Instruction) val);
         } else if (val instanceof IntConst) {
             return getVirtualReg((IntConst) val);
+        } else if (val instanceof NullConst) {
+            return getFakeReg("zero");
         } else if (val instanceof Argument) {
-            RVAddr argAddr = argumentMap.get(val);
-            VirtualReg tmp = new VirtualReg("argument");
-            curBlock.AddInst( new RVLoad(curBlock, tmp, argAddr));
-            return tmp;
+            RVOperand argAddr = argumentMap.get(val);
+            if (argAddr instanceof VirtualReg) return (VirtualReg) argAddr;
+            else if (argAddr instanceof RVAddr) {
+                VirtualReg tmp = new VirtualReg("argument");
+                curBlock.AddInst( new RVLoad(curBlock, tmp, (RVAddr) argAddr));
+                return tmp;
+            } else {
+                logger.severe("this should never happen!");
+                return null;
+            }
         } else {
             logger.severe("Do not support this type!!");
             return null;
@@ -129,8 +137,13 @@ public class InstSelector implements IRVisitor {
 
     private VirtualReg getVirtualReg(Immediate imm) {
         VirtualReg tmp = new VirtualReg("hold immediate");
-        RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("zero"), imm, tmp);
-        curBlock.AddInst(addi);
+        if (imm.getValue() < 2048 && imm.getValue() > -2048) {
+            RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("zero"), imm, tmp);
+            curBlock.AddInst(addi);
+        } else {
+            LI li = new LI(curBlock, imm, tmp);
+            curBlock.AddInst(li);
+        }
         return tmp;
     }
 
@@ -171,17 +184,21 @@ public class InstSelector implements IRVisitor {
             }
             return this.globalVarMap.get(irValue);
         } else if (irValue instanceof Argument) {
-            RVAddr addr = argumentMap.get(irValue);
-            VirtualReg tmp = new VirtualReg("argument");
-            curBlock.AddInst( new RVLoad(curBlock, tmp, addr));
-            return tmp;
+            return getVirtualReg(irValue);
         } else if (irValue instanceof Instruction) {
             if (irValue instanceof AllocaInst) return rvAddrMap.get(irValue);
             return getVirtualReg((Instruction) irValue);
         } else if (irValue instanceof Constant) {
             // return imm
+            if (irValue instanceof NullConst) {
+                return new Immediate(0);
+            }
             if (irValue instanceof IntConst) {
-                return new Immediate(((IntConst) irValue).ConstValue);
+                if (((IntConst) irValue).ConstValue < 2048 && ((IntConst) irValue).ConstValue >= -2058)
+                    return new Immediate(((IntConst) irValue).ConstValue);
+                else {
+                    return getVirtualReg(irValue);
+                }
             }
             if (irValue instanceof BoolConst) {
                 return new Immediate((Integer) ((BoolConst) irValue).constValue);
@@ -203,18 +220,19 @@ public class InstSelector implements IRVisitor {
 
         if (node.isEntryBlock()) {
             // Store argument on stack
-            int index = 0;
-            for (Argument arg : node.getParent().getParameterList()) {
-                if (index < 8) {
-                    RVAddr addr = new RVAddr(arg, curFunction);
-                    RVStore rvStore = new RVStore(curBlock, getFakeReg("a" + index), addr);
-                    argumentMap.put(arg, addr);
-                    curBlock.AddInst(rvStore);
-
-                } else {
-
-                }
-                index += 1;
+            int argNum = node.getParent().getParameterList().size();
+            for (int i = 8; i < argNum; i++ ) {
+                Argument arg = node.getParent().getParameterList().get(i);
+                VirtualReg tmp = new VirtualReg("tmp for argument");
+                curBlock.AddInst(new RVLoad(curBlock, tmp, new RVAddr(getFakeReg("sp"), 4 * (i - 8), curFunction)));
+                this.argumentMap.put(arg, tmp);
+            }
+            for (int i = 0; i < Math.min(8, argNum); i++ ) {
+                Argument arg = node.getParent().getParameterList().get(i);
+                RVAddr addr = new RVAddr(arg, curFunction);
+                RVStore rvStore = new RVStore(curBlock, getFakeReg("a" + i), addr);
+                argumentMap.put(arg, addr);
+                curBlock.AddInst(rvStore);
             }
         }
         for (Instruction inst : node.getInstList()) {
@@ -425,16 +443,16 @@ public class InstSelector implements IRVisitor {
     @Override
     public Object visit(CallInst callInst) {
         // perhaps the most complicated one
-        int index = 0;
-
-        for (Value arg : callInst.getArgumentList()) {
-            if (index < 8) {
-                RVOperand argument = getRVOperand(arg);
-                curBlock.AddInst(getMoveInst(argument, getFakeReg("a" + index)));
-            } else {
-                // store in memory
-            }
-            index++;
+        int argNum = callInst.getArgumentList().size();
+        for (int i = 0; i < Math.min(8, argNum); i++) {
+            RVOperand argument = getRVOperand(callInst.getArgument(i));
+            curBlock.AddInst(getMoveInst(argument, getFakeReg("a" + i)));
+        }
+        for (int i = 8; i < argNum; i++) {
+            Value arg = callInst.getArgument(i);
+            VirtualReg argument = getVirtualReg(callInst.getArgument(i));
+            RVAddr addr = new RVAddr(callInst.getCallee().getParameterList().get(i), curFunction);
+            curBlock.AddInst(new RVStore(curBlock, argument, addr));
         }
         curBlock.AddInst(new RVCall(curBlock, getRVFunction(callInst.getCallee())));
         if (!callInst.isVoid()) {
@@ -462,13 +480,15 @@ public class InstSelector implements IRVisitor {
                 // use xor
                 VirtualReg delta = new VirtualReg("A minus B");
                 curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, delta));
-                curBlock.AddInst(new RVCmp(RVOpcode.seqz, curBlock, delta, tmp));
+                // curBlock.AddInst(new RVCmp(RVOpcode.seqz, curBlock, delta, tmp));
+                curBlock.AddInst(new RVArithImm(RVOpcode.sltiu, curBlock, delta, new Immediate(1), tmp));
                 break;
             }
             case ne: {
                 VirtualReg delta = new VirtualReg("A minus B");
                 curBlock.AddInst(new RVArith(RVOpcode.sub, curBlock, LHS, RHS, delta));
-                curBlock.AddInst(new RVCmp(RVOpcode.snez, curBlock, delta, tmp));
+                // curBlock.AddInst(new RVCmp(RVOpcode.snez, curBlock, delta, tmp));
+                curBlock.AddInst(new RVArith(RVOpcode.sltu, curBlock, getFakeReg("zero"), delta, tmp));
                 break;
             }
             case sle: {

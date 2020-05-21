@@ -41,8 +41,8 @@ public class LUI extends RVInstruction {
         ans.append("\t").append(destReg.toString()).append(",\t");
         if (this.immediate instanceof RVGlobal) {
             ans.append("%hi(").append(((RVGlobal) immediate).getIdentifier()).append(")\n");
-        } else {
-            ans.append(immediate.toString()).append("\n");
+        } else if (immediate instanceof Immediate){
+            ans.append("hi(").append(((Immediate) immediate).getValue()).append(")\n");
         }
         return ans.toString();
     }

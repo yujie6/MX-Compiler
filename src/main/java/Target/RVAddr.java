@@ -36,6 +36,16 @@ public class RVAddr extends RVOperand {
         this.baseAddrReg = InstSelector.fakePhyRegMap.get("sp");
     }
 
+    public RVAddr(RVAddr addr, RVFunction rvFunction) {
+        // on stack
+        this.onStack = true;
+        this.isGlobal = false;
+        this.function = rvFunction;
+        this.identifier = addr.identifier;
+        this.offset = addr.offset;
+        this.baseAddrReg = InstSelector.fakePhyRegMap.get("sp");
+    }
+
     public RVAddr(VirtualReg baseReg, int offset, RVFunction rvFunction) {
         this.onStack = false;
         this.isGlobal = false;

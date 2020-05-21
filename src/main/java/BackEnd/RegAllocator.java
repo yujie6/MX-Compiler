@@ -255,6 +255,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
             HashSet<VirtualReg> live = new HashSet<>(BB.liveOutSet);
             for (int i = BB.rvInstList.size() - 1; i >= 0; i--) {
                 RVInstruction inst = BB.rvInstList.get(i);
+                /*if (i % 100 == 0) {
+                    logger.fine("Build " + i + " instructions");
+                }*/
                 if (inst instanceof RVMove) {
                     live.removeAll(inst.getUseRegs());
                     inst.getDefRegs().forEach(v -> {moveList(v).add((RVMove) inst);});
