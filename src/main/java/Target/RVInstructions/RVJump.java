@@ -4,6 +4,7 @@ import Target.RVBlock;
 import Target.VirtualReg;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class RVJump extends RVInstruction {
 
@@ -15,13 +16,13 @@ public class RVJump extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getUseRegs() {
+        return Set.of();
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of();
     }
 
     @Override

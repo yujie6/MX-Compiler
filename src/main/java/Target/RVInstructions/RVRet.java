@@ -3,7 +3,7 @@ package Target.RVInstructions;
 import Target.RVBlock;
 import Target.VirtualReg;
 
-import java.util.ArrayList;
+import java.util.Set;
 
 public class RVRet extends RVInstruction {
 
@@ -12,14 +12,14 @@ public class RVRet extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getUseRegs() {
+        return Set.of();
     }
 
     @Override
     public
-    ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+    Set<VirtualReg> getDefRegs() {
+        return Set.of();
     }
 
     @Override

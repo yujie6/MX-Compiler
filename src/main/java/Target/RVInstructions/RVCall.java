@@ -6,7 +6,8 @@ import Target.RVFunction;
 import Target.RVTargetInfo;
 import Target.VirtualReg;
 
-import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 
 public class RVCall extends RVInstruction{
     private RVFunction callee;
@@ -20,8 +21,8 @@ public class RVCall extends RVInstruction{
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        ArrayList<VirtualReg> useRegs = new ArrayList<>();
+    public Set<VirtualReg> getUseRegs() {
+        HashSet<VirtualReg> useRegs = new HashSet<>();
         for (int i = 0; i < callee.getArgNum() && i < 8; i++) {
             useRegs.add(InstSelector.fakePhyRegMap.get("a" + i));
         }
@@ -29,8 +30,8 @@ public class RVCall extends RVInstruction{
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        ArrayList<VirtualReg> defRegs = new ArrayList<>();
+    public Set<VirtualReg> getDefRegs() {
+        HashSet<VirtualReg> defRegs = new HashSet<>();
         for (String name : RVTargetInfo.callerSaves) {
             defRegs.add(InstSelector.fakePhyRegMap.get(name));
         }

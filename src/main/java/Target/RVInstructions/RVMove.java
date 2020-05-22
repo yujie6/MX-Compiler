@@ -5,6 +5,7 @@ import Target.RVBlock;
 import Target.VirtualReg;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public class RVMove extends RVArithImm {
 
@@ -24,12 +25,12 @@ public class RVMove extends RVArithImm {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
+    public Set<VirtualReg> getUseRegs() {
         return super.getUseRegs();
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
+    public Set<VirtualReg> getDefRegs() {
         return super.getDefRegs();
     }
 

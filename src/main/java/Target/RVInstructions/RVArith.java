@@ -4,8 +4,7 @@ import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class RVArith extends RVInstruction {
 
@@ -21,13 +20,14 @@ public class RVArith extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(LHS, RHS));
+    public Set<VirtualReg> getUseRegs() {
+        if (LHS.equals(RHS)) return Set.of(LHS);
+        return Set.of(LHS, RHS);
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>(List.of(destReg));
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of(destReg);
     }
 
     @Override

@@ -1,15 +1,16 @@
 # MX-Compiler
 A compiler from scratch for Mx*(a c-and-java-like language)
-to riscv32.
+to riscv32. Able to generate correct assembly file.
 
 To run the project
 ```bash
 ./gradlew installDist
 ./build/install/Compiler/bin/Compiler inputfile
 ```
-To run codegen tests with llvm
+To run codegen tests with llvm or assembly
 ```bash
 ./gradlew test --tests LLVMTest
+./gradlew test --tests CodegenTest
 ```
 More command line options:
 
@@ -17,7 +18,7 @@ More command line options:
      -g,--debug <arg>    set level of debug information
      -h,--help           print this message
      -i,--input <arg>    input file path
-     -o,--output <arg>   output file
+     -o,--output <arg>   output file (rv32 Assembly)
     
     debug option	description
     -g 0		no debug information
@@ -26,10 +27,12 @@ More command line options:
     -g 3		with detail information
 
 ### Current Objectives
-* Loop invariant code motion
-* Strength Reduction
-* Induction Variable Recognition
+* Optimizations
+    * Improve mem2reg
+    * Improve CSE
+    * Loop invariant code motion
+    * Strength Reduction
+    * Induction Variable Recognition
 * Some non-trivial optimizations
-* Liveness Analysis
-* ...
+* Improve code quality in code generation and IR
 

@@ -3,8 +3,7 @@ package Target.RVInstructions;
 import Target.RVBlock;
 import Target.VirtualReg;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class RVCmp extends RVInstruction {
     VirtualReg srcReg, destReg;
@@ -16,13 +15,13 @@ public class RVCmp extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(srcReg));
+    public Set<VirtualReg> getUseRegs() {
+        return Set.of(srcReg);
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>(List.of(destReg));
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of(destReg);
     }
 
     @Override

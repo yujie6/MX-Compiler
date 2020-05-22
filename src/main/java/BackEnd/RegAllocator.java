@@ -243,35 +243,29 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         for (RVBlock BB : curFunction.getRvBlockList()) {
             BasicBlock irBB = BB.irBlock;
             int depth = curFunction.LA.getLoopDepth(irBB);
-            for (RVInstruction inst : BB.rvInstList) {
-                for (VirtualReg use : inst.getUseRegs()) {
-                    use.spillCost += Math.pow(10, depth);
-                }
-                for (VirtualReg def : inst.getDefRegs()) {
-                    def.spillCost += Math.pow(10, depth);
-                }
-            }
 
             HashSet<VirtualReg> live = new HashSet<>(BB.liveOutSet);
             for (int i = BB.rvInstList.size() - 1; i >= 0; i--) {
                 RVInstruction inst = BB.rvInstList.get(i);
-                /*if (i % 100 == 0) {
-                    logger.fine("Build " + i + " instructions");
-                }*/
+                var defs = inst.getDefRegs();
+                var uses = inst.getUseRegs();
+                uses.forEach(use -> {use.spillCost += Math.pow(10, depth);});
+                defs.forEach(def -> {def.spillCost += Math.pow(10, depth);});
                 if (inst instanceof RVMove) {
-                    live.removeAll(inst.getUseRegs());
-                    inst.getDefRegs().forEach(v -> {moveList(v).add((RVMove) inst);});
-                    inst.getUseRegs().forEach(v -> {moveList(v).add((RVMove) inst);});
+                    live.removeAll(uses);
+                    defs.forEach(v -> {moveList(v).add((RVMove) inst);});
+                    uses.forEach(v -> {moveList(v).add((RVMove) inst);});
                     this.workListMoves.add((RVMove) inst);
                 }
-                live.addAll(inst.getDefRegs());
-                for (VirtualReg d : inst.getDefRegs()) {
+
+                live.addAll(defs);
+                for (VirtualReg d : defs) {
                     for (VirtualReg l : live) {
                         addEdge(d, l);
                     }
                 }
-                live.removeAll(inst.getDefRegs());
-                live.addAll(inst.getUseRegs());
+                live.removeAll(defs);
+                live.addAll(uses);
             }
         }
     }
@@ -541,7 +535,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         for (RVBlock BB : curFunction.getRvBlockList()) {
             for (RVInstruction inst : BB.rvInstList) {
                 if (inst.getDefRegs().size() == 1) {
-                    VirtualReg dest = inst.getDefRegs().get(0);
+                    VirtualReg dest = inst.getDefRegs().iterator().next();
                     getAlias(dest);
                 }
             }

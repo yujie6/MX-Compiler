@@ -21,13 +21,14 @@ public class RVBranch extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(LHS, RHS));
+    public Set<VirtualReg> getUseRegs() {
+        if (LHS.equals(RHS)) return Set.of(LHS);
+        return Set.of(LHS, RHS);
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of();
     }
 
     @Override

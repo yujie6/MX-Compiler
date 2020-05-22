@@ -32,7 +32,7 @@ public class DebugSingle {
     @Test
     public void debugCustomTest() throws IOException, InterruptedException {
         mxcc = new MXCC();
-        int diffResult = RunTestFile("t59.mx");
+        int diffResult = RunTestFile("t58.mx");
         assertEquals(diffResult, 0);
     }
 

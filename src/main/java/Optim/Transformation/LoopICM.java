@@ -7,10 +7,10 @@ import IR.Instructions.BinOpInst;
 import IR.Instructions.Instruction;
 import IR.User;
 import IR.Value;
+import Optim.FuncAnalysis.AliasAnalysis;
 import Optim.FuncAnalysis.Loop;
 import Optim.FuncAnalysis.LoopAnalysis;
 import Optim.FunctionPass;
-import Optim.Pass;
 
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -21,12 +21,15 @@ import java.util.LinkedList;
 public class LoopICM extends FunctionPass {
 
     private LoopAnalysis LA;
+    private AliasAnalysis AA;
     private LinkedList<Instruction> workList;
     private HashSet<Instruction> invariants;
+    private Loop curLoop;
 
-    public LoopICM (Function function, LoopAnalysis LA) {
+    public LoopICM (Function function, LoopAnalysis LA, AliasAnalysis AA) {
         super(function);
         this.LA = LA;
+        this.AA = AA;
         workList = new LinkedList<>();
         invariants = new HashSet<>();
     }
@@ -97,5 +100,16 @@ public class LoopICM extends FunctionPass {
         BasicBlock preHeader = loop.preHeader;
         // hoist instruction to preHeader
         return changed;
+    }
+
+    private boolean notModifiedInLoop(Value pointer) {
+        for (BasicBlock BB : curLoop.getLoopBlocks()) {
+            for (Instruction inst : BB.getInstList()) {
+                if (AA.getModRefInfo(inst, pointer) != AliasAnalysis.ModRefInfo.NoModRef) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 }

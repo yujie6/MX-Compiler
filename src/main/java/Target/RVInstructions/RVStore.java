@@ -4,9 +4,7 @@ import Target.RVAddr;
 import Target.RVBlock;
 import Target.RVOperand;
 import Target.VirtualReg;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class RVStore extends RVInstruction {
 
@@ -26,13 +24,13 @@ public class RVStore extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>(List.of(src, destAddr.getBaseAddrReg()));
+    public Set<VirtualReg> getUseRegs() {
+        return Set.of(src, destAddr.getBaseAddrReg());
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of();
     }
 
     @Override

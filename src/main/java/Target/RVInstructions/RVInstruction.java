@@ -3,6 +3,7 @@ package Target.RVInstructions;
 import Target.*;
 
 import java.util.ArrayList;
+import java.util.Set;
 
 public abstract class RVInstruction {
     private RVOpcode opcode;
@@ -13,8 +14,8 @@ public abstract class RVInstruction {
         this.parentBB = rvBlock;
     }
 
-    public abstract ArrayList<VirtualReg> getUseRegs();
-    public abstract ArrayList<VirtualReg> getDefRegs();
+    public abstract Set<VirtualReg> getUseRegs();
+    public abstract Set<VirtualReg> getDefRegs();
     public abstract void replaceDef(VirtualReg t);
     public abstract void replaceUse(VirtualReg old, VirtualReg replaceVal);
 

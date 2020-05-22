@@ -95,8 +95,10 @@ public class MXCC {
         MxProgramNode ast = GetAbstractSyntaxTree(input);
         Scope globalScope = GetGlobalScope(ast);
         SemanticCheck(globalScope, ast);
-        Module LLVMTopModule = GetIRModule(ast, globalScope);
-
+        Module LLVMTopModule;
+        if (llvm == 0) {
+            LLVMTopModule = GetIRModule(ast, globalScope, false);
+        } else LLVMTopModule = GetIRModule(ast, globalScope, false);
         MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
         optimizer.optimize();
 
@@ -142,8 +144,8 @@ public class MXCC {
         return gsbuilder.getGlobalScope();
     }
 
-    private static Module GetIRModule(MxProgramNode ast, Scope globalScope) {
-        IRBuilder irBuilder = new IRBuilder(globalScope, logger);
+    private static Module GetIRModule(MxProgramNode ast, Scope globalScope, boolean i64array) {
+        IRBuilder irBuilder = new IRBuilder(globalScope, logger, i64array);
         return (Module) irBuilder.visit(ast);
     }
 
@@ -279,7 +281,7 @@ public class MXCC {
         if (onlySemantic) {
             return;
         }
-        Module LLVMTopModule = GetIRModule(ast, globalScope);
+        Module LLVMTopModule = GetIRModule(ast, globalScope, false);
         optimLevel = 0;
         switch (optimLevel) {
             case 0: {

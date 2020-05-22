@@ -1,18 +1,18 @@
 package Target.RVInstructions;
 
-import Target.Immediate;
 import Target.RVBlock;
+import Target.RVGlobal;
 import Target.VirtualReg;
 
 import java.util.Set;
 
-public class LI extends RVInstruction {
-    Immediate immediate;
+public class LA extends RVInstruction {
     VirtualReg destReg;
-    public LI(RVBlock rvBlock, Immediate imm, VirtualReg destReg) {
-        super(RVOpcode.li, rvBlock);
-        this.immediate = imm;
-        this.destReg=  destReg;
+    RVGlobal symbolAddr;
+    public LA(RVBlock rvBlock, RVGlobal addr, VirtualReg destReg) {
+        super(RVOpcode.la, rvBlock);
+        this.symbolAddr = addr;
+        this.destReg = destReg;
     }
 
     @Override
@@ -22,26 +22,26 @@ public class LI extends RVInstruction {
 
     @Override
     public Set<VirtualReg> getDefRegs() {
-        return Set.of(this.destReg);
+        return Set.of(destReg);
     }
 
     @Override
     public void replaceDef(VirtualReg t) {
-        if (this.destReg.equals(t)) {
+        if (destReg.equals(t)) {
             this.destReg = t;
         }
     }
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
-        // should never access
+
     }
 
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
         ans.append("\t").append(destReg.toString()).append(",\t");
-        ans.append(immediate.toString()).append("\n");
+        ans.append(symbolAddr.toString()).append("\n");
         return ans.toString();
     }
 }

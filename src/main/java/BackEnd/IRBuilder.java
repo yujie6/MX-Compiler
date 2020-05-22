@@ -32,7 +32,7 @@ public class IRBuilder implements ASTVisitor {
     private Stack<BasicBlock> LoopStackForContinue;
     private Stack<ValueSymbolTable> EnteredTable;
     ValueSymbolTable LocalSymTab;
-
+    private boolean usei64Array; // set true if we want runnable IR
     private void EnterScope(Function function) {
         EnteredTable.push(LocalSymTab.clone());
         if (function != null) LocalSymTab = function.getVarSymTab();
@@ -54,7 +54,13 @@ public class IRBuilder implements ASTVisitor {
         init = new Function("_entry_block", Module.VOID, new ArrayList<>(), false);
         TopModule.defineFunction(init);
         init.initialize();
+        this.usei64Array = false;
         logger.info("IRBuild ready to start.");
+    }
+
+    public IRBuilder(Scope globalScope, MXLogger logger, boolean i64Array) {
+        this(globalScope, logger);
+        this.usei64Array = i64Array;
     }
 
     public static IRBaseType ConvertTypeFromAST(Type type) {
@@ -578,15 +584,16 @@ public class IRBuilder implements ASTVisitor {
         Value arraySize = arraySizeList.get(0);
         BinOpInst malloc_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.mul, arraySize, new IntConst(arrayUnitSize));
         BinOpInst total_size = new BinOpInst(curBasicBlock, Module.I32, Instruction.InstType.add, malloc_size, new IntConst(8));
-        SextInst malloc_size_i64 = new SextInst(curBasicBlock, Module.I32, total_size, Module.I64);
+        // SextInst malloc_size_i64 = new SextInst(curBasicBlock, Module.I32, total_size, Module.I64);
 
         ArrayList<Value> paras = new ArrayList<>();
-        paras.add(malloc_size_i64);
+        // paras.add(malloc_size_i64);
+        paras.add(total_size);
         Function _malloc = TopModule.getFunctionMap().get("_malloc_and_init");
         CallInst malloc_addr = new CallInst(curBasicBlock, _malloc, paras);
         curBasicBlock.AddInstAtTail(malloc_size);
         curBasicBlock.AddInstAtTail(total_size);
-        curBasicBlock.AddInstAtTail(malloc_size_i64);
+        // curBasicBlock.AddInstAtTail(malloc_size_i64);
         curBasicBlock.AddInstAtTail(malloc_addr);
 
         if (!arraySize.getType().equals(Module.I32)) {
@@ -599,7 +606,11 @@ public class IRBuilder implements ASTVisitor {
         StoreInst stArraySize = new StoreInst(curBasicBlock, arraySizeInt64, ArraySizeAddr);
         BitCastInst array_addr = new BitCastInst(curBasicBlock, malloc_addr, new PointerType(arrayBaseType));
         ArrayList<Value> offsets = new ArrayList<>();
-        offsets.add(new IntConst(1)); // 8 / arrayUnitSize
+        if (usei64Array)
+            offsets.add(new IntConst(8 / arrayUnitSize));
+        else
+            offsets.add(new IntConst(1));
+
         GetPtrInst arrayBaseAddr = new GetPtrInst(curBasicBlock, array_addr, offsets, arrayBaseType);
 
         curBasicBlock.AddInstAtTail(ArraySizeAddr);

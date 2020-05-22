@@ -1,9 +1,7 @@
 package Target.RVInstructions;
 
 import Target.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class RVArithImm extends RVInstruction {
 
@@ -31,16 +29,16 @@ public class RVArithImm extends RVInstruction {
 
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
+    public Set<VirtualReg> getUseRegs() {
         if (!(srcReg instanceof VirtualReg) ) {
 
         }
-        return new ArrayList<>(List.of( (VirtualReg) srcReg));
+        return Set.of( (VirtualReg) srcReg);
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>(List.of(destReg));
+    public Set<VirtualReg>getDefRegs() {
+        return Set.of(destReg);
     }
 
     @Override

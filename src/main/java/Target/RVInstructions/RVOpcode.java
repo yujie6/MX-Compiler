@@ -13,7 +13,7 @@ public enum RVOpcode {
     beq, bne, blt, bltu, bge, bgeu,
     lw, lh, lb, lhu, lbu,
     sw, sh, ret, sb,
-    seqz, snez, sltz, sgtz, not, li
+    seqz, snez, sltz, sgtz, not, li, la
 }
 // {seqz, snez, sltz, sgtz} rd, rs
 

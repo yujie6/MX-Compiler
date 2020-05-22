@@ -2,8 +2,7 @@ package Target.RVInstructions;
 
 import Target.*;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Set;
 
 public class LUI extends RVInstruction {
     private VirtualReg destReg ;
@@ -16,13 +15,13 @@ public class LUI extends RVInstruction {
     }
 
     @Override
-    public ArrayList<VirtualReg> getUseRegs() {
-        return new ArrayList<>();
+    public Set<VirtualReg> getUseRegs() {
+        return Set.of();
     }
 
     @Override
-    public ArrayList<VirtualReg> getDefRegs() {
-        return new ArrayList<>(List.of(destReg));
+    public Set<VirtualReg> getDefRegs() {
+        return Set.of(destReg);
     }
 
     @Override
