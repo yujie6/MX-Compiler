@@ -86,6 +86,7 @@ public class MxOptimizer {
         deadCodeElimination();
         loopAnalysis();
         loopInvariantCodeMotion();
+
         // aggressiveDeadCodeElimination();
         // commonSubexpressionElimination();
         // loopInvariantCodeMotion();

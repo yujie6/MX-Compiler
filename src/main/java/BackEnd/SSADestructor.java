@@ -39,27 +39,40 @@ public class SSADestructor extends ModulePass {
         return null;
     }
 
+    private CopyInst getSafeCopy() {
+        for (CopyInst copyInst : copyInsts) {
+            if (findCircle(copyInst) == null) {
+                return copyInst;
+            }
+        }
+        return null;
+    }
+
     private void parallel2sequential(BasicBlock BB) {
         if (BB.getIdentifier().equals("edge_splitter")) return;
 
         copyInsts = new LinkedList<>(BB.getCopyInsts());
-        while (true) {
+        while (getPCopy() != null) {
+            CopyInst safeCopy = getSafeCopy();
+            if (safeCopy != null) {
+                copyInsts.remove(safeCopy);
+                safeCopy.eraseFromParent();
+
+                safeCopy.isParallel = false;
+                simpleCopyList.add(safeCopy);
+                continue;
+            }
             CopyInst copyInst = getPCopy();
-            if (copyInst == null) break;
             CopyInst friend = findCircle(copyInst);
             if (friend == null) {
-                copyInsts.remove(copyInst);
-                copyInst.eraseFromParent();
-
-                copyInst.isParallel = false;
-                simpleCopyList.add(copyInst);
-            } else {
-                Instruction tmpRegister = new PhiInst(BB, new LocalRegister()); // freshly created vairable
-                CopyInst tmpCopy = new CopyInst(BB, tmpRegister, copyInst.getSrc(), false);
-                BB.AddInstBeforeBranch(tmpRegister);
-                simpleCopyList.add(tmpCopy);
-                copyInst.replaceSrc(tmpRegister);
+                // this should never happen
+                logger.severe("Friend never be null");
             }
+            Instruction tmpRegister = new PhiInst(BB, new LocalRegister()); // freshly created vairable
+            CopyInst tmpCopy = new CopyInst(BB, tmpRegister, copyInst.getSrc(), false);
+            BB.AddInstBeforeBranch(tmpRegister);
+            simpleCopyList.add(tmpCopy);
+            copyInst.replaceSrc(tmpRegister);
         }
 
         for (CopyInst inst : simpleCopyList) {

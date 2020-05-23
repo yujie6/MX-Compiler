@@ -8,7 +8,7 @@ public abstract class Instruction extends User {
     static protected int regNum = 1;
     protected BasicBlock Parent;
     public InstType Opcode;
-    protected Instruction prev, next;
+
     protected String RegisterID;
 
     public enum InstType {
@@ -51,8 +51,6 @@ public abstract class Instruction extends User {
     }
 
     public void eraseFromParent() {
-        if (this.prev != null) this.prev.next = this.next;
-        if (this.next != null) this.next.prev = this.prev;
         this.Parent.getInstList().remove(this);
     }
 
@@ -83,22 +81,6 @@ public abstract class Instruction extends User {
 
     public boolean isTerminalInst() {
         return Opcode == InstType.ret || Opcode == InstType.br;
-    }
-
-    public void setNext(Instruction next) {
-        this.next = next;
-    }
-
-    public void setPrev(Instruction prev) {
-        this.prev = prev;
-    }
-
-    public Instruction getNext() {
-        return next;
-    }
-
-    public Instruction getPrev() {
-        return prev;
     }
 
     public void setRegisterID(String registerID) {

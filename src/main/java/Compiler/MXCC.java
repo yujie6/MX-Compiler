@@ -282,7 +282,7 @@ public class MXCC {
             return;
         }
         Module LLVMTopModule = GetIRModule(ast, globalScope, false);
-        optimLevel = 0;
+        optimLevel = 2;
         switch (optimLevel) {
             case 0: {
                 PrintLLVMIR(LLVMTopModule, "Basic1");

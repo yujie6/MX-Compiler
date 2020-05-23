@@ -89,9 +89,20 @@ public class LoopAnalysis extends Pass {
         buildLoopTree(rootLoop); // rootLoop may not be a loop
         this.preheaderNum = 0;
         addPreheader(rootLoop);
-        MxOptimizer.logger.fine("Loop analysis on function " + function.getIdentifier() +
-                " done, with " + preheaderNum + " preheader added");
+        buildLoopDepth(rootLoop, 0);
+        MxOptimizer.logger.fine(String.format("Loop analysis on function \"%s\" done, with %d preheaders added."
+                , function.getIdentifier(), preheaderNum));
         return !loopMap.isEmpty();
+    }
+
+    private void buildLoopDepth(Loop outerLoop, int depth) {
+        for (BasicBlock BB : outerLoop.getLoopBlocks()) {
+            BB.loopDepth = depth;
+        }
+        for (Loop insideLoop : outerLoop.insideLoops) {
+            if (insideLoop.outerLoop != outerLoop) continue;
+            buildLoopDepth(insideLoop, depth + 1);
+        }
     }
 
     private void buildLoopTree(Loop outerLoop) {
@@ -132,18 +143,7 @@ public class LoopAnalysis extends Pass {
     }
 
     public int getLoopDepth(BasicBlock BB) {
-        Loop t = null;
-        for (Loop loop : nestedLoops.values()) {
-            if (loop.getLoopBlocks().contains(BB)) {
-               t = loop;
-            }
-        }
-        int s = 0;
-        while (t != null) {
-            t = t.outerLoop;
-            s++;
-        }
-        return s;
+        return BB.loopDepth;
     }
 
     private int preheaderNum;

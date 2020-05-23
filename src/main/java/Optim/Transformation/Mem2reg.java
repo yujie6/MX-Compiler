@@ -118,7 +118,7 @@ public class Mem2reg extends FunctionPass {
         }
         if (visited.contains(BB)) return;
         visited.add(BB);
-        for (Instruction inst = BB.getHeadInst(); inst != null; inst = inst.getNext()) {
+        for (Instruction inst : List.copyOf(BB.getInstList())) {
             if (inst instanceof LoadInst && ((LoadInst) inst).getLoadAddr() == AI) {
                 // we can assert "store comes first" or "there is phi inst"
                 if (newReplaceVal == null) {
@@ -310,7 +310,7 @@ public class Mem2reg extends FunctionPass {
         // replace each load with the nearest store
         BasicBlock BB = info.onlyBlock;
         Value replaceVal = null;
-        for (Instruction inst = BB.getHeadInst(); inst != null; inst = inst.getNext()) {
+        for (Instruction inst : List.copyOf(BB.getInstList())) {
             if (inst instanceof LoadInst && ((LoadInst) inst).getLoadAddr() == AI) {
                 inst.replaceAllUsesWith(replaceVal);
                 inst.eraseFromParent();

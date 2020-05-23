@@ -7,6 +7,8 @@ import Optim.FuncAnalysis.AliasAnalysis;
 import Optim.FuncAnalysis.Loop;
 import Optim.FuncAnalysis.LoopAnalysis;
 import Optim.FunctionPass;
+import Optim.MxOptimizer;
+import Tools.MXLogger;
 import com.ibm.icu.util.ICUUncheckedIOException;
 
 import java.util.HashSet;
@@ -22,6 +24,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     private LinkedList<Instruction> workList;
     private HashSet<Instruction> invariants;
     private Loop curLoop;
+    private int hositNum = 0;
 
     public LoopICM (Function function, LoopAnalysis LA, AliasAnalysis AA) {
         super(function);
@@ -33,8 +36,10 @@ public class LoopICM extends FunctionPass implements IRVisitor {
 
     @Override
     public boolean optimize() {
-        return true;
-        // return hoist(LA.rootLoop);
+        boolean changed = hoist(LA.rootLoop);
+        MxOptimizer.logger.fine(String.format("Hoist %d insts in function \"%s\""
+                , hositNum, function.getIdentifier()));
+        return changed;
     }
 
     private void findInvariant(Loop loop) {
@@ -55,9 +60,6 @@ public class LoopICM extends FunctionPass implements IRVisitor {
                 ((Instruction) user).accept(this);
             }
         }
-
-
-
     }
 
     private boolean isInvariant(Value val, Loop loop) {
@@ -101,8 +103,9 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         boolean changed  = false;
         BasicBlock preHeader = loop.preHeader;
         // hoist instruction to preHeader
-//        preHeader.AddInstBeforeBranch(inst);
-//        inst.eraseFromParent();
+        preHeader.AddInstBeforeBranch(inst);
+        inst.eraseFromParent();
+        this.hositNum += 1;
         return changed;
     }
 
@@ -162,7 +165,9 @@ public class LoopICM extends FunctionPass implements IRVisitor {
                 return null;
             }
         }
-        workList.add(callInst);
+        if (AA.getModRefBehavior(callInst.getCallee()) == AliasAnalysis.ModRefInfo.NoModRef) {
+            workList.add(callInst);
+        }
         return null;
     }
 

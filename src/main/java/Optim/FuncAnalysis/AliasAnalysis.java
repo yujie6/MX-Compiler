@@ -77,6 +77,7 @@ public class AliasAnalysis extends FunctionPass {
                 case "getInt":
                 case "getString":
                 case "_malloc_and_init":
+                case "malloc":
                     return ModRefInfo.Ref;
                 case "toString":
                 case "__string_length":

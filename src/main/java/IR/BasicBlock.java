@@ -31,6 +31,7 @@ public class BasicBlock extends Value {
 
     private static int BlockNum = 1;
     private String Label;
+    public int loopDepth = 0;
 
     public Set<BasicBlock> predecessors;
     public Set<BasicBlock> successors;
@@ -91,18 +92,13 @@ public class BasicBlock extends Value {
         if (inst == null) return;
         if (isEmpty()) {
             HeadInst = inst;
-        } else {
-            TailInst.setNext(inst);
-            inst.setPrev(TailInst);
         }
         TailInst = inst;
         InstList.addLast(inst);
     }
 
     public void RemoveTailInst() {
-        TailInst = TailInst.getPrev();
         InstList.pollLast();
-        TailInst.setNext(null);
     }
 
     public boolean isEntryBlock() {
@@ -111,9 +107,6 @@ public class BasicBlock extends Value {
     public void AddInstAtTop(Instruction inst) {
         if (isEmpty()) {
             TailInst = inst;
-        } else {
-            HeadInst.setPrev(inst);
-            inst.setNext(HeadInst);
         }
         HeadInst = inst;
         InstList.addFirst(inst);
@@ -121,12 +114,6 @@ public class BasicBlock extends Value {
 
     public void AddInstBeforeBranch(Instruction inst) {
         Instruction br = getTailInst();
-        if (br.getPrev() != null) {
-            br.getPrev().setNext(inst);
-            inst.setPrev(br.getPrev());
-        }
-        inst.setNext(br);
-        br.setPrev(inst);
         InstList.add( InstList.size() - 1, inst); // where would you add ?
     }
 

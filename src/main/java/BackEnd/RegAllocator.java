@@ -242,7 +242,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
         for (RVBlock BB : curFunction.getRvBlockList()) {
             BasicBlock irBB = BB.irBlock;
-            int depth = curFunction.LA.getLoopDepth(irBB);
+            int depth = irBB.loopDepth;
 
             HashSet<VirtualReg> live = new HashSet<>(BB.liveOutSet);
             for (int i = BB.rvInstList.size() - 1; i >= 0; i--) {
