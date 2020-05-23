@@ -22,6 +22,7 @@ package IR.Types;
 import IR.Value;
 import com.ibm.icu.impl.CacheBase;
 
+import java.awt.*;
 import java.util.Objects;
 
 public abstract class IRBaseType {
@@ -60,8 +61,7 @@ public abstract class IRBaseType {
                     ((IntegerType) other).getBitWidth()
             );
         } else if (this.BaseTypeName.equals(TypeID.PointerTyID)) {
-            // TODO optim here
-            return true;
+            return ((PointerType) this).getBaseType().equals(((PointerType) other).getBaseType());
         } else if (this.BaseTypeName.equals(TypeID.StructTyID)) {
             return Objects.equals(this, other);
         }

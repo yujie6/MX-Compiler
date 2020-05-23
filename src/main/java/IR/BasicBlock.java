@@ -24,7 +24,7 @@ public class BasicBlock extends Value {
     private Function Parent;
     private String Identifier;
     private LinkedList<Instruction> InstList;
-    private BasicBlock prev, next;
+
     public int dfnOrder, postDfnOrder;
     private Instruction HeadInst, TailInst;
     private ArrayList<CopyInst> copyInsts;
@@ -41,8 +41,6 @@ public class BasicBlock extends Value {
         this.Identifier = id;
         HeadInst = null;
         TailInst = null;
-        prev = null;
-        next = null;
         predecessors = new LinkedHashSet<>();
         successors = new LinkedHashSet<>();
         InstList = new LinkedList<>();
@@ -139,22 +137,6 @@ public class BasicBlock extends Value {
     @Override
     public Object accept(IRVisitor<Object> visitor) {
         return visitor.visit(this);
-    }
-
-    public BasicBlock getPrev() {
-        return prev;
-    }
-
-    public void setPrev(BasicBlock prev) {
-        this.prev = prev;
-    }
-
-    public BasicBlock getNext() {
-        return next;
-    }
-
-    public void setNext(BasicBlock next) {
-        this.next = next;
     }
 
     public String getLabel() {

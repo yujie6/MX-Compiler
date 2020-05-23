@@ -13,6 +13,7 @@ import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class CommonSubexElim extends FunctionPass {
 
@@ -56,6 +57,21 @@ public class CommonSubexElim extends FunctionPass {
             this.LHS = LHS;
             this.RHS = RHS;
             this.opcode = opcode;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (this == o) return true;
+            if (o == null || getClass() != o.getClass()) return false;
+            expr expr = (expr) o;
+            return Objects.equals(LHS, expr.LHS) &&
+                    Objects.equals(RHS, expr.RHS) &&
+                    Objects.equals(opcode, expr.opcode);
+        }
+
+        @Override
+        public int hashCode() {
+            return Objects.hash(LHS, RHS, opcode);
         }
     }
 

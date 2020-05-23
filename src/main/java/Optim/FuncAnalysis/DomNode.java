@@ -14,7 +14,11 @@ public class DomNode {
     }
 
     public boolean dominates(DomNode other) {
-        return children.contains(other);
+        DomNode t = other;
+        while (t != null && t != this) {
+            t = t.idom;
+        }
+        return t != null;
     }
 
     public void addChild(DomNode child) {

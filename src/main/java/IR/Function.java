@@ -109,9 +109,6 @@ public class Function extends Value {
     public void AddBlockAtTail(BasicBlock basicBlock) {
         if (HeadBlock == null) {
             HeadBlock = basicBlock;
-        } else {
-            TailBlock.setNext(basicBlock);
-            basicBlock.setPrev(TailBlock);
         }
         this.BlockList.add(basicBlock);
         TailBlock = basicBlock;
@@ -119,16 +116,15 @@ public class Function extends Value {
 
     public void AddBlockAfter(BasicBlock fa, BasicBlock basicBlock) {
         int index = BlockList.indexOf(fa);
-        fa.getNext().setPrev(basicBlock);
-        basicBlock.setNext(fa.getNext());
-        basicBlock.setPrev(fa);
-        fa.setNext(basicBlock);
         BlockList.add(index + 1, basicBlock);
     }
 
+    public void AddBlockBefore(BasicBlock ch, BasicBlock basicBlock) {
+        int index = BlockList.indexOf(ch);
+        BlockList.add(index, basicBlock);
+    }
+
     public void removeBlock(BasicBlock BB) {
-        BB.getNext().setPrev(BB.getPrev());
-        BB.getPrev().setNext(BB.getNext());
         BlockList.remove(BB);
     }
 

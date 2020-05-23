@@ -1,16 +1,14 @@
 package Optim;
 
 import IR.Function;
-import Optim.FuncAnalysis.CDGBuilder;
-import Optim.FuncAnalysis.DomTreeBuilder;
-import Optim.FuncAnalysis.Loop;
-import Optim.FuncAnalysis.LoopAnalysis;
+import Optim.FuncAnalysis.*;
 import Optim.Transformation.*;
 
 public class FuncOptimManager {
     private Function function;
     private DomTreeBuilder domTreeBuilder;
     private LoopAnalysis LA;
+    private AliasAnalysis AA;
     private CFGSimplifier cfgSimplifier;
 
     private CDGBuilder cdgBuilder;
@@ -25,12 +23,13 @@ public class FuncOptimManager {
         cfgSimplifier = new CFGSimplifier(function);
         domTreeBuilder = new DomTreeBuilder(function);
         LA = new LoopAnalysis(function, domTreeBuilder);
+        AA = new AliasAnalysis(function);
         mem2reg = new Mem2reg(function, domTreeBuilder);
         dce = new DeadCodeElim(function);
         cdgBuilder = new CDGBuilder(function);
         adce = new AggrDeadCodeElim(function, cdgBuilder);
         cse = new CommonSubexElim(function, domTreeBuilder);
-        licm = new LoopICM(function, LA);
+        licm = new LoopICM(function, LA, AA);
     }
 
     public void buildControlDependenceGraph() {

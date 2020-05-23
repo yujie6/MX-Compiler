@@ -8,6 +8,7 @@ import Optim.FunctionPass;
 import Optim.Pass;
 
 import java.util.LinkedList;
+import java.util.List;
 
 /**
  * The SimplifyCFG (SCFG) plugin tries to find or create basic blocks that can be entirely deleted from a
@@ -30,12 +31,11 @@ public class CFGSimplifier extends FunctionPass {
 
     public Object visit(Function node) {
         boolean changed = false;
-        for (BasicBlock curBasicBlock = node.getHeadBlock(); curBasicBlock != node.getTailBlock();
-        curBasicBlock = curBasicBlock.getNext() ) {
-            if (curBasicBlock.successors.size() == 1) {
-                BasicBlock child = curBasicBlock.successors.iterator().next();
-                if (child.successors.size() == 1 && child.predecessors.contains(curBasicBlock)) {
-                    merge(curBasicBlock, child);
+        for (BasicBlock BB : List.copyOf(node.getBlockList()) ) {
+            if (BB.successors.size() == 1) {
+                BasicBlock child = BB.successors.iterator().next();
+                if (child.successors.size() == 1 && child.predecessors.contains(BB)) {
+                    merge(BB, child);
                     changed = true;
                 }
             }
