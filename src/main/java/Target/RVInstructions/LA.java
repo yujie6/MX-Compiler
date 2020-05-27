@@ -41,7 +41,7 @@ public class LA extends RVInstruction {
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
         ans.append("\t").append(destReg.toString()).append(",\t");
-        ans.append(symbolAddr.toString()).append("\n");
+        ans.append(symbolAddr.getIdentifier()).append("\n");
         return ans.toString();
     }
 }

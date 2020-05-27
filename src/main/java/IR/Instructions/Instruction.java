@@ -52,6 +52,13 @@ public abstract class Instruction extends User {
 
     public void eraseFromParent() {
         this.Parent.getInstList().remove(this);
+        for (Use U : UseList) {
+            if (U.getVal() instanceof Instruction) {
+                Instruction inst = (Instruction) U.getVal();
+                inst.UserList.remove(this);
+            }
+        }
+        this.Parent = null;
     }
 
     public void replaceAllUsesWith(Value replaceValue) {
@@ -77,6 +84,10 @@ public abstract class Instruction extends User {
         return Opcode.equals(InstType.add) || Opcode.equals(InstType.xor) ||
                 Opcode.equals(InstType.and) || Opcode.equals(InstType.mul) ||
                 Opcode.equals(InstType.or);
+    }
+
+    public void setParent(BasicBlock parent) {
+        Parent = parent;
     }
 
     public boolean isTerminalInst() {

@@ -1,11 +1,14 @@
 package BackEnd;
 
 import IR.BasicBlock;
+import IR.Instructions.CallInst;
 import IR.Instructions.Instruction;
 import Target.*;
 import Target.RVInstructions.*;
 import com.ibm.icu.util.VTimeZone;
 
+import java.time.Duration;
+import java.time.Instant;
 import java.util.*;
 
 import static Optim.MxOptimizer.logger;
@@ -239,7 +242,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private void Build() {
-
+        Instant start = Instant.now();
         for (RVBlock BB : curFunction.getRvBlockList()) {
             BasicBlock irBB = BB.irBlock;
             int depth = irBB.loopDepth;
@@ -249,8 +252,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 RVInstruction inst = BB.rvInstList.get(i);
                 var defs = inst.getDefRegs();
                 var uses = inst.getUseRegs();
-                uses.forEach(use -> {use.spillCost += Math.pow(10, depth);});
-                defs.forEach(def -> {def.spillCost += Math.pow(10, depth);});
+                uses.forEach(use -> {use.spillCost += Math.pow(10, depth)  * 64;});
+                if (!(inst instanceof RVCall))
+                    defs.forEach(def -> {def.spillCost += Math.pow(10, depth) * 64;});
                 if (inst instanceof RVMove) {
                     live.removeAll(uses);
                     defs.forEach(v -> {moveList(v).add((RVMove) inst);});
@@ -268,6 +272,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 live.addAll(uses);
             }
         }
+        Instant end = Instant.now();
+        System.out.println(String.format("God damn build process cost %d!!", Duration.between(start, end).toMillis() ) );
     }
 
     private void addEdge(VirtualReg u, VirtualReg v) {
@@ -475,17 +481,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
 
     private VirtualReg selectFavorite() {
         VirtualReg favorite = null;
-        var iter = spillWorkList.iterator();
-        while (iter.hasNext()) {
-            favorite = iter.next();
-            if (!favorite.spillTemporary) {
-                break;
-            }
-        }
-        while (iter.hasNext()) {
-            VirtualReg t = iter.next();
-            if (!t.spillTemporary && t.getSpillCost() < favorite.getSpillCost()) {
-                favorite = t;
+        int minCost = (int) 1e9;
+        for (VirtualReg v : spillWorkList) {
+            if (v.spillCost < minCost) {
+                favorite = v;
+                minCost = v.spillCost;
             }
         }
         return favorite;

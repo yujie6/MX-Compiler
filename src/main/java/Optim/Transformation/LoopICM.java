@@ -4,13 +4,13 @@ import IR.*;
 import IR.Constants.Constant;
 import IR.Instructions.*;
 import Optim.FuncAnalysis.AliasAnalysis;
+import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.FuncAnalysis.Loop;
 import Optim.FuncAnalysis.LoopAnalysis;
 import Optim.FunctionPass;
 import Optim.MxOptimizer;
-import Tools.MXLogger;
-import com.ibm.icu.util.ICUUncheckedIOException;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 
@@ -21,17 +21,19 @@ public class LoopICM extends FunctionPass implements IRVisitor {
 
     private LoopAnalysis LA;
     private AliasAnalysis AA;
+    private DomTreeBuilder dm;
     private LinkedList<Instruction> workList;
-    private HashSet<Instruction> invariants;
+    private ArrayList<Instruction> invariants;
     private Loop curLoop;
     private int hositNum = 0;
 
-    public LoopICM (Function function, LoopAnalysis LA, AliasAnalysis AA) {
+    public LoopICM (Function function, LoopAnalysis LA, AliasAnalysis AA, DomTreeBuilder dm) {
         super(function);
         this.LA = LA;
         this.AA = AA;
+        this.dm = dm;
         workList = new LinkedList<>();
-        invariants = new HashSet<>();
+        invariants = new ArrayList<>();
     }
 
     @Override
@@ -55,7 +57,6 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         while (!workList.isEmpty()) {
             Instruction inst = workList.pop();
             if (invariants.contains(inst)) continue;
-            invariants.add(inst);
             for (User user : inst.UserList) {
                 ((Instruction) user).accept(this);
             }
@@ -77,6 +78,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
             return true;
         } else if (val instanceof Instruction) {
             if (invariants.contains(val) ) return true;
+            if (val instanceof PhiInst) return false;
             return !curLoop.getLoopBlocks().contains(((Instruction) val).getParent());
         }
         return false;
@@ -103,8 +105,8 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         boolean changed  = false;
         BasicBlock preHeader = loop.preHeader;
         // hoist instruction to preHeader
+        inst.getParent().getInstList().remove(inst);
         preHeader.AddInstBeforeBranch(inst);
-        inst.eraseFromParent();
         this.hositNum += 1;
         return changed;
     }
@@ -141,6 +143,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         Value RHS = binOpInst.getRHS();
         if (isInvariant(LHS, curLoop) && isInvariant(RHS, curLoop)) {
             workList.add(binOpInst);
+            invariants.add(binOpInst);
         }
         return null;
     }
@@ -149,6 +152,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     public Object visit(BitCastInst bitCastInst) {
         if (isInvariant(bitCastInst.getCastValue()) ) {
             workList.add(bitCastInst);
+            invariants.add(bitCastInst);
         }
         return null;
     }
@@ -167,6 +171,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         }
         if (AA.getModRefBehavior(callInst.getCallee()) == AliasAnalysis.ModRefInfo.NoModRef) {
             workList.add(callInst);
+            invariants.add(callInst);
         }
         return null;
     }
@@ -175,6 +180,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     public Object visit(CmpInst cmpInst) {
         if (isInvariant(cmpInst.getLHS()) && isInvariant(cmpInst.getRHS())) {
             workList.add(cmpInst);
+            invariants.add(cmpInst);
         }
         return null;
     }
@@ -194,6 +200,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         }
         if (notModifiedInLoop(getPtrInst.getAggregateValue(), curLoop)) {
             workList.add(getPtrInst);
+            invariants.add(getPtrInst);
         }
         return null;
     }
@@ -203,6 +210,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         Value addr = loadInst.getLoadAddr();
         if (isInvariant(addr) && notModifiedInLoop(addr, curLoop)) {
             workList.add(loadInst);
+            invariants.add(loadInst);
         }
         return null;
     }

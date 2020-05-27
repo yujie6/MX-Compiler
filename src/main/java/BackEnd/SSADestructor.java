@@ -56,8 +56,7 @@ public class SSADestructor extends ModulePass {
             CopyInst safeCopy = getSafeCopy();
             if (safeCopy != null) {
                 copyInsts.remove(safeCopy);
-                safeCopy.eraseFromParent();
-
+                safeCopy.getParent().getInstList().remove(safeCopy);
                 safeCopy.isParallel = false;
                 simpleCopyList.add(safeCopy);
                 continue;
@@ -74,9 +73,11 @@ public class SSADestructor extends ModulePass {
             simpleCopyList.add(tmpCopy);
             copyInst.replaceSrc(tmpRegister);
         }
-
-        for (CopyInst inst : simpleCopyList) {
-            BB.AddInstBeforeBranch(inst);
+        for (int i = 0; i < simpleCopyList.size(); i++) {
+            CopyInst inst = simpleCopyList.get(i);
+            if (i == 0 || !inst.toString().equals(simpleCopyList.get(i - 1).toString())) {
+                BB.AddInstBeforeBranch(inst);
+            }
         }
         simpleCopyList.clear();
     }

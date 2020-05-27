@@ -10,9 +10,11 @@ import Optim.FuncAnalysis.DomNode;
 import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.FuncOptimManager;
 import Optim.FunctionPass;
+import Optim.MxOptimizer;
 import Optim.Pass;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 public class CommonSubexElim extends FunctionPass {
@@ -21,7 +23,7 @@ public class CommonSubexElim extends FunctionPass {
     private DomTreeBuilder dm;
 
     private class expr {
-        String LHS, RHS, opcode;
+        String LHS, RHS, opcode;  // shall add gep!
 
         public expr(Instruction inst, boolean reverse) {
             this(inst); // call another constructor
@@ -81,31 +83,33 @@ public class CommonSubexElim extends FunctionPass {
         this.dm = dm1;
     }
 
-
-
+    private int elimNum = 0;
     @Override
     public boolean optimize() {
-        boolean changed = false;
         exprMap.clear();
+        elimNum = 0;
         DomNode root = dm.domTree.get(function.getHeadBlock());
-        return visit(root);
+        visit(root);
+        if (elimNum != 0)
+            MxOptimizer.logger.fine(String.format("Common subexpression elimination works on \"%s\" with %d inst eliminated ",
+                function.getIdentifier(), elimNum));
+        return elimNum != 0;
     }
 
-    private boolean visit(DomNode node) {
-        boolean changed = false;
+    private void visit(DomNode node) {
         BasicBlock BB = node.block;
 
-        for (Instruction inst : BB.getInstList()) {
+        for (Instruction inst : List.copyOf(BB.getInstList())) {
             if (inst instanceof BinOpInst || inst instanceof CmpInst) {
                 expr curExpr = new expr(inst);
                 if (exprMap.containsKey(curExpr)) {
                     Instruction replaceVal = exprMap.get(curExpr);
-                    BasicBlock defBB = replaceVal.getParent();
-                    if (dm.dominates(defBB, BB)) {
+                    if ( dm.dominates( replaceVal, inst) ) {
                         inst.replaceAllUsesWith(replaceVal);
+                        inst.eraseFromParent();
+                        elimNum += 1;
                     } else {
                         exprMap.replace(curExpr, inst);
-                        changed = true;
                     }
                 } else {
                     exprMap.put(curExpr, inst);
@@ -116,11 +120,7 @@ public class CommonSubexElim extends FunctionPass {
                 }
             }
         }
-
-        for (DomNode child : node.children) {
-            changed |= visit(child);
-        }
-        return changed;
+        node.children.forEach( child -> {visit(child);});
     }
 
 

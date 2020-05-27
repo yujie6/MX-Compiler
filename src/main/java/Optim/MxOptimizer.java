@@ -60,6 +60,12 @@ public class MxOptimizer {
         }
     }
 
+    private void commonGetElementPtrElimination() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.cge();
+        }
+    }
+
     private void cfgSimplify() {
         for (FuncOptimManager optimManager : funcOptimizers) {
             optimManager.cfgSimplify();
@@ -78,6 +84,12 @@ public class MxOptimizer {
         }
     }
 
+    private void redundantLoadElimination() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.loadelim();
+        }
+    }
+
 
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();
@@ -85,10 +97,14 @@ public class MxOptimizer {
         mem2reg();
         deadCodeElimination();
         loopAnalysis();
+        buildDomTrees();
+        commonSubexpressionElimination();
+        // commonGetElementPtrElimination();
         loopInvariantCodeMotion();
 
+        // redundantLoadElimination();
+
         // aggressiveDeadCodeElimination();
-        // commonSubexpressionElimination();
-        // loopInvariantCodeMotion();
+
     }
 }

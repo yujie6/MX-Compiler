@@ -3,6 +3,7 @@ package Optim.FuncAnalysis;
 import IR.BasicBlock;
 import IR.Function;
 import IR.Instructions.Instruction;
+import IR.Value;
 import Optim.MxOptimizer;
 
 import java.util.ArrayList;
@@ -37,7 +38,10 @@ public class DomTreeBuilder {
     }
 
     public void init() {
+        domTree.clear();
+        domFrontier.clear();
         sum = function.getBlockList().size();
+        function.getBlockList().forEach(BB -> { BB.dfnOrder = -1; BB.postDfnOrder = -1;});
         parent = new BasicBlock[sum];
         idom = new BasicBlock[sum];
         sdom = new BasicBlock[sum];
@@ -61,6 +65,20 @@ public class DomTreeBuilder {
     public boolean dominates(BasicBlock defBB, BasicBlock useBB) {
         if (defBB == useBB) return true;
         return domTree.get(defBB).dominates(domTree.get(useBB));
+    }
+
+    public boolean dominates(Value a, Value b) {
+        if (!(a instanceof Instruction))
+            return true;
+        if (!(b instanceof Instruction))
+            return false;
+        Instruction def = (Instruction) a, use = (Instruction) b;
+        BasicBlock defBB = def.getParent(), useBB = use.getParent();
+        if (defBB != useBB) {
+            return dominates(defBB, useBB);
+        } else {
+            return defBB.getInstList().indexOf(def) > defBB.getInstList().indexOf(use);
+        }
     }
 
 

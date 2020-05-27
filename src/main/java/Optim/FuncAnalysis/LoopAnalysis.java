@@ -168,8 +168,9 @@ public class LoopAnalysis extends Pass {
                 br.replaceSuccBlock(header, preheader);
                 for (Instruction inst : List.copyOf(header.getInstList()) ) {
                     if (inst instanceof PhiInst) {
+                        // inst.eraseFromParent(); !!!
+                        inst.getParent().getInstList().remove(this);
                         preheader.AddInstAtTop(inst);
-                        inst.eraseFromParent();
                     } else break;
                 }
             }

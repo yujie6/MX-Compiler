@@ -16,20 +16,24 @@ public class FuncOptimManager {
     private DeadCodeElim dce;
     private AggrDeadCodeElim adce;
     private CommonSubexElim cse;
+    private CommonGEPElim cge;
     private LoopICM licm;
+    private LoadElim loadElim;
 
     public FuncOptimManager(Function func) {
         this.function = func;
         cfgSimplifier = new CFGSimplifier(function);
         domTreeBuilder = new DomTreeBuilder(function);
         LA = new LoopAnalysis(function, domTreeBuilder);
-        AA = new AliasAnalysis(function);
+        AA = new AliasAnalysis(function, domTreeBuilder);
         mem2reg = new Mem2reg(function, domTreeBuilder);
         dce = new DeadCodeElim(function);
         cdgBuilder = new CDGBuilder(function);
         adce = new AggrDeadCodeElim(function, cdgBuilder);
         cse = new CommonSubexElim(function, domTreeBuilder);
-        licm = new LoopICM(function, LA, AA);
+        licm = new LoopICM(function, LA, AA, domTreeBuilder);
+        loadElim = new LoadElim(function, AA, domTreeBuilder);
+        cge = new CommonGEPElim(function, AA, domTreeBuilder);
     }
 
     public void buildControlDependenceGraph() {
@@ -65,7 +69,15 @@ public class FuncOptimManager {
         cse.optimize();
     }
 
+    public void cge() {
+        cge.optimize();
+    }
+
     public void licm() {
         licm.optimize();
+    }
+
+    public void loadelim() {
+        loadElim.optimize();
     }
 }

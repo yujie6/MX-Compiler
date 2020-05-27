@@ -15,7 +15,6 @@ import java.util.ArrayList;
  */
 public class Use {
     private Value Val;
-    private Use prev, next;
     private User user;
 
     public Use(Value var, User user) {
@@ -28,19 +27,7 @@ public class Use {
         Val = val;
     }
 
-    public Use getPrev() {
-        return prev;
-    }
-
-    public Use getNext() {
-        return next;
-    }
-
     public Value getVal() {
         return Val;
-    }
-
-    public User getUser() {
-        return user;
     }
 }

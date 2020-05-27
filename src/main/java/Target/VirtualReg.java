@@ -52,6 +52,7 @@ public class VirtualReg extends RVOperand {
         this.degree = 0;
         this.alias = null;
         this.stackAddress = null;
+        this.spillCost = 0;
         this.color = null;
     }
 

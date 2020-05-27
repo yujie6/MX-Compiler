@@ -5,6 +5,8 @@ import IR.IRVisitor;
 import IR.Use;
 import IR.Value;
 
+import java.util.Objects;
+
 /**
  * Just pseudo instruction used after ssa destruction
  */

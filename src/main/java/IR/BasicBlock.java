@@ -93,6 +93,7 @@ public class BasicBlock extends Value {
         if (isEmpty()) {
             HeadInst = inst;
         }
+        inst.setParent(this);
         TailInst = inst;
         InstList.addLast(inst);
     }
@@ -108,12 +109,14 @@ public class BasicBlock extends Value {
         if (isEmpty()) {
             TailInst = inst;
         }
+        inst.setParent(this);
         HeadInst = inst;
         InstList.addFirst(inst);
     }
 
     public void AddInstBeforeBranch(Instruction inst) {
         Instruction br = getTailInst();
+        inst.setParent(this);
         InstList.add( InstList.size() - 1, inst); // where would you add ?
     }
 

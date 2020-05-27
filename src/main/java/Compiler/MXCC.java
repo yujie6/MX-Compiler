@@ -302,7 +302,7 @@ public class MXCC {
             case 2: {
                 MxOptimizer optimizer = new MxOptimizer(LLVMTopModule, logger);
                 optimizer.optimize();
-                RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
+                 RVModule RISCVTopModule = GetRISCVModule(LLVMTopModule);
                 PrintRISCVAssembly(RISCVTopModule, outFilePath);
                 break;
             }

@@ -537,11 +537,13 @@ public class InstSelector implements IRVisitor {
         RVOperand baseAddr = getRVOperand(getPtrInst.getAggregateValue());
         if (baseAddr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
-            LUI lui = new LUI(curBlock, tmp, baseAddr);
-            RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, tmp, baseAddr, tmp);
 
+            /*LUI lui = new LUI(curBlock, tmp, baseAddr);
+            RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, tmp, baseAddr, tmp);
             curBlock.AddInst(lui);
-            curBlock.AddInst(addi);
+            curBlock.AddInst(addi);*/
+            LA la = new LA (curBlock, (RVGlobal) baseAddr, tmp);
+            curBlock.AddInst(la);
             this.virtualRegMap.put(getPtrInst, tmp);
             return null;
         }
@@ -575,9 +577,12 @@ public class InstSelector implements IRVisitor {
         RVOperand addr = getRVOperand(loadInst.getLoadAddr());
         if (addr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
-            LUI lui = new LUI(curBlock, tmp, addr);
+            /*LUI lui = new LUI(curBlock, tmp, addr);
             addr = new RVAddr((RVGlobal) addr, tmp, curFunction); // should load
-            curBlock.AddInst(lui);
+            curBlock.AddInst(lui);*/
+            LA la = new LA(curBlock, (RVGlobal) addr, tmp);
+            curBlock.AddInst(la);
+            addr = new RVAddr(tmp, 0, curFunction);
         } else if (!(addr instanceof RVAddr)) {
             if (addr instanceof VirtualReg)
                 addr = new RVAddr((VirtualReg) addr, 0, curFunction);
@@ -629,9 +634,12 @@ public class InstSelector implements IRVisitor {
         RVOperand destAddr = getRVOperand(storeInst.getStoreDest());
         if (destAddr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
-            LUI lui = new LUI(curBlock, tmp, destAddr);
+            /*LUI lui = new LUI(curBlock, tmp, destAddr);
             destAddr = new RVAddr((RVGlobal) destAddr, tmp, curFunction); // should load
-            curBlock.AddInst(lui);
+            curBlock.AddInst(lui);*/
+            LA la = new LA(curBlock, (RVGlobal) destAddr, tmp);
+            destAddr = new RVAddr(tmp, 0, curFunction);
+            curBlock.AddInst(la);
         } else if (storeInst.getStoreDest() instanceof Instruction) {
             destAddr = new RVAddr(getVirtualReg(storeInst.getStoreDest()), 0, curFunction);
         }

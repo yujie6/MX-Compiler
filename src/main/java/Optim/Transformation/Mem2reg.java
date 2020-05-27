@@ -276,7 +276,7 @@ public class Mem2reg extends FunctionPass {
         StoreInst onlyStore = info.onlyStore;
         BasicBlock storeBB = info.onlyStore.getParent();
         info.usingBlocks.clear();
-        for (User U : AI.UserList) {
+        for (User U : List.copyOf(AI.UserList)) {
             if (!(U instanceof LoadInst)) continue;
             LoadInst LI = (LoadInst) U;
             if (LI.getParent() == storeBB) {

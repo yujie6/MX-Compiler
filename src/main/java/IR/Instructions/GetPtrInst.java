@@ -13,6 +13,7 @@ import java.util.ArrayList;
 public class GetPtrInst extends Instruction {
     private IRBaseType baseAggregateType;
     private IRBaseType elementType;
+    public int offsetNum;
 
     public GetPtrInst(BasicBlock parent, Value aggregateValue, ArrayList<Value> offsets,
                       IRBaseType elementType) {
@@ -21,6 +22,7 @@ public class GetPtrInst extends Instruction {
         for (Value offset : offsets) {
             this.UseList.add(new Use(offset, this));
         }
+        offsetNum = offsets.size();
 
 
         if (aggregateValue.getType() instanceof PointerType) {
@@ -95,6 +97,10 @@ public class GetPtrInst extends Instruction {
             offsets.add(this.UseList.get(i).getVal());
         }
         return offsets;
+    }
+
+    public Value getOffset(int index) {
+        return this.UseList.get(index + 1).getVal();
     }
 
     public int getTotalOffset() {

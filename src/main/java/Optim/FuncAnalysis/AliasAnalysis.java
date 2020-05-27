@@ -1,10 +1,9 @@
 package Optim.FuncAnalysis;
 
+import IR.BasicBlock;
+import IR.Constants.IntConst;
 import IR.Function;
-import IR.Instructions.CallInst;
-import IR.Instructions.Instruction;
-import IR.Instructions.LoadInst;
-import IR.Instructions.StoreInst;
+import IR.Instructions.*;
 import IR.Value;
 import Optim.FunctionPass;
 
@@ -24,16 +23,35 @@ public class AliasAnalysis extends FunctionPass {
     ;
 
     public enum ModRefInfo {NoModRef, Mod, Ref, ModRef}
-
-    public AliasAnalysis(Function function) {
+    private DomTreeBuilder dm;
+    public AliasAnalysis(Function function, DomTreeBuilder dm) {
         super(function);
+        this.dm = dm;
     }
 
     public AR alias(Value v1, Value v2) {
         if (v1 == v2) {
             return AR.MustAlias;
-        } else if (v1.getType().equals(v2.getType())) {
+        }  else if (!v1.getType().equals(v2.getType())) {
             return AR.NoAlias;
+        } else if (v1 instanceof IntConst && v2 instanceof IntConst) {
+            if (((IntConst) v1).ConstValue == ((IntConst) v2).ConstValue ) {
+                return AR.MustAlias;
+            } else return AR.NoAlias;
+        } else if (v1 instanceof GetPtrInst && v2 instanceof GetPtrInst) {
+            GetPtrInst gep1 = (GetPtrInst) v1, gep2 = (GetPtrInst) v2;
+            if (gep1.offsetNum == gep2.offsetNum) {
+                if (alias(gep1.getAggregateValue(), gep2.getAggregateValue()) != AR.MustAlias)
+                    return AR.NoAlias;
+                for (int i = 0; i < gep1.offsetNum; i++ ){
+                    Value offset1 = gep1.getOffset(i);
+                    Value offset2 = gep2.getOffset(i);
+                    if (alias(offset1, offset2) != AR.MustAlias) {
+                        return AR.NoAlias;
+                    }
+                }
+                return AR.MustAlias;
+            } else return AR.NoAlias;
         } else return AR.MayAlias;
     }
 
