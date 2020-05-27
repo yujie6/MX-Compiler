@@ -390,11 +390,10 @@ public class IRBuilder implements ASTVisitor {
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
         curBasicBlock = CondBlock;
         curFunction.AddBlockAtTail(CondBlock);
-
         Instruction cond = (Instruction) node.getCondition().accept(this);
         // TODO: check cast's correctness
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, cond, LoopBody, MergeBlock));
-        LoopStackForContinue.push(LoopBody);
+        LoopStackForContinue.push(CondBlock);
         curFunction.AddBlockAtTail(LoopBody);
 
         MergeStackForBreak.push(MergeBlock);
@@ -440,11 +439,11 @@ public class IRBuilder implements ASTVisitor {
         if (node.getCondExpr() != null) {
             Instruction condInst = (Instruction) node.getCondExpr().accept(this);
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, condInst, LoopBody, MergeBlock));
-            LoopStackForContinue.push(LoopBody);
+            LoopStackForContinue.push(UpdateBlock);
             MergeStackForBreak.push(MergeBlock);
         } else {
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, LoopBody, null));
-            LoopStackForContinue.push(LoopBody);
+            LoopStackForContinue.push(UpdateBlock);
             MergeStackForBreak.push(MergeBlock);
         }
         curFunction.AddBlockAtTail(LoopBody);
