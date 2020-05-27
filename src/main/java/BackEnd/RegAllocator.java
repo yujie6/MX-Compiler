@@ -25,11 +25,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     private HashSet<VirtualReg> preColored;
     private LivenessBuilder livenessBuilder;
 
-    private HashSet<VirtualReg> simplifyWorkList;
-    private HashSet<VirtualReg> freezeWorkList;
-    private HashSet<VirtualReg> spillWorkList;
+    private Collection<VirtualReg> simplifyWorkList;
+    private Collection<VirtualReg> freezeWorkList;
+    private Collection<VirtualReg> spillWorkList;
 
-    private HashSet<VirtualReg> spilledNodes;
+    private LinkedList<VirtualReg> spilledNodes;
     private HashSet<VirtualReg> coloredNodes;
     private HashSet<VirtualReg> coalescedNodes;
 
@@ -95,11 +95,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     public RegAllocator(RVModule topModule) {
         super(topModule);
         this.adjacentSet = new LinkedHashSet<>();
-        this.simplifyWorkList = new HashSet<>();
-        this.freezeWorkList = new HashSet<>();
-        this.spillWorkList = new HashSet<>();
+        this.simplifyWorkList = new LinkedList<>();
+        this.freezeWorkList = new LinkedList<>();
+        this.spillWorkList = new LinkedList<>();
 
-        this.spilledNodes = new HashSet<>();
+        this.spilledNodes = new LinkedList<>();
         this.coalescedNodes = new HashSet<>();
         this.coloredNodes = new LinkedHashSet<>();
 
@@ -241,12 +241,15 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
         return null;
     }
 
+    private int maxLoopDepth;
+
     private void Build() {
         Instant start = Instant.now();
+        maxLoopDepth = 0;
         for (RVBlock BB : curFunction.getRvBlockList()) {
             BasicBlock irBB = BB.irBlock;
             int depth = irBB.loopDepth;
-
+            maxLoopDepth = Math.max(maxLoopDepth, depth);
             HashSet<VirtualReg> live = new HashSet<>(BB.liveOutSet);
             for (int i = BB.rvInstList.size() - 1; i >= 0; i--) {
                 RVInstruction inst = BB.rvInstList.get(i);
@@ -271,6 +274,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 live.removeAll(defs);
                 live.addAll(uses);
             }
+        }
+        if (maxLoopDepth >= 2) {
+            spillWorkList = new HashSet<>();
+            simplifyWorkList = new HashSet<>();
+            freezeWorkList = new HashSet<>();
         }
         Instant end = Instant.now();
         System.out.println(String.format("God damn build process cost %d!!", Duration.between(start, end).toMillis() ) );
@@ -489,9 +497,6 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 favorite = v;
                 minCost = v.spillCost;
             }
-        }
-        if (minCost > 25000) {
-            minCost = 0;
         }
         return favorite;
     }
