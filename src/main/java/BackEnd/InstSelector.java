@@ -538,12 +538,12 @@ public class InstSelector implements IRVisitor {
         if (baseAddr instanceof RVGlobal) {
             VirtualReg tmp = new VirtualReg("tmp for abs addr");
 
-            /*LUI lui = new LUI(curBlock, tmp, baseAddr);
+            LUI lui = new LUI(curBlock, tmp, baseAddr);
             RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, tmp, baseAddr, tmp);
             curBlock.AddInst(lui);
-            curBlock.AddInst(addi);*/
-            LA la = new LA (curBlock, (RVGlobal) baseAddr, tmp);
-            curBlock.AddInst(la);
+            curBlock.AddInst(addi);
+            /*LA la = new LA (curBlock, (RVGlobal) baseAddr, tmp);
+            curBlock.AddInst(la);*/
             this.virtualRegMap.put(getPtrInst, tmp);
             return null;
         }

@@ -11,7 +11,6 @@ import Optim.FunctionPass;
 import Optim.MxOptimizer;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 
 /**
@@ -25,9 +24,9 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     private LinkedList<Instruction> workList;
     private ArrayList<Instruction> invariants;
     private Loop curLoop;
-    private int hositNum = 0;
+    private int hoistNum = 0;
 
-    public LoopICM (Function function, LoopAnalysis LA, AliasAnalysis AA, DomTreeBuilder dm) {
+    public LoopICM(Function function, LoopAnalysis LA, AliasAnalysis AA, DomTreeBuilder dm) {
         super(function);
         this.LA = LA;
         this.AA = AA;
@@ -38,10 +37,13 @@ public class LoopICM extends FunctionPass implements IRVisitor {
 
     @Override
     public boolean optimize() {
-        boolean changed = hoist(LA.rootLoop);
+        hoistNum = 0;
+        workList.clear();
+        invariants.clear();
+        hoist(LA.rootLoop);
         MxOptimizer.logger.fine(String.format("Hoist %d insts in function \"%s\""
-                , hositNum, function.getIdentifier()));
-        return changed;
+                , hoistNum, function.getIdentifier()));
+        return hoistNum != 0;
     }
 
     private void findInvariant(Loop loop) {
@@ -63,22 +65,25 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         }
     }
 
-    private boolean isInvariant(Value val, Loop loop) {
-        if (val instanceof Constant) {
-            return true;
-        } else if (val instanceof Instruction) {
-            if (invariants.contains(val) ) return true;
-            return !loop.getLoopBlocks().contains(((Instruction) val).getParent());
-        }
-        return false;
-    }
-
     private boolean isInvariant(Value val) {
-        if (val instanceof Constant) {
+        if (val instanceof Constant || val instanceof Argument) {
             return true;
         } else if (val instanceof Instruction) {
-            if (invariants.contains(val) ) return true;
-            if (val instanceof PhiInst) return false;
+            if (invariants.contains(val)) return true;
+            if (val instanceof PhiInst) {
+                return false;
+                /*PhiInst phi = (PhiInst) val;
+                if (!curLoop.getLoopBlocks().contains(phi.getParent())) {
+                    int branchNum = phi.getBranchNum();
+                    for (int i = 0; i < branchNum; i++) {
+                        BasicBlock BB = phi.getBlock(i);
+                        if (curLoop.getLoopBlocks().contains(BB)) return false;
+                    }
+                    return true;
+                }
+                return false;*/
+            }
+
             return !curLoop.getLoopBlocks().contains(((Instruction) val).getParent());
         }
         return false;
@@ -102,13 +107,16 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     }
 
     private boolean hoist(Instruction inst, Loop loop) {
-        boolean changed  = false;
+        boolean changed = false;
         BasicBlock preHeader = loop.preHeader;
         // hoist instruction to preHeader
+        if (loop.preHeader.getInstList().contains(inst)) {
+            return false;
+        }
         inst.getParent().getInstList().remove(inst);
         preHeader.AddInstBeforeBranch(inst);
-        this.hositNum += 1;
-        return changed;
+        this.hoistNum += 1;
+        return true;
     }
 
     private boolean notModifiedInLoop(Value pointer, Loop loop) {
@@ -141,7 +149,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     public Object visit(BinOpInst binOpInst) {
         Value LHS = binOpInst.getLHS();
         Value RHS = binOpInst.getRHS();
-        if (isInvariant(LHS, curLoop) && isInvariant(RHS, curLoop)) {
+        if (isInvariant(LHS) && isInvariant(RHS)) {
             workList.add(binOpInst);
             invariants.add(binOpInst);
         }
@@ -150,7 +158,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
 
     @Override
     public Object visit(BitCastInst bitCastInst) {
-        if (isInvariant(bitCastInst.getCastValue()) ) {
+        if (isInvariant(bitCastInst.getCastValue())) {
             workList.add(bitCastInst);
             invariants.add(bitCastInst);
         }
@@ -165,7 +173,7 @@ public class LoopICM extends FunctionPass implements IRVisitor {
     @Override
     public Object visit(CallInst callInst) {
         for (Value arg : callInst.getArgumentList()) {
-            if (!isInvariant(arg, curLoop)) {
+            if (!isInvariant(arg)) {
                 return null;
             }
         }
@@ -193,15 +201,17 @@ public class LoopICM extends FunctionPass implements IRVisitor {
 
     @Override
     public Object visit(GetPtrInst getPtrInst) {
-        for (Value offset : getPtrInst.getOffsets() ) {
+        if (!isInvariant(getPtrInst.getAggregateValue())) {
+            return null;
+        }
+        for (Value offset : getPtrInst.getOffsets()) {
             if (!isInvariant(offset)) {
                 return null;
             }
         }
-        if (notModifiedInLoop(getPtrInst.getAggregateValue(), curLoop)) {
-            workList.add(getPtrInst);
-            invariants.add(getPtrInst);
-        }
+        workList.add(getPtrInst);
+        invariants.add(getPtrInst);
+
         return null;
     }
 

@@ -90,6 +90,12 @@ public class MxOptimizer {
         }
     }
 
+    private void optimizeAllFunctions() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            optimManager.run();
+        }
+    }
+
 
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();

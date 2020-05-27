@@ -80,4 +80,20 @@ public class FuncOptimManager {
     public void loadelim() {
         loadElim.optimize();
     }
+
+    public void run() {
+        cfgSimplify();
+        buildDomTree();
+        mem2reg();
+        loopAnalysis();
+        boolean changed = true;
+        while (changed) {
+            changed = false;
+            changed |= dce.optimize();
+            changed |= cse.optimize();
+            AA.optimize();
+            buildDomTree();
+            changed |= licm.optimize();
+        }
+    }
 }

@@ -59,6 +59,11 @@ public class LoopAnalysis extends Pass {
 
     @Override
     public boolean optimize() {
+        backEdges.clear();
+        visited.clear();
+        nestedLoops.clear();
+        loopMap.clear();
+        loopHeaders.clear();
         DomNode root = dm.domTree.get(function.getHeadBlock());
         HashSet<BasicBlock> realLoopBlocks = new HashSet<>();
         // find all back edges
@@ -110,9 +115,12 @@ public class LoopAnalysis extends Pass {
             if (BB == outerLoop.header) continue;
             if (loopHeaders.contains(BB)) {
                 Loop innerLoop = nestedLoops.get(BB);
-                innerLoop.setOuterLoop(outerLoop);
-                outerLoop.addInnerLoop(innerLoop);
-                buildLoopTree(innerLoop);
+                if (innerLoop.outerLoop == null) {
+                    // each inner loop is visited once
+                    innerLoop.setOuterLoop(outerLoop);
+                    outerLoop.addInnerLoop(innerLoop);
+                    buildLoopTree(innerLoop);
+                }
             }
         }
     }
@@ -138,13 +146,6 @@ public class LoopAnalysis extends Pass {
         }
     }
 
-    public HashMap<BasicBlock, Loop> getNestedLoops() {
-        return nestedLoops;
-    }
-
-    public int getLoopDepth(BasicBlock BB) {
-        return BB.loopDepth;
-    }
 
     private int preheaderNum;
 
@@ -166,13 +167,13 @@ public class LoopAnalysis extends Pass {
                 if (predecessor == preheader) continue;
                 BranchInst br = (BranchInst) predecessor.getTailInst();
                 br.replaceSuccBlock(header, preheader);
-                for (Instruction inst : List.copyOf(header.getInstList()) ) {
-                    if (inst instanceof PhiInst) {
-                        // inst.eraseFromParent(); !!!
-                        inst.getParent().getInstList().remove(this);
-                        preheader.AddInstAtTop(inst);
-                    } else break;
-                }
+            }
+            for (Instruction inst : List.copyOf(header.getInstList()) ) {
+                if (inst instanceof PhiInst) {
+                    // inst.eraseFromParent(); !!!
+                    inst.getParent().getInstList().remove(this);
+                    preheader.AddInstAtTop(inst);
+                } else break;
             }
             this.preheaderNum += 1;
             function.AddBlockBefore(header, preheader);
