@@ -25,11 +25,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     private HashSet<VirtualReg> preColored;
     private LivenessBuilder livenessBuilder;
 
-    private LinkedList<VirtualReg> simplifyWorkList;
-    private LinkedList<VirtualReg> freezeWorkList;
-    private LinkedList<VirtualReg> spillWorkList;
+    private HashSet<VirtualReg> simplifyWorkList;
+    private HashSet<VirtualReg> freezeWorkList;
+    private HashSet<VirtualReg> spillWorkList;
 
-    private LinkedList<VirtualReg> spilledNodes;
+    private HashSet<VirtualReg> spilledNodes;
     private HashSet<VirtualReg> coloredNodes;
     private HashSet<VirtualReg> coalescedNodes;
 
@@ -95,11 +95,11 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     public RegAllocator(RVModule topModule) {
         super(topModule);
         this.adjacentSet = new LinkedHashSet<>();
-        this.simplifyWorkList = new LinkedList<>();
-        this.freezeWorkList = new LinkedList<>();
-        this.spillWorkList = new LinkedList<>();
+        this.simplifyWorkList = new HashSet<>();
+        this.freezeWorkList = new HashSet<>();
+        this.spillWorkList = new HashSet<>();
 
-        this.spilledNodes = new LinkedList<>();
+        this.spilledNodes = new HashSet<>();
         this.coalescedNodes = new HashSet<>();
         this.coloredNodes = new LinkedHashSet<>();
 
@@ -345,7 +345,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private void Simplify() {
-        VirtualReg n = simplifyWorkList.pop();
+        VirtualReg n = simplifyWorkList.iterator().next();
+        simplifyWorkList.remove(n);
         if (!this.selectStack.contains(n)) this.selectStack.push(n);
         for (VirtualReg m : getAdjacent(n)) {
             DecrementDegree(m);
@@ -474,7 +475,8 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private void Freeze() {
-        VirtualReg u = freezeWorkList.pop();
+        VirtualReg u = freezeWorkList.iterator().next();
+        freezeWorkList.remove(u);
         simplifyWorkList.add(u);
         freezeMoves(u);
     }
@@ -487,6 +489,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 favorite = v;
                 minCost = v.spillCost;
             }
+        }
+        if (minCost > 25000) {
+            minCost = 0;
         }
         return favorite;
     }

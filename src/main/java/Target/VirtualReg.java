@@ -4,6 +4,7 @@ import IR.Instructions.Instruction;
 
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Objects;
 
 public class VirtualReg extends RVOperand {
 
@@ -76,6 +77,19 @@ public class VirtualReg extends RVOperand {
     public int getSpillCost() {
         if (degree == 0) return 20;
         return spillCost / degree;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        VirtualReg that = (VirtualReg) o;
+        return that.toString().equals(toString());
+    }
+
+    @Override
+    public int hashCode() {
+        return this.toString().hashCode();
     }
 
     public String getIdentifier() {

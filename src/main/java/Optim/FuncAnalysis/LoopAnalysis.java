@@ -115,7 +115,7 @@ public class LoopAnalysis extends Pass {
             if (BB == outerLoop.header) continue;
             if (loopHeaders.contains(BB)) {
                 Loop innerLoop = nestedLoops.get(BB);
-                if (innerLoop.outerLoop == null) {
+                if (innerLoop.outerLoop == null || innerLoop.outerLoop == rootLoop) {
                     // each inner loop is visited once
                     innerLoop.setOuterLoop(outerLoop);
                     outerLoop.addInnerLoop(innerLoop);

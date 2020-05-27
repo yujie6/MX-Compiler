@@ -68,8 +68,8 @@ check {
 }
 
 run {
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/sorting/bubble_sort.mx", "-o", "/tmp/test.s"]
-    // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t61.mx", "-o", "/tmp/test.s"]
+    // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/sorting/bubble_sort.mx", "-o", "/tmp/test.s"]
+    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t58.mx", "-o", "/tmp/test.s"]
     // args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/LearnLLVM/codegen/t.mx"]
     // options.warnings = false
 }
