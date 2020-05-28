@@ -1,9 +1,7 @@
 package Target.RVInstructions;
 
-import Target.RVAddr;
-import Target.RVBlock;
-import Target.RVOperand;
-import Target.VirtualReg;
+import Target.*;
+
 import java.util.Set;
 
 public class RVLoad extends RVInstruction {
@@ -11,12 +9,7 @@ public class RVLoad extends RVInstruction {
 
     private VirtualReg destReg;
     private RVAddr srcAddr;
-
-    public RVLoad(RVOpcode opcode, RVBlock rvBlock, VirtualReg dest, RVAddr src) {
-        super(opcode, rvBlock);
-        this.destReg = dest;
-        this.srcAddr = src;
-    }
+    private RVGlobal gvar;
 
     public RVLoad(RVBlock rvBlock, VirtualReg dest, RVAddr src) {
         super(RVOpcode.lw, rvBlock);
@@ -24,8 +17,15 @@ public class RVLoad extends RVInstruction {
         this.srcAddr = src;
     }
 
+    public RVLoad(RVBlock rvBlock, VirtualReg dest, RVGlobal gvar) {
+        super(RVOpcode.lw, rvBlock);
+        this.destReg = dest;
+        this.gvar = gvar;
+    }
+
     @Override
     public Set<VirtualReg> getUseRegs() {
+        if (gvar != null) return Set.of();
         return Set.of(srcAddr.getBaseAddrReg()) ;
     }
 
@@ -41,6 +41,7 @@ public class RVLoad extends RVInstruction {
 
     @Override
     public void replaceUse(VirtualReg old, VirtualReg replaceVal) {
+        if (srcAddr == null) return;
         if (srcAddr.getBaseAddrReg().equals(old)) {
             srcAddr.setBaseAddrReg(replaceVal);
         }
@@ -49,7 +50,10 @@ public class RVLoad extends RVInstruction {
     @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getOpcode());
-        ans.append("\t").append(destReg.toString()).append(",\t").append(srcAddr.toString());
+        ans.append("\t").append(destReg.toString()).append(",\t");
+        if (gvar != null) {
+            ans.append(gvar.getIdentifier());
+        } else ans.append(srcAddr.toString());
         ans.append("\n");
         return ans.toString();
     }

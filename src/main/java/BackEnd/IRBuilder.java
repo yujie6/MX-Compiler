@@ -390,9 +390,13 @@ public class IRBuilder implements ASTVisitor {
         curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, CondBlock, null));
         curBasicBlock = CondBlock;
         curFunction.AddBlockAtTail(CondBlock);
-        Instruction cond = (Instruction) node.getCondition().accept(this);
-        // TODO: check cast's correctness
-        curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, cond, LoopBody, MergeBlock));
+        Value cond = (Value) node.getCondition().accept(this);
+        if (cond instanceof BoolConst) {
+            if (((BoolConst) cond).constValue == 1)
+                curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, LoopBody, null));
+            else
+                curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+        } else curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, cond, LoopBody, MergeBlock));
         LoopStackForContinue.push(CondBlock);
         curFunction.AddBlockAtTail(LoopBody);
 
@@ -487,7 +491,7 @@ public class IRBuilder implements ASTVisitor {
             } else {
                 boolean old_left = isLeftValue;
                 isLeftValue = false;
-                RetValue = (Instruction) node.getReturnedExpr().accept(this);
+                RetValue = (Value) node.getReturnedExpr().accept(this);
                 isLeftValue = old_left;
             }
             curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, RetValue, curFunction.getRetValue()));
@@ -691,7 +695,7 @@ public class IRBuilder implements ASTVisitor {
         // malloc some space, and bitcast to (class*)
         Function malloc = TopModule.getFunctionMap().get("malloc");
         ArrayList<Value> paras = new ArrayList<>();
-        paras.add(new IntConst(classType.getBytes(), true));
+        paras.add(new IntConst(classType.getBytes()));
         CallInst mallocCall = new CallInst(curBasicBlock, malloc, paras);
         BitCastInst addr = new BitCastInst(curBasicBlock, mallocCall,
                 new PointerType(classType));

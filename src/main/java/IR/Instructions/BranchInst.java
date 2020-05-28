@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import BackEnd.IRBuilder;
 import IR.BasicBlock;
+import IR.Constants.BoolConst;
 import IR.IRVisitor;
 import IR.Use;
 import IR.Value;
@@ -71,6 +72,9 @@ public class BranchInst extends Instruction {
     }
 
     public String getCondLabel() {
+        if (getCondition() instanceof BoolConst) {
+            return getCondition().toString();
+        }
         return ((Instruction) getCondition()).RegisterID;
     }
 

@@ -18,6 +18,9 @@ public class Immediate extends RVOperand {
 
     @Override
     public String toString() {
-        return String.valueOf(value);
+//        if (!(value < 2048 && value > -2048)) {
+//            return "lo(" + value + ")";
+//        } else
+            return String.valueOf(value);
     }
 }
