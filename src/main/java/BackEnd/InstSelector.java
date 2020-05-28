@@ -154,9 +154,14 @@ public class InstSelector implements IRVisitor {
     private RVInstruction getMoveInst(RVOperand src, VirtualReg dest) {
         if (src instanceof VirtualReg)
             return new RVMove(curBlock, (VirtualReg) src, dest);
-        else if (src instanceof Immediate)
-            return new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("zero"), (Immediate) src,
-                    dest);
+        else if (src instanceof Immediate) {
+            int s = ((Immediate) src).getValue();
+            if (s > 2048 || s < -2048) {
+              src = getVirtualReg((Immediate) src);
+              return new RVArith(RVOpcode.add, curBlock, getFakeReg("zero"), src, dest);
+            } else return new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("zero"), (Immediate) src,
+                        dest);
+        }
         else {
             logger.severe("move inst operand wrong!");
             return null;
@@ -266,8 +271,6 @@ public class InstSelector implements IRVisitor {
         VirtualReg calleeSavedReg = getFakeReg("ra");
         this.calleeSavedMap.put(calleeSavedReg, backup);
         curBlock.AddInst(new RVMove(curBlock, calleeSavedReg, backup));
-
-//        curBlock.AddInst(new RVArithImm(RVOpcode.addi, curBlock, getFakeReg("sp"), ZERO, getFakeReg("s0")));
 
         for (BasicBlock BB : node.getBlockList()) {
             visit(BB);
@@ -550,8 +553,13 @@ public class InstSelector implements IRVisitor {
         int s = getPtrInst.getTotalOffset();
         VirtualReg tmp = new VirtualReg("tmp for addr computation");
         if (s != -42) {
-            RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, baseAddr, new Immediate(s), tmp);
-            curBlock.AddInst(addi);
+            if (s > 2048 || s < -2048) {
+                RVArith add = new RVArith(RVOpcode.add, curBlock, baseAddr, getVirtualReg(new Immediate(s)), tmp);
+                curBlock.AddInst(add);
+            } else {
+                RVArithImm addi = new RVArithImm(RVOpcode.addi, curBlock, baseAddr, new Immediate(s), tmp);
+                curBlock.AddInst(addi);
+            }
             this.virtualRegMap.put(getPtrInst, tmp);
             return null;
         } else {
