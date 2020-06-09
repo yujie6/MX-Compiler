@@ -1,11 +1,8 @@
 package IR.Instructions;
 
 import BackEnd.IRBuilder;
-import IR.BasicBlock;
+import IR.*;
 import IR.Constants.BoolConst;
-import IR.IRVisitor;
-import IR.Use;
-import IR.Value;
 
 public class BranchInst extends Instruction {
 
@@ -76,6 +73,11 @@ public class BranchInst extends Instruction {
             return getCondition().toString();
         }
         return ((Instruction) getCondition()).RegisterID;
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new BranchInst(other, irMap.get(getCondition()), irMap.get(getThenBlock()), irMap.get(getElseBlock()) ));
     }
 
     @Override

@@ -28,9 +28,8 @@ More command line options:
 
 ### Current Objectives
 * Optimizations
-    * Improve mem2reg
-    * Improve CSE
-    * Loop invariant code motion
+    * Graph simplification (edge splitter & preheader)
+    * Inst Combine
     * Strength Reduction
     * Induction Variable Recognition
 * Some non-trivial optimizations

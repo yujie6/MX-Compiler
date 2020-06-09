@@ -4,6 +4,8 @@ import IR.*;
 import IR.Constants.Constant;
 import Optim.MxOptimizer;
 
+import java.awt.image.BandedSampleModel;
+
 public abstract class Instruction extends User {
     static protected int regNum = 1;
     protected BasicBlock Parent;
@@ -79,6 +81,8 @@ public abstract class Instruction extends User {
         }
         this.UserList.clear();
     }
+
+    public abstract void copyTo(BasicBlock other, IRMap irMap);
 
     public boolean isCommutative() {
         return Opcode.equals(InstType.add) || Opcode.equals(InstType.xor) ||

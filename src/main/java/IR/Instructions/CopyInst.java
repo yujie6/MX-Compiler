@@ -1,9 +1,6 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.IRVisitor;
-import IR.Use;
-import IR.Value;
+import IR.*;
 
 import java.util.Objects;
 
@@ -34,6 +31,11 @@ public class CopyInst extends Instruction {
 
     public Value getSrc() {
         return this.UseList.get(1).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new CopyInst(other, irMap.get(getDest()), irMap.get(getSrc()), isParallel));
     }
 
     @Override

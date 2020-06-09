@@ -1,10 +1,7 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.IRVisitor;
+import IR.*;
 import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
 
 public class SextInst extends Instruction {
     // sign extend on integer
@@ -19,6 +16,11 @@ public class SextInst extends Instruction {
 
     public Value getExtendValue() {
         return this.UseList.get(0).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new SextInst(other, type, irMap.get(getExtendValue()), type));
     }
 
     @Override

@@ -1,12 +1,9 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
+import IR.*;
 import IR.Constants.IntConst;
 import IR.Constants.NullConst;
-import IR.IRVisitor;
 import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
 
 import java.util.ArrayList;
 
@@ -53,6 +50,15 @@ public class PhiInst extends Instruction {
         return this.UseList.get(index).getVal();
     }
 
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        PhiInst phi = new PhiInst(other, type);
+        for (int i = 0; i < branchNum; i++) {
+            phi.AddPhiBranch(irMap.get(getBlock(i)), irMap.get(getValue(i)));
+        }
+        other.AddInstAtTail(phi);
+    }
 
     @Override
     public String toString() {

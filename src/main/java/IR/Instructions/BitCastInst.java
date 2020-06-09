@@ -1,10 +1,7 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.IRVisitor;
+import IR.*;
 import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
 
 public class BitCastInst extends Instruction {
 
@@ -19,6 +16,11 @@ public class BitCastInst extends Instruction {
 
     public Value getCastValue() {
         return UseList.get(0).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new BitCastInst(other, irMap.get(getCastValue()), TargetType));
     }
 
     @Override

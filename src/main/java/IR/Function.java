@@ -30,6 +30,9 @@ public class Function extends Value {
     private Value RetValue, thisExpr;
     private ValueSymbolTable varSymTab;
     private boolean isExternal;
+    public ArrayList<Function> caller;
+    public ArrayList<Function> callee;
+    public int instNum = 0;
     private LoopAnalysis LA;
 
     public ArrayList<BasicBlock> getBlockList() {
@@ -41,6 +44,8 @@ public class Function extends Value {
         this.Identifier = id;
         this.ParameterList = parameterList;
         varSymTab = new ValueSymbolTable();
+        callee = new ArrayList<>();
+        caller = new ArrayList<>();
         this.BlockList = new ArrayList<>();
         ArrayList<IRBaseType> argTypeList = new ArrayList<>();
         for (Argument argument : parameterList) {

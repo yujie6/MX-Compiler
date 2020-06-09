@@ -1,14 +1,11 @@
 package IR.Instructions;
 
 import BackEnd.IRBuilder;
-import IR.BasicBlock;
+import IR.*;
 import IR.Constants.Constant;
-import IR.IRVisitor;
 import IR.Types.ArrayType;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
-import IR.Use;
-import IR.Value;
 import Tools.MXError;
 
 public class StoreInst extends Instruction {
@@ -37,6 +34,11 @@ public class StoreInst extends Instruction {
 
     public Value getStoreValue() {
         return this.UseList.get(0).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new StoreInst(other, irMap.get(getStoreValue()), irMap.get(getStoreDest())));
     }
 
     @Override

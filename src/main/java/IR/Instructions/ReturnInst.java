@@ -1,10 +1,7 @@
 package IR.Instructions;
 
-import IR.BasicBlock;
-import IR.IRVisitor;
+import IR.*;
 import IR.Types.IRBaseType;
-import IR.Use;
-import IR.Value;
 
 public class ReturnInst extends Instruction {
     private IRBaseType RetType;
@@ -23,6 +20,11 @@ public class ReturnInst extends Instruction {
 
     public Value getRetValue() {
         return UseList.get(0).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new ReturnInst(other, RetType, irMap.get(getRetValue())));
     }
 
     @Override

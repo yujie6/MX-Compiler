@@ -1,12 +1,9 @@
 package IR.Instructions;
 
 import BackEnd.IRBuilder;
-import IR.BasicBlock;
-import IR.IRVisitor;
+import IR.*;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
-import IR.Use;
-import IR.Value;
 
 public class LoadInst extends Instruction {
 
@@ -26,6 +23,11 @@ public class LoadInst extends Instruction {
 
     public Value getLoadAddr() {
         return UseList.get(0).getVal();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new LoadInst(other, type, irMap.get(getLoadAddr())));
     }
 
     @Override

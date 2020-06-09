@@ -10,7 +10,7 @@ public class FuncOptimManager {
     private LoopAnalysis LA;
     private AliasAnalysis AA;
     private CFGSimplifier cfgSimplifier;
-
+    private ConstFold constFold;
     private CDGBuilder cdgBuilder;
     private Mem2reg mem2reg;
     private DeadCodeElim dce;
@@ -18,6 +18,7 @@ public class FuncOptimManager {
     private CommonSubexElim cse;
     private CommonGEPElim cge;
     private LoopICM licm;
+    private CondConstPropag sccp;
     private LoadElim loadElim;
 
     public FuncOptimManager(Function func) {
@@ -28,12 +29,14 @@ public class FuncOptimManager {
         AA = new AliasAnalysis(function, domTreeBuilder);
         mem2reg = new Mem2reg(function, domTreeBuilder);
         dce = new DeadCodeElim(function);
+        constFold = new ConstFold(function);
         cdgBuilder = new CDGBuilder(function);
         adce = new AggrDeadCodeElim(function, cdgBuilder);
         cse = new CommonSubexElim(function, domTreeBuilder);
         licm = new LoopICM(function, LA, AA, domTreeBuilder);
         loadElim = new LoadElim(function, AA, domTreeBuilder);
         cge = new CommonGEPElim(function, AA, domTreeBuilder);
+        sccp = new CondConstPropag(function);
     }
 
     public void buildControlDependenceGraph() {
@@ -45,8 +48,8 @@ public class FuncOptimManager {
         adce.optimize();
     }
 
-    public void dce() {
-        dce.optimize();
+    public boolean dce() {
+        return dce.optimize();
     }
 
     public void buildDomTree() {
@@ -57,43 +60,35 @@ public class FuncOptimManager {
         LA.optimize();
     }
 
-    public void mem2reg() {
-        this.mem2reg.optimize();
+    public boolean mem2reg() {
+        return this.mem2reg.optimize();
     }
 
-    public void cfgSimplify() {
-        this.cfgSimplifier.optimize();
+    public boolean cfgSimplify() {
+        return this.cfgSimplifier.optimize();
     }
 
-    public void cse() {
-        cse.optimize();
+    public boolean constFold() {
+        return this.constFold.optimize();
     }
 
-    public void cge() {
-        cge.optimize();
+    public boolean cse() {
+        return cse.optimize();
     }
 
-    public void licm() {
-        licm.optimize();
+    public boolean cge() {
+        return cge.optimize();
     }
 
-    public void loadelim() {
-        loadElim.optimize();
+    public boolean sccp() {
+        return sccp.optimize();
     }
 
-    public void run() {
-        cfgSimplify();
-        buildDomTree();
-        mem2reg();
-        loopAnalysis();
-        boolean changed = true;
-        while (changed) {
-            changed = false;
-            changed |= dce.optimize();
-            changed |= cse.optimize();
-            AA.optimize();
-            buildDomTree();
-            changed |= licm.optimize();
-        }
+    public boolean licm() {
+        return licm.optimize();
+    }
+
+    public boolean loadelim() {
+        return loadElim.optimize();
     }
 }

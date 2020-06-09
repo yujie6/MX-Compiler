@@ -3,6 +3,7 @@ package Optim;
 import IR.Function;
 import IR.Module;
 import Optim.Transformation.DeadFuncElim;
+import Optim.Transformation.FunctionInline;
 import Tools.MXLogger;
 
 import java.util.ArrayList;
@@ -10,12 +11,13 @@ import java.util.ArrayList;
 public class MxOptimizer {
     private Module TopModule;
     public static MXLogger logger;
-
+    public FunctionInline functionInline;
 
     private ArrayList<FuncOptimManager> funcOptimizers;
     public MxOptimizer(Module topModule, MXLogger logger) {
         this.TopModule = topModule;
         MxOptimizer.logger = logger;
+        functionInline = new FunctionInline(this.TopModule);
         funcOptimizers = new ArrayList<>();
         for (Function function : TopModule.getFunctionMap().values()) {
             if (!function.isExternal())
@@ -30,21 +32,9 @@ public class MxOptimizer {
         }
     }
 
-    private void buildControlDependenceGraph() {
-        for (FuncOptimManager optimizer : funcOptimizers) {
-            optimizer.buildControlDependenceGraph();;
-        }
-    }
-
     private void mem2reg() {
         for (FuncOptimManager optimizer : funcOptimizers) {
             optimizer.mem2reg();
-        }
-    }
-
-    private void deadCodeElimination () {
-        for (FuncOptimManager optimManager : funcOptimizers) {
-            optimManager.dce();
         }
     }
 
@@ -90,27 +80,28 @@ public class MxOptimizer {
         }
     }
 
-    private void optimizeAllFunctions() {
-        for (FuncOptimManager optimManager : funcOptimizers) {
-            optimManager.run();
-        }
-    }
-
 
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
         mem2reg();
-        deadCodeElimination();
-        loopAnalysis();
+        do {
+            for (FuncOptimManager optimManager : funcOptimizers) {
+                optimManager.buildDomTree();
+                while (true) {
+                    boolean changed = false;
+                    changed = optimManager.constFold();
+                    changed |= optimManager.dce();
+                    changed |= optimManager.cse();
+                    // changed |= optimManager.sccp();
+                    //changed |= optimManager.cfgSimplify();
+                    if (!changed) break;
+                }
+            }
+        } while (functionInline.optimize());
+        /*loopAnalysis();
         buildDomTrees();
-        commonSubexpressionElimination();
-        // commonGetElementPtrElimination();
-        loopInvariantCodeMotion();
-
-        // redundantLoadElimination();
-
-        // aggressiveDeadCodeElimination();
+        loopInvariantCodeMotion();*/
 
     }
 }

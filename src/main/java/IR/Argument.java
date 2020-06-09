@@ -8,6 +8,7 @@ package IR;
 
 
 import IR.Types.IRBaseType;
+import Optim.MxOptimizer;
 
 public class Argument extends Value {
     private Function Parent;
@@ -25,6 +26,25 @@ public class Argument extends Value {
         this.type = argType;
         this.ArgNo = argNo;
         this.name = name;
+    }
+
+    public void replaceAllUsesWith(Value replaceValue) {
+        for (User U : this.UserList) {
+            replaceValue.UserList.add(U);
+            boolean replaceDone = false;
+            for (Use use : U.UseList) {
+                if (use.getVal() == this) {
+                    use.setVal(replaceValue);
+                    replaceValue.UserList.add(U);
+                    replaceDone = true;
+                }
+            }
+            if (!replaceDone) {
+                MxOptimizer.logger.severe("Replacing value fail!");
+                System.exit(1);
+            }
+        }
+        this.UserList.clear();
     }
 
     public int getArgNo() {

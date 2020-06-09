@@ -36,6 +36,15 @@ public class CallInst extends Instruction {
     }
 
     @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        ArrayList<Value> newParas = new ArrayList<>();
+        for (int i = 0; i < getCallee().getParameterList().size(); i++) {
+            newParas.add(irMap.get(getArgument(i)));
+        }
+        other.AddInstAtTail(new CallInst(other, getCallee(), newParas));
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder();
         if (isVoid()) {

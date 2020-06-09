@@ -36,6 +36,15 @@ public class GetPtrInst extends Instruction {
     }
 
     @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        ArrayList<Value> newOffsets = new ArrayList<>();
+        for (int i = 0; i < offsetNum; i++) {
+            newOffsets.add(irMap.get(getOffset(i)));
+        }
+        other.AddInstAtTail(new GetPtrInst(other, irMap.get(getAggregateValue()), newOffsets, elementType));
+    }
+
+    @Override
     public String toString() {
         StringBuilder ans = new StringBuilder(getRegisterID());
         if (getAggregateValue() instanceof GlobalVariable) {

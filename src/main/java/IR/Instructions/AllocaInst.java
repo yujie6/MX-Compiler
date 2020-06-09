@@ -2,6 +2,7 @@ package IR.Instructions;
 
 import IR.BasicBlock;
 import IR.IRBaseNode;
+import IR.IRMap;
 import IR.IRVisitor;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
@@ -18,6 +19,11 @@ public class AllocaInst extends Instruction {
 
     public IRBaseType getBaseType() {
         return baseType;
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new AllocaInst(other, baseType));
     }
 
     @Override

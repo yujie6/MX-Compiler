@@ -37,6 +37,14 @@ public class CmpInst extends Instruction {
         this.type = Module.I1;
     }
 
+    public CmpInst(BasicBlock parent, CmpOperation subOpcode, Value LHS, Value RHS) {
+        super(parent, InstType.icmp);
+        this.UseList.add(new Use(LHS, this));
+        this.UseList.add(new Use(RHS, this));
+        this.SubOpcode = subOpcode;
+        this.type = Module.I1;
+    }
+
     public Value getLHS() {
         return this.UseList.get(0).getVal();
     }
@@ -57,6 +65,11 @@ public class CmpInst extends Instruction {
 
     public String getFullOpcode () {
         return "icmp " + SubOpcode.toString();
+    }
+
+    @Override
+    public void copyTo(BasicBlock other, IRMap irMap) {
+        other.AddInstAtTail(new CmpInst(other, SubOpcode, irMap.get(getLHS()), irMap.get(getRHS())));
     }
 
     @Override

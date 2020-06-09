@@ -52,6 +52,21 @@ public class BasicBlock extends Value {
         this.copyInsts = new ArrayList<>();
     }
 
+    public BasicBlock(BasicBlock other) {
+        super(ValueType.BASIC_BLOCK);
+        this.Identifier = other.Identifier + "_copied";
+        HeadInst = null;
+        TailInst = null;
+        predecessors = new LinkedHashSet<>();
+        successors = new LinkedHashSet<>();
+        InstList = new LinkedList<>();
+        Label = String.valueOf(BlockNum);
+        BlockNum += 1;
+        this.dfnOrder = -1;
+        this.postDfnOrder = -1;
+        this.copyInsts = new ArrayList<>();
+    }
+
     public void addSuccessor(BasicBlock basicBlock) {
         successors.add(basicBlock);
     }
@@ -105,6 +120,7 @@ public class BasicBlock extends Value {
     public boolean isEntryBlock() {
         return this == getParent().getHeadBlock();
     }
+
     public void AddInstAtTop(Instruction inst) {
         if (isEmpty()) {
             TailInst = inst;
@@ -117,7 +133,22 @@ public class BasicBlock extends Value {
     public void AddInstBeforeBranch(Instruction inst) {
         Instruction br = getTailInst();
         inst.setParent(this);
-        InstList.add( InstList.size() - 1, inst); // where would you add ?
+        InstList.add(InstList.size() - 1, inst); // where would you add ?
+    }
+
+    public void mergeWith(BasicBlock other) {
+
+    }
+
+    public BasicBlock split(Instruction inst) {
+        BasicBlock newBB = new BasicBlock(getParent(), getIdentifier() + "_split");
+        int index = InstList.indexOf(inst), size = InstList.size();
+        for (int i = index + 1; i < size; i++) {
+            newBB.AddInstAtTail(InstList.get(i));
+        }
+        for (int i = index + 1; i < size; i++) {InstList.remove(i); }
+        // AddInstAtTail(new BranchInst(this, null, newBB, null));
+        return newBB;
     }
 
     public boolean endWithBranch() {
