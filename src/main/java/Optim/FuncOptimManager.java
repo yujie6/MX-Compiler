@@ -25,6 +25,7 @@ public class FuncOptimManager {
         this.function = func;
         cfgSimplifier = new CFGSimplifier(function);
         domTreeBuilder = new DomTreeBuilder(function);
+        func.setDM(domTreeBuilder);
         LA = new LoopAnalysis(function, domTreeBuilder);
         AA = new AliasAnalysis(function, domTreeBuilder);
         mem2reg = new Mem2reg(function, domTreeBuilder);
@@ -37,6 +38,10 @@ public class FuncOptimManager {
         loadElim = new LoadElim(function, AA, domTreeBuilder);
         cge = new CommonGEPElim(function, AA, domTreeBuilder);
         sccp = new CondConstPropag(function);
+    }
+
+    public String getIdentifier() {
+        return function.getIdentifier();
     }
 
     public void buildControlDependenceGraph() {

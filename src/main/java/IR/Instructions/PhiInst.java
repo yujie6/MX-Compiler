@@ -3,7 +3,9 @@ package IR.Instructions;
 import IR.*;
 import IR.Constants.IntConst;
 import IR.Constants.NullConst;
+import IR.Constants.StringConst;
 import IR.Types.IRBaseType;
+import Optim.MxOptimizer;
 
 import java.util.ArrayList;
 
@@ -46,6 +48,10 @@ public class PhiInst extends Instruction {
         return blockList.get(index);
     }
 
+    public void setBlock(int index, BasicBlock BB) {
+        this.blockList.set(index, BB);
+    }
+
     public Value getValue(int index) {
         return this.UseList.get(index).getVal();
     }
@@ -55,9 +61,29 @@ public class PhiInst extends Instruction {
     public void copyTo(BasicBlock other, IRMap irMap) {
         PhiInst phi = new PhiInst(other, type);
         for (int i = 0; i < branchNum; i++) {
-            phi.AddPhiBranch(irMap.get(getBlock(i)), irMap.get(getValue(i)));
+            if (irMap.containsVal(getValue(i))) {
+                phi.AddPhiBranch(irMap.get(getBlock(i)), irMap.get(getValue(i)));
+            } else {
+                phi.AddPhiBranch(irMap.get(getBlock(i)), new StringConst("PlaceHolder"));
+                MxOptimizer.logger.warning("Build one PL");
+            }
         }
         other.AddInstAtTail(phi);
+    }
+
+    public void removePlaceHolder(IRMap irMap) {
+        PhiInst newPhi = (PhiInst) irMap.get(this);
+        for (int i = 0; i < branchNum; i++) {
+            Value fakeVal = newPhi.getValue(i);
+            if (fakeVal instanceof StringConst && ((StringConst) fakeVal).getConstValue().equals("PlaceHolder")) {
+                newPhi.setValue(i, irMap.get(getValue(i)));
+                MxOptimizer.logger.warning("Eliminate one PL");
+            }
+        }
+    }
+
+    public void setValue(int index, Value newVal) {
+        this.UseList.set(index, new Use(newVal, this));
     }
 
     @Override

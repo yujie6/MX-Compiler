@@ -5,6 +5,7 @@ import IR.Function;
 import IR.Instructions.Instruction;
 import IR.Module;
 import Optim.FunctionPass;
+import Optim.MxOptimizer;
 import Optim.Pass;
 
 import java.util.LinkedList;
@@ -21,43 +22,36 @@ public class CFGSimplifier extends FunctionPass {
         super(function1);
     }
 
+    private int elimNum = 0;
 
-    private void merge(BasicBlock father, BasicBlock child) {
-        father.RemoveTailInst();
-        for (Instruction inst : child.getInstList()) {
-            father.AddInstAtTail(inst);
-        }
-    }
-
-    public Object visit(Function node) {
-        boolean changed = false;
-        for (BasicBlock BB : List.copyOf(node.getBlockList()) ) {
+    public boolean visit(Function node) {
+        this.elimNum = 0;
+        for (BasicBlock BB : List.copyOf(node.getBlockList())) {
             if (BB.successors.size() == 1) {
                 BasicBlock child = BB.successors.iterator().next();
-                if (child.successors.size() == 1 && child.predecessors.contains(BB)) {
-                    merge(BB, child);
-                    changed = true;
+                // consider the replacement of PhiInst
+                if (child.predecessors.size() == 1 && child.predecessors.contains(BB)) {
+                    BB.successors.remove(child);
+                    BB.mergeWith(child);
+                    elimNum += 1;
+                }
+                if (BB.predecessors.size() == 0 && BB != function.getHeadBlock()) {
+                    function.getBlockList().remove(BB);
+                    BB.successors.forEach(succ -> {
+                        succ.predecessors.remove(BB); // remove phi?
+                    });
                 }
             }
         }
-        return changed;
+        if (elimNum != 0) {
+            MxOptimizer.logger.fine("CFG simplify " + elimNum + " BBs for function: " + function.getIdentifier());
+        }
+        return elimNum != 0;
     }
 
 
     @Override
     public boolean optimize() {
-        boolean changed = false;
-        LinkedList<BasicBlock> workList = new LinkedList<>(function.getBlockList());
-        while (!workList.isEmpty()) {
-            BasicBlock BB = workList.pop();
-            if (BB.predecessors.size() == 0 && BB != function.getHeadBlock()) {
-                for (BasicBlock succ : BB.successors) {
-                    succ.predecessors.remove(BB);
-                    workList.add(succ);
-                }
-                function.removeBlock(BB);
-            }
-        }
-        return changed;
+        return visit(function);
     }
 }

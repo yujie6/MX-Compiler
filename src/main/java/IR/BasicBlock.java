@@ -3,6 +3,7 @@ package IR;
 import IR.Instructions.BranchInst;
 import IR.Instructions.CopyInst;
 import IR.Instructions.Instruction;
+import IR.Instructions.PhiInst;
 
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
@@ -131,13 +132,46 @@ public class BasicBlock extends Value {
     }
 
     public void AddInstBeforeBranch(Instruction inst) {
-        Instruction br = getTailInst();
         inst.setParent(this);
         InstList.add(InstList.size() - 1, inst); // where would you add ?
     }
 
     public void mergeWith(BasicBlock other) {
+        Instruction br = getTailInst();
+        if (br instanceof BranchInst) {
+            br.eraseFromParent(); // >
+        }
+        other.successors.forEach(succ -> {
+            succ.resetPhi(other, this);
+            succ.predecessors.add(this);
+            succ.predecessors.remove(other);
+        });
+        this.successors.addAll(other.successors);
+        TailInst = other.TailInst;
+        other.getInstList().forEach(inst -> {
+            inst.setParent(this);
+            InstList.add(inst);
+        });
+        if (other == Parent.getRetBlock()) {
+            Parent.setRetBlock(this);
+        }
+        Parent.getBlockList().remove(other);
+    }
 
+    public void resetPhi(BasicBlock from, BasicBlock to) {
+        for (Instruction phi : InstList) {
+            if (phi instanceof PhiInst) {
+                int num = ((PhiInst) phi).getBranchNum();
+                for (int i = 0; i < num; i++) {
+                    if (((PhiInst) phi).getBlock(i) == from) {
+                        ((PhiInst) phi).setBlock(i, to);
+                    }
+                    if (((PhiInst) phi).getBlock(i) == null) {
+                        System.out.println("shit");
+                    }
+                }
+            } else break;
+        }
     }
 
     public BasicBlock split(Instruction inst) {
@@ -145,9 +179,23 @@ public class BasicBlock extends Value {
         int index = InstList.indexOf(inst), size = InstList.size();
         for (int i = index + 1; i < size; i++) {
             newBB.AddInstAtTail(InstList.get(i));
+            InstList.get(i).setParent(newBB);
         }
-        for (int i = index + 1; i < size; i++) {InstList.remove(i); }
+        for (int i = index + 1; i < size; i++) {
+            InstList.remove(index + 1);
+        }
+        newBB.successors.addAll(successors);
+        successors.forEach(succ -> {
+            succ.resetPhi(this, newBB);
+            succ.predecessors.remove(this);
+            succ.predecessors.add(newBB);
+        });
+        successors.clear();
+        newBB.HeadInst = newBB.getInstList().getFirst();
+        newBB.TailInst = newBB.getInstList().getLast();
         // AddInstAtTail(new BranchInst(this, null, newBB, null));
+        TailInst = InstList.getLast();
+        Parent.AddBlockAfter(this, newBB);
         return newBB;
     }
 

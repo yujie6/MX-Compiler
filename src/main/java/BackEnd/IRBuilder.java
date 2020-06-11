@@ -353,9 +353,11 @@ public class IRBuilder implements ASTVisitor {
         curFunction.AddBlockAtTail(ThenBlock);
 
         node.getThenStmt().accept(this); // curBasicBlock may change here
+        boolean useMergeBlock = false;
         if (!curBasicBlock.endWithBranch()) {
             // else is the return inst
             curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+            useMergeBlock = true;
         }
 
 
@@ -364,13 +366,14 @@ public class IRBuilder implements ASTVisitor {
             node.getElseStmt().accept(this);
             if (!curBasicBlock.endWithBranch()) {
                 curBasicBlock.AddInstAtTail(new BranchInst(curBasicBlock, null, MergeBlock, null));
+                useMergeBlock = true;
             }
             curFunction.AddBlockAtTail(ElseBlock);
         }
-
-        curBasicBlock = MergeBlock;
-        curFunction.AddBlockAtTail(MergeBlock);
-
+        // if (useMergeBlock) {
+            curBasicBlock = MergeBlock;
+            curFunction.AddBlockAtTail(MergeBlock);
+        // }
         return null;
     }
 

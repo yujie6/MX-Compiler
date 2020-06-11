@@ -44,6 +44,10 @@ public class MXLogger {
         logger.warning("Warning at " + location.toString() + " with message: "+ msg);
     }
 
+    public void warning(String msg) {
+        logger.warning(msg);
+    }
+
     public void info(String msg) {
         logger.info(msg);
     }

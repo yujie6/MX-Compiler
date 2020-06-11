@@ -1,4 +1,6 @@
 package IR;
+import IR.Constants.Constant;
+
 import java.util.HashMap;
 
 public class IRMap {
@@ -20,7 +22,15 @@ public class IRMap {
     }
 
     public Value get(Value origin) {
+        if (origin instanceof Constant || origin instanceof GlobalVariable) return origin;
+        if (!this.valueMap.containsKey(origin)) {
+            System.out.println("damn");
+        }
         return this.valueMap.get(origin);
+    }
+
+    public boolean containsVal(Value origin) {
+        return this.valueMap.containsKey(origin);
     }
 
     public BasicBlock get(BasicBlock BB) {

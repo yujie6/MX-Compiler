@@ -24,7 +24,9 @@ public class ReturnInst extends Instruction {
 
     @Override
     public void copyTo(BasicBlock other, IRMap irMap) {
-        other.AddInstAtTail(new ReturnInst(other, RetType, irMap.get(getRetValue())));
+        if (getRetType().toString().equals("void")) {
+            other.AddInstAtTail(new ReturnInst(other, RetType, null));
+        } else other.AddInstAtTail(new ReturnInst(other, RetType, irMap.get(getRetValue())));
     }
 
     @Override

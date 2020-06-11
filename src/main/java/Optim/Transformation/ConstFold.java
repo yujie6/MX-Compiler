@@ -24,8 +24,15 @@ public class ConstFold extends FunctionPass {
 
     public static Value getConstVal(Instruction.InstType opcode, IntConst LHS, IntConst RHS) {
         switch (opcode) {
+            case srem:
+                return new IntConst(LHS.ConstValue % RHS.ConstValue);
             case add:
                 return new IntConst(LHS.ConstValue + RHS.ConstValue);
+            case sdiv:
+                if (RHS.ConstValue == 0) {
+                    return new IntConst((int) 1e9);
+                }
+                return new IntConst(LHS.ConstValue / RHS.ConstValue);
             case sub:
                 return new IntConst(LHS.ConstValue - RHS.ConstValue);
             case shl:
@@ -53,7 +60,8 @@ public class ConstFold extends FunctionPass {
         if (LHS instanceof IntConst && RHS instanceof IntConst) {
             Value replaceVal = getConstVal(opcode, ((IntConst) LHS), ((IntConst) RHS));
             if (replaceVal == null) {
-
+                MxOptimizer.logger.severe("Fatal error");
+                System.exit(-1);
             }
             this.elimNum += 1;
             binOpInst.replaceAllUsesWith(replaceVal);
@@ -115,7 +123,7 @@ public class ConstFold extends FunctionPass {
     public boolean optimize() {
         this.elimNum = 0;
         for (BasicBlock BB : function.getBlockList()) {
-            for (Instruction inst : List.copyOf(BB.getInstList() ) ) {
+            for (Instruction inst : List.copyOf(BB.getInstList())) {
                 foldInst(inst);
             }
         }

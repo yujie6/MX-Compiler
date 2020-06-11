@@ -6,6 +6,7 @@ import IR.Instructions.LoadInst;
 import IR.Instructions.ReturnInst;
 import IR.Types.FunctionType;
 import IR.Types.IRBaseType;
+import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.FuncAnalysis.LoopAnalysis;
 
 import java.util.ArrayList;
@@ -34,6 +35,7 @@ public class Function extends Value {
     public ArrayList<Function> callee;
     public int instNum = 0;
     private LoopAnalysis LA;
+    public DomTreeBuilder dm;
 
     public ArrayList<BasicBlock> getBlockList() {
         return BlockList;
@@ -172,6 +174,10 @@ public class Function extends Value {
         RetValue = retValue;
     }
 
+    public void setRetBlock(BasicBlock retBlock) {
+        RetBlock = retBlock;
+    }
+
     public boolean isExternal() {
         return isExternal;
     }
@@ -187,5 +193,9 @@ public class Function extends Value {
     @Override
     public Object accept(IRVisitor<Object> visitor) {
         return null;
+    }
+
+    public void setDM(DomTreeBuilder domTreeBuilder) {
+        this.dm = domTreeBuilder;
     }
 }

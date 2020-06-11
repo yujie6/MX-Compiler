@@ -77,7 +77,12 @@ public class BranchInst extends Instruction {
 
     @Override
     public void copyTo(BasicBlock other, IRMap irMap) {
-        other.AddInstAtTail(new BranchInst(other, irMap.get(getCondition()), irMap.get(getThenBlock()), irMap.get(getElseBlock()) ));
+        if (hasElse) {
+            other.AddInstAtTail(new BranchInst(other, irMap.get(getCondition()), irMap.get(getThenBlock()), irMap.get(getElseBlock()) ));
+        } else {
+            other.AddInstAtTail(new BranchInst(other, null, irMap.get(getThenBlock()), null));
+        }
+
     }
 
     @Override

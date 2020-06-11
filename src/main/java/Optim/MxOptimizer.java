@@ -87,6 +87,9 @@ public class MxOptimizer {
         mem2reg();
         do {
             for (FuncOptimManager optimManager : funcOptimizers) {
+                if (!TopModule.getFunctionMap().containsKey(optimManager.getIdentifier())) {
+                    continue;
+                }
                 optimManager.buildDomTree();
                 while (true) {
                     boolean changed = false;
@@ -94,7 +97,7 @@ public class MxOptimizer {
                     changed |= optimManager.dce();
                     changed |= optimManager.cse();
                     // changed |= optimManager.sccp();
-                    //changed |= optimManager.cfgSimplify();
+                    // changed |= optimManager.cfgSimplify();
                     if (!changed) break;
                 }
             }

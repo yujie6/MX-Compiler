@@ -8,7 +8,6 @@ import IR.Value;
 import Optim.MxOptimizer;
 import Optim.Pass;
 
-import java.util.ArrayList;
 import java.util.LinkedList;
 
 /**
@@ -17,14 +16,15 @@ import java.util.LinkedList;
 public class DeadCodeElim extends Pass {
 
     private Function function;
-    private int eliminationNum;
+    private int elimNum;
     public DeadCodeElim(Function func) {
         this.function = func;
-        this.eliminationNum = 0;
+        this.elimNum = 0;
     }
 
     @Override
     public boolean optimize() {
+        this.elimNum = 0;
         LinkedList<Instruction> workList = new LinkedList<>();
         for (BasicBlock BB : function.getBlockList()) {
             workList.addAll(BB.getInstList());
@@ -44,12 +44,12 @@ public class DeadCodeElim extends Pass {
                     }
                 }
                 inst.eraseFromParent();
-                eliminationNum += 1;
+                elimNum += 1;
             }
         }
-        if (eliminationNum != 0) {
+        if (elimNum != 0) {
             MxOptimizer.logger.info("Dead code elimination runs on " + function.getIdentifier() +
-                    ", with " + eliminationNum + " instructions eliminated");
+                    ", with " + elimNum + " instructions eliminated");
             return true;
         }
         return false;
