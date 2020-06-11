@@ -8,6 +8,7 @@ import Optim.FunctionPass;
 import Optim.MxOptimizer;
 import Optim.Pass;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -26,17 +27,22 @@ public class CFGSimplifier extends FunctionPass {
 
     public boolean visit(Function node) {
         this.elimNum = 0;
+        ArrayList<BasicBlock> mergedBB = new ArrayList<>();
         for (BasicBlock BB : List.copyOf(node.getBlockList())) {
             if (BB.successors.size() == 1) {
                 BasicBlock child = BB.successors.iterator().next();
                 // consider the replacement of PhiInst
-                if (child.predecessors.size() == 1 && child.predecessors.contains(BB)) {
+                if (mergedBB.contains(BB)) continue;
+                if (child.predecessors.size() == 1 && child.predecessors.contains(BB) && BB != child) {
                     BB.successors.remove(child);
+                    child.predecessors.remove(BB);
                     BB.mergeWith(child);
+                    mergedBB.add(child);
                     elimNum += 1;
                 }
                 if (BB.predecessors.size() == 0 && BB != function.getHeadBlock()) {
                     function.getBlockList().remove(BB);
+                    elimNum += 1;
                     BB.successors.forEach(succ -> {
                         succ.predecessors.remove(BB); // remove phi?
                     });

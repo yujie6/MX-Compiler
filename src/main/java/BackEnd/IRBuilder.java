@@ -221,7 +221,7 @@ public class IRBuilder implements ASTVisitor {
                 }
                 globalVar.setInitValue(initValue);
                 TopModule.defineGlobalVar(globalVar);
-                logger.fine("IR build for '" + subnode.getIdentifier() + "' global variable done.");
+                // logger.fine("IR build for '" + subnode.getIdentifier() + "' global variable done.");
             }
         } else {
             // Local Variable
@@ -240,7 +240,7 @@ public class IRBuilder implements ASTVisitor {
                         initValue.setType(type);
                     curBasicBlock.AddInstAtTail(new StoreInst(curBasicBlock, initValue, AllocaAddr));
                 }
-                logger.fine("IR build for '" + subnode.getIdentifier() + "' variable declaration ir done.");
+                // logger.fine("IR build for '" + subnode.getIdentifier() + "' variable declaration ir done.");
             }
 
         }
@@ -1308,7 +1308,7 @@ public class IRBuilder implements ASTVisitor {
                 }
                 CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
                 curBasicBlock.AddInstAtTail(instance);
-                logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
+                // logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
                 return instance;
 
             } else if (mx_func.getClassName().equals("__Array")) {
@@ -1328,7 +1328,7 @@ public class IRBuilder implements ASTVisitor {
 
                 CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
                 curBasicBlock.AddInstAtTail(instance);
-                logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
+                // logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' method call done.", node.GetLocation());
                 return instance;
 
             } else {
@@ -1379,7 +1379,7 @@ public class IRBuilder implements ASTVisitor {
 
             CallInst instance = new CallInst(curBasicBlock, CalledFunc, args);
             curBasicBlock.AddInstAtTail(instance);
-            logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' function call done.", node.GetLocation());
+            // logger.fine("IR build for '" + CalledFunc.getIdentifier() + "' function call done.", node.GetLocation());
             return instance;
         }
     }

@@ -97,14 +97,16 @@ public class MxOptimizer {
                     changed |= optimManager.dce();
                     changed |= optimManager.cse();
                     // changed |= optimManager.sccp();
-                    // changed |= optimManager.cfgSimplify();
+                    changed |= optimManager.cfgSimplify();
                     if (!changed) break;
                 }
             }
         } while (functionInline.optimize());
-        /*loopAnalysis();
-        buildDomTrees();
-        loopInvariantCodeMotion();*/
+        loopAnalysis();
+        for (FuncOptimManager optimizer : funcOptimizers) {
+            optimizer.buildDomTree();
+        }
+        loopInvariantCodeMotion();
 
     }
 }

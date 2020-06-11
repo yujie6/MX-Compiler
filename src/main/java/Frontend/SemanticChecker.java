@@ -560,8 +560,8 @@ public class SemanticChecker implements ASTVisitor {
             }
         }
         node.setExprType(node.getFunction().getReturnType());
-        logger.fine("Semantic checks on '" + node.getFunction().getIdentifier() + "' function call at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks on '" + node.getFunction().getIdentifier() + "' function call at line "
+        //        + node.GetLocation().getLine() + " done successfully.");
         // node.getParameters().forEach();
         return null;
     }
@@ -576,8 +576,8 @@ public class SemanticChecker implements ASTVisitor {
         if (node.isHasElse()) {
             node.getElseStmt().accept(this);
         }
-        logger.fine("Semantic checks if statement at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks if statement at line "
+        //        + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 
@@ -587,8 +587,8 @@ public class SemanticChecker implements ASTVisitor {
         if (LocalScope.LoopLevel <= 0) {
             logger.severe("Continue statement not in a loop", node.GetLocation());
         }
-        logger.fine("Semantic checks break statement at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks break statement at line "
+        //       + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 
@@ -605,8 +605,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopStmt().accept(this);
         LocalScope.LoopLevel--;
-        logger.fine("Semantic checks on 'while statement' at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks on 'while statement' at line "
+        //        + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 
@@ -616,8 +616,8 @@ public class SemanticChecker implements ASTVisitor {
         if (LocalScope.LoopLevel <= 0) {
             logger.severe("Continue statement not in a loop", node.GetLocation());
         }
-        logger.fine("Semantic checks continue statement at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks continue statement at line "
+        //        + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 
@@ -647,8 +647,8 @@ public class SemanticChecker implements ASTVisitor {
         }
         node.getLoopBlcok().accept(this);
         LocalScope.LoopLevel--;
-        logger.fine("Semantic checks on 'for statement' at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks on 'for statement' at line "
+        // + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 
@@ -668,8 +668,8 @@ public class SemanticChecker implements ASTVisitor {
         }
 
         hasRetStmt = true;
-        logger.fine("Semantic checks return statement at line "
-                + node.GetLocation().getLine() + " done successfully.");
+        // logger.fine("Semantic checks return statement at line "
+        //        + node.GetLocation().getLine() + " done successfully.");
         return null;
     }
 

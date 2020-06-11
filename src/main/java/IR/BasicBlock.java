@@ -147,6 +147,7 @@ public class BasicBlock extends Value {
             succ.predecessors.remove(other);
         });
         this.successors.addAll(other.successors);
+        other.successors.clear();
         TailInst = other.TailInst;
         other.getInstList().forEach(inst -> {
             inst.setParent(this);
@@ -154,6 +155,8 @@ public class BasicBlock extends Value {
         });
         if (other == Parent.getRetBlock()) {
             Parent.setRetBlock(this);
+            Parent.getBlockList().remove(this);
+            Parent.getBlockList().add(this);
         }
         Parent.getBlockList().remove(other);
     }
