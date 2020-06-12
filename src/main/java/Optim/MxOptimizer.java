@@ -97,6 +97,7 @@ public class MxOptimizer {
                     changed |= optimManager.dce();
                     changed |= optimManager.cse();
                     // changed |= optimManager.sccp();
+                    // changed |= optimManager.cge();
                     changed |= optimManager.cfgSimplify();
                     if (!changed) break;
                 }
@@ -107,6 +108,6 @@ public class MxOptimizer {
             optimizer.buildDomTree();
         }
         loopInvariantCodeMotion();
-
+        cfgSimplify();
     }
 }

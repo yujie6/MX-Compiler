@@ -8,6 +8,7 @@ import IR.Types.FunctionType;
 import IR.Types.IRBaseType;
 import Optim.FuncAnalysis.DomTreeBuilder;
 import Optim.FuncAnalysis.LoopAnalysis;
+import javafx.scene.Parent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -163,6 +164,9 @@ public class Function extends Value {
     }
 
     public BasicBlock getRetBlock() {
+        if (!(RetBlock.getInstList().getLast() instanceof ReturnInst)) {
+            RetBlock = getBlockList().get(getBlockList().size() - 1);
+        }
         return RetBlock;
     }
 

@@ -53,14 +53,6 @@ public class CommonSubexElim extends FunctionPass {
             }
         }
 
-
-
-        public expr (String LHS, String RHS, String opcode) {
-            this.LHS = LHS;
-            this.RHS = RHS;
-            this.opcode = opcode;
-        }
-
         @Override
         public boolean equals(Object o) {
             if (this == o) return true;
