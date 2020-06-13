@@ -9,6 +9,7 @@ import Frontend.SemanticChecker;
 import IR.Module;
 import Optim.MxOptimizer;
 import Target.RVModule;
+import Target.RVPeephole;
 import Tools.MXError;
 import Tools.MXLogger;
 import Tools.SyntaxErrorListener;
@@ -157,8 +158,11 @@ public class MXCC {
 
         InstSelector instSelector = new InstSelector(LLVMTopModule, logger);
         RVModule module = instSelector.getRISCVTopModule();
+        RVPeephole rvPeephole = new RVPeephole(module);
+        rvPeephole.optimize();
         RegAllocator regAllocator = new RegAllocator(module);
         regAllocator.run();
+        rvPeephole.optimize();
         return module;
     }
 

@@ -41,7 +41,8 @@ public class LoopICM extends FunctionPass implements IRVisitor {
         workList.clear();
         invariants.clear();
         hoist(LA.rootLoop);
-        MxOptimizer.logger.fine(String.format("Hoist %d insts in function \"%s\""
+        if (hoistNum != 0)
+            MxOptimizer.logger.fine(String.format("Hoist %d insts in function \"%s\""
                 , hoistNum, function.getIdentifier()));
         return hoistNum != 0;
     }

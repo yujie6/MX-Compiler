@@ -23,6 +23,14 @@ public class RVStore extends RVInstruction {
         this.destAddr = (RVAddr) dest;
     }
 
+    public VirtualReg getSrc() {
+        return src;
+    }
+
+    public RVOperand getAddr() {
+        return destAddr;
+    }
+
     @Override
     public Set<VirtualReg> getUseRegs() {
         return Set.of(src, destAddr.getBaseAddrReg());

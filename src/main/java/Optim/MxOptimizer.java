@@ -4,6 +4,7 @@ import IR.Function;
 import IR.Module;
 import Optim.Transformation.DeadFuncElim;
 import Optim.Transformation.FunctionInline;
+import Optim.Transformation.Global2Local;
 import Tools.MXLogger;
 
 import java.util.ArrayList;
@@ -23,6 +24,10 @@ public class MxOptimizer {
             if (!function.isExternal())
                 funcOptimizers.add(new FuncOptimManager(function));
         }
+    }
+
+    private void global2local() {
+        (new Global2Local(TopModule) ).optimize();
     }
 
     private void buildDomTrees() {
@@ -84,6 +89,7 @@ public class MxOptimizer {
     public void optimize() {
         (new DeadFuncElim(TopModule)).optimize();
         buildDomTrees();
+        global2local();
         mem2reg();
         do {
             for (FuncOptimManager optimManager : funcOptimizers) {
@@ -98,6 +104,7 @@ public class MxOptimizer {
                     changed |= optimManager.cse();
                     // changed |= optimManager.sccp();
                     // changed |= optimManager.cge();
+                    // changed |= optimManager.peephole();
                     changed |= optimManager.cfgSimplify();
                     if (!changed) break;
                 }

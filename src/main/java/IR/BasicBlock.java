@@ -68,6 +68,10 @@ public class BasicBlock extends Value {
         this.copyInsts = new ArrayList<>();
     }
 
+    public void setHeadInst(Instruction headInst) {
+        HeadInst = headInst;
+    }
+
     public void addSuccessor(BasicBlock basicBlock) {
         successors.add(basicBlock);
     }

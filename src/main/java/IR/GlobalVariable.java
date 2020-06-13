@@ -4,6 +4,7 @@ import IR.Constants.Constant;
 import IR.Constants.StringConst;
 import IR.Types.IRBaseType;
 import IR.Types.PointerType;
+import Optim.MxOptimizer;
 
 public class GlobalVariable extends Value {
 
@@ -58,6 +59,25 @@ public class GlobalVariable extends Value {
 
 
         return ans.toString();
+    }
+
+    public void replaceAllUsesWith(Value replaceValue) {
+        for (User U : this.UserList) {
+            replaceValue.UserList.add(U);
+            boolean replaceDone = false;
+            for (Use use : U.UseList) {
+                if (use.getVal() == this) {
+                    use.setVal(replaceValue);
+                    replaceValue.UserList.add(U);
+                    replaceDone = true;
+                }
+            }
+            if (!replaceDone) {
+                MxOptimizer.logger.severe("Replacing value fail!");
+                System.exit(1);
+            }
+        }
+        this.UserList.clear();
     }
 
     public IRBaseType getOriginalType() {

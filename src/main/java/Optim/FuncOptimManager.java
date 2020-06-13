@@ -20,6 +20,7 @@ public class FuncOptimManager {
     private LoopICM licm;
     private CondConstPropag sccp;
     private LoadElim loadElim;
+    private Peephole peephole;
 
     public FuncOptimManager(Function func) {
         this.function = func;
@@ -38,6 +39,7 @@ public class FuncOptimManager {
         loadElim = new LoadElim(function, AA, domTreeBuilder);
         cge = new CommonGEPElim(function, AA, domTreeBuilder);
         sccp = new CondConstPropag(function);
+        peephole = new Peephole(function);
     }
 
     public String getIdentifier() {
@@ -51,6 +53,10 @@ public class FuncOptimManager {
     public void adce() {
         cdgBuilder.build();
         adce.optimize();
+    }
+
+    public boolean peephole() {
+        return peephole.optimize();
     }
 
     public boolean dce() {

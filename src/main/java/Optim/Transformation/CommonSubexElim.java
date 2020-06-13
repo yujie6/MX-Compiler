@@ -90,7 +90,6 @@ public class CommonSubexElim extends FunctionPass {
 
     private void visit(DomNode node) {
         BasicBlock BB = node.block;
-
         for (Instruction inst : List.copyOf(BB.getInstList())) {
             if (inst instanceof BinOpInst || inst instanceof CmpInst) {
                 expr curExpr = new expr(inst);

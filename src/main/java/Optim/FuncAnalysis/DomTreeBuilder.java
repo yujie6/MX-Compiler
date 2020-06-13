@@ -151,7 +151,7 @@ public class DomTreeBuilder {
             t.idom.addChild(t);
         }
 
-        MxOptimizer.logger.fine("Dom tree build on function '" + function.getIdentifier() + "' done");
+        // MxOptimizer.logger.fine("Dom tree build on function '" + function.getIdentifier() + "' done");
 
     }
 

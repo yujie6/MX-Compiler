@@ -63,6 +63,14 @@ public abstract class Instruction extends User {
         this.Parent = null;
     }
 
+    public void addInstBefore(Instruction other) {
+        int index = Parent.getInstList().indexOf(this);
+        Parent.getInstList().add(index, other);
+        if (index == 0) {
+            Parent.setHeadInst(other);
+        }
+    }
+
     public void replaceAllUsesWith(Value replaceValue) {
         for (User U : this.UserList) {
             replaceValue.UserList.add(U);

@@ -23,6 +23,15 @@ public class RVLoad extends RVInstruction {
         this.gvar = gvar;
     }
 
+    public RVOperand getAddr() {
+        if (gvar != null ) return gvar;
+        return srcAddr;
+    }
+
+    public VirtualReg getDestReg() {
+        return destReg;
+    }
+
     @Override
     public Set<VirtualReg> getUseRegs() {
         if (gvar != null) return Set.of();
