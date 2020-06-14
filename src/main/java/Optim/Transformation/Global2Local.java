@@ -80,6 +80,37 @@ public class Global2Local extends Pass {
 
     }
 
+    private void eliminateConstGlobal() {
+        ArrayList<GlobalVariable> globalWorkList = new ArrayList<>();
+        for (Value gvar : TopModule.getGlobalVarMap().values()) {
+            if (gvar instanceof GlobalVariable && !((GlobalVariable) gvar).isStringConst) {
+                boolean safeToPromote = true;
+                GlobalVariable global = (GlobalVariable) gvar;
+                for (User U : global.UserList) {
+                    if (!(U instanceof LoadInst)) {
+                        safeToPromote = false;
+                        break;
+                    }
+                }
+                if (safeToPromote) {
+                    if (global.getInitValue() != null) {
+                        elimNum += 1;
+                        // remove all load !!
+                        for (User U : global.UserList) {
+                            LoadInst toElim = ((LoadInst) U);
+                            globalWorkList.add(global);
+                            toElim.replaceAllUsesWith(global.getInitValue());
+                            toElim.eraseFromParent();
+                        }
+                    }
+                }
+            }
+        }
+        globalWorkList.forEach(gvar -> {
+            TopModule.getGlobalVarMap().remove(gvar.getIdentifier());
+        });
+    }
+
     private void promoteOnFunction(Function function, GlobalVariable gvar) {
         // add a load at first BB, and store at last BB
         BasicBlock head = function.getHeadBlock();
@@ -141,6 +172,7 @@ public class Global2Local extends Pass {
         elimNum = 0;
         if (TopModule.getInstNum() > 3000) return false;
         eliminateTrivialGlobals();
+        eliminateConstGlobal();
         // promoteGlobalToLocal();
         if (elimNum != 0) {
             MxOptimizer.logger.fine(String.format("Global2local promote %d global variables", elimNum));
