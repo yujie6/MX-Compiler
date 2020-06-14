@@ -102,6 +102,7 @@ public class MxOptimizer {
                     changed = optimManager.constFold();
                     changed |= optimManager.dce();
                     changed |= optimManager.cse();
+                    changed |= optimManager.loadelim();
                     // changed |= optimManager.sccp();
                     // changed |= optimManager.cge();
                     // changed |= optimManager.peephole();

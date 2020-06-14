@@ -95,7 +95,8 @@ public class LoopAnalysis extends Pass {
         this.preheaderNum = 0;
         addPreheader(rootLoop);
         buildLoopDepth(rootLoop, 0);
-        MxOptimizer.logger.fine(String.format("Loop analysis on function \"%s\" done, with %d preheaders added."
+        if (preheaderNum != 0)
+            MxOptimizer.logger.fine(String.format("Loop analysis on function \"%s\" done, with %d preheaders added."
                 , function.getIdentifier(), preheaderNum));
         return !loopMap.isEmpty();
     }

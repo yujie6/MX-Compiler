@@ -32,27 +32,40 @@ public class LoadElim extends FunctionPass {
         DomNode root = dm.domTree.get(function.getHeadBlock());
         elimNum = 0;
         visit(root);
-        MxOptimizer.logger.fine(String.format("Redundant load elimination works on function \"%s\", with %d insts eliminated",
+        if (elimNum != 0)
+            MxOptimizer.logger.fine(String.format("Redundant load elimination works on function \"%s\", with %d insts eliminated",
                 function.getIdentifier(), elimNum));
         return elimNum != 0;
     }
 
     private void visit(DomNode domNode) {
         BasicBlock BB = domNode.block;
-        for (Instruction inst : BB.getInstList()) {
-            if (inst instanceof LoadInst) {
-                Value addr = ((LoadInst) inst).getLoadAddr();
-                for (User U : List.copyOf(addr.UserList) ) { // find addr's alias
-                    if (U instanceof LoadInst && U != inst &&
-                            isSafeToEliminate(((LoadInst) U), ((LoadInst) inst))) {
-                        LoadInst redundantLoad = (LoadInst) U;
-                        redundantLoad.replaceAllUsesWith(inst);
-                        redundantLoad.eraseFromParent();
+        boolean changed = false;
+        do {
+            changed = false;
+            int len = BB.getInstList().size();
+            for (int i = 0; i < len; i++) {
+                Instruction inst = BB.getInstList().get(i);
+                if (inst instanceof LoadInst) {
+                    LoadInst elimLoad = null;
+                    for (int j = 1; i + j < Math.min(i + 10, len); j++) {
+                        Instruction elim = BB.getInstList().get(i + j);
+                        if (elim instanceof StoreInst) {
+                            break;
+                        } else if (elim instanceof LoadInst && ((LoadInst) elim).getLoadAddr() == ((LoadInst) inst).getLoadAddr()) {
+                            elimLoad = ((LoadInst) elim);
+                        }
+                    }
+                    if (elimLoad != null) {
                         elimNum += 1;
+                        changed = true;
+                        elimLoad.replaceAllUsesWith(inst);
+                        elimLoad.eraseFromParent();
+                        break;
                     }
                 }
             }
-        }
+        } while (changed);
         domNode.children.forEach(child -> { visit(child); });
     }
 
