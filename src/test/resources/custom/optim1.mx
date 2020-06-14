@@ -12,7 +12,7 @@ NO
 === end ===
 ExitCode: 0
 InstLimit: -1
-Origin Package: Codeforces 4A #57460997
+Origin Package: custom
 */
 int w;
 int main(){
