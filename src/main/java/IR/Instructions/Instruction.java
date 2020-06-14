@@ -63,7 +63,7 @@ public abstract class Instruction extends User {
         this.Parent = null;
     }
 
-    public void addInstBefore(Instruction other) {
+    public void addInstBeforeMe(Instruction other) {
         int index = Parent.getInstList().indexOf(this);
         Parent.getInstList().add(index, other);
         if (index == 0) {
