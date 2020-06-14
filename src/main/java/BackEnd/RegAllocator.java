@@ -242,7 +242,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     }
 
     private int maxLoopDepth;
-    private int loopDepthWeight = 64;
+
     private void Build() {
         Instant start = Instant.now();
         maxLoopDepth = 0;
@@ -255,9 +255,9 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
                 RVInstruction inst = BB.rvInstList.get(i);
                 var defs = inst.getDefRegs();
                 var uses = inst.getUseRegs();
-                uses.forEach(use -> {use.spillCost += Math.pow(10, depth)  * loopDepthWeight;});
+                uses.forEach(use -> {use.spillCost += Math.pow(10, depth)  * 64;});
                 if (!(inst instanceof RVCall))
-                    defs.forEach(def -> {def.spillCost += Math.pow(10, depth) * loopDepthWeight;});
+                    defs.forEach(def -> {def.spillCost += Math.pow(10, depth) * 64;});
                 if (inst instanceof RVMove) {
                     live.removeAll(uses);
                     defs.forEach(v -> {moveList(v).add((RVMove) inst);});

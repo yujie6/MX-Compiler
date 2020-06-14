@@ -76,7 +76,6 @@ public class MxOptimizer {
     private void loopInvariantCodeMotion() {
         for (FuncOptimManager optimManager : funcOptimizers) {
             optimManager.licm();
-            optimManager.licm();
         }
     }
 
