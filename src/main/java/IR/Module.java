@@ -5,6 +5,8 @@ import AST.MethodDecNode;
 import AST.ParameterNode;
 import BackEnd.IRBuilder;
 import IR.Instructions.AllocaInst;
+import IR.Instructions.CallInst;
+import IR.Instructions.Instruction;
 import IR.Instructions.StoreInst;
 import IR.Types.*;
 import Tools.MXLogger;
@@ -78,6 +80,15 @@ public class Module extends Value {
                 }
             });
         }
+    }
+
+    public int getInstNum() {
+        updateCallGraph();
+        int sum = 0;
+        for (Function function : getFunctionMap().values()) {
+            sum += function.instNum;
+        }
+        return sum;
     }
 
     private void PreProcess() {
@@ -215,6 +226,25 @@ public class Module extends Value {
 
     public HashMap<String, Value> getGlobalVarMap() {
         return GlobalVarMap;
+    }
+
+    public void updateCallGraph() {
+        this.getFunctionMap().forEach((s, f) -> {
+            f.callee.clear();
+            f.caller.clear();
+        });
+        this.getFunctionMap().forEach((s, f) -> {
+            f.instNum = 0;
+            for (BasicBlock BB : f.getBlockList()) {
+                for (Instruction inst : BB.getInstList()) {
+                    if (inst instanceof CallInst) {
+                        ((CallInst) inst).getCallee().caller.add(f);
+                        f.callee.add(((CallInst) inst).getCallee());
+                    }
+                }
+                f.instNum += BB.getInstList().size();
+            }
+        });
     }
 
     public HashMap<String, StructureType> getClassMap() {

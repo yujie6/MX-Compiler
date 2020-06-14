@@ -26,6 +26,7 @@ public class RVPeephole {
 
         elimNum = 0;
         for (RVBlock rvBlock : rvFunction.getRvBlockList()) {
+            if (rvBlock.rvInstList.size() > 500) continue;
             ArrayList<RVInstruction> eraseWorkList = new ArrayList<>();
             HashMap<RVInstruction, RVInstruction> insertAfterMap = new HashMap<>();
             for (int i = 1; i < rvBlock.rvInstList.size(); i++) {

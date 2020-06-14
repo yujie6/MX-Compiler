@@ -26,25 +26,6 @@ public class FunctionInline extends Pass {
         this.irMap = new IRMap();
     }
 
-    public void updateCallGraph() {
-        TopModule.getFunctionMap().forEach((s, f) -> {
-            f.callee.clear();
-            f.caller.clear();
-        });
-        TopModule.getFunctionMap().forEach((s, f) -> {
-            f.instNum = 0;
-            for (BasicBlock BB : f.getBlockList()) {
-                for (Instruction inst : BB.getInstList()) {
-                    if (inst instanceof CallInst) {
-                        ((CallInst) inst).getCallee().caller.add(f);
-                        f.callee.add(((CallInst) inst).getCallee());
-                    }
-                }
-                f.instNum += BB.getInstList().size();
-            }
-        });
-    }
-
     private int elimNum = 0, inlineBound = 600;
 
     private boolean tryInline() {
@@ -162,7 +143,7 @@ public class FunctionInline extends Pass {
     public boolean optimize() {
         changed = false;
         do {
-            updateCallGraph();
+            TopModule.updateCallGraph();
         } while (tryInline());
         return changed;
     }

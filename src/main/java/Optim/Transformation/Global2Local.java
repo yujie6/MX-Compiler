@@ -13,6 +13,8 @@ import Optim.MxOptimizer;
 import Optim.Pass;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 public class Global2Local extends Pass {
 
@@ -91,9 +93,21 @@ public class Global2Local extends Pass {
     }
 
     private void promoteGlobalToLocal() {
+        HashSet<Function> goodFunctions = new HashSet<>();
+        TopModule.updateCallGraph();
         for (Function function : TopModule.getFunctionMap().values()) {
             if (function.callee.isEmpty()) {
-
+                goodFunctions.add(function);
+            }
+        }
+        for (Value gvar : TopModule.getGlobalVarMap().values()) {
+            if (gvar instanceof GlobalVariable && !((GlobalVariable) gvar).isStringConst) {
+                for (User U : List.copyOf(gvar.UserList)) {
+                    Function candidate = ((Instruction) U).getParent().getParent();
+                    if (goodFunctions.contains(candidate)) {
+                        promoteOnFunction(candidate, ((GlobalVariable) gvar));
+                    }
+                }
             }
         }
     }
@@ -113,9 +127,12 @@ public class Global2Local extends Pass {
         return promotable;
     }
 
+    private int instNum;
+
     @Override
     public boolean optimize() {
         elimNum = 0;
+        if (TopModule.getInstNum() > 800) return false;
         eliminateTrivialGlobals();
         // promoteGlobalToLocal();
         if (elimNum != 0) {
