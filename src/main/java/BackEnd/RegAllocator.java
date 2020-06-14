@@ -147,7 +147,7 @@ public class RegAllocator extends RVPass implements AsmVisitor<Object> {
     @Override
     public Object visit(RVFunction rvFunction) {
         curFunction = rvFunction;
-        logger.fine("Running on function " + rvFunction.getIdentifier() + " once");
+        // logger.fine("Running on function " + rvFunction.getIdentifier() + " once");
         clear();
         livenessBuilder.visit(rvFunction);
         Build();

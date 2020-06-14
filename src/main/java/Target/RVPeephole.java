@@ -1,6 +1,7 @@
 package Target;
 
 import IR.Function;
+import IR.Instructions.StoreInst;
 import Optim.MxOptimizer;
 import Target.RVInstructions.*;
 
@@ -29,14 +30,33 @@ public class RVPeephole {
                         elimNum += 1;
                     }
                 }
-                /*else if (inst instanceof RVArithImm) {
-                    if (inst.getOpcode().equals("addi") && ((RVArithImm) inst).getImm().toString().equals("0")) {
-                        inst.eraseFromParent();
-                        elimNum += 1;
-                    }
-                }*/
             }
         }
+    }
+
+    private void removeLoadStore(RVFunction rvFunction) {
+        rvFunction.getRvBlockList().forEach(BB -> {
+            if (BB.rvInstList.size() > 500) return;
+            HashMap<String, RVInstruction> localLoadStore = new HashMap<>();
+            if (BB.predecessors.size() == 1) {
+                RVBlock pred = BB.predecessors.iterator().next();
+                for (RVInstruction inst : pred.rvInstList) {
+                    if (inst instanceof RVLoad) {
+                        if (localLoadStore.containsKey(((RVLoad) inst).getAddr().toString())) {
+                            RVInstruction lastInst = localLoadStore.get(((RVLoad) inst).getAddr().toString());
+                            if (lastInst instanceof RVStore) {
+
+                            }
+                        }
+                    } else if (inst instanceof RVStore) {
+                        localLoadStore.clear();
+                        localLoadStore.put(((RVStore) inst).getAddr().toString(), inst);
+                    } else if (inst instanceof RVCall) {
+                        localLoadStore.clear();
+                    }
+                }
+            }
+        });
     }
 
     private void removeLoad(RVFunction rvFunction) {
@@ -71,8 +91,9 @@ public class RVPeephole {
 
     public void optimize() {
         for (RVFunction rvFunction : TopModule.rvFunctions) {
-            removeLoad(rvFunction);
             removeMove(rvFunction);
+            // removeLoadStore(rvFunction);
+            removeLoad(rvFunction);
         }
     }
 

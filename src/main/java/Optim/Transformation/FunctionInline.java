@@ -35,6 +35,22 @@ public class FunctionInline extends Pass {
         HashSet<Function> elimFunctions = new HashSet<>();
         TopModule.getFunctionMap().forEach((s, f) -> {
             if (f.callee.size() == 0 && !f.isExternal()) freeToInline.add(f);
+            if (f.callee.size() != 0) {
+                boolean nope = false;
+                for (Function callee : f.callee) {
+                    if (!callee.isExternal()) {
+                        nope = true;
+                        break;
+                    }
+                }
+                if (!nope) freeToInline.add(f);
+                else {
+                    if (f.caller.size() == 1 && f.UserList.size() == 1) {
+                        if (!f.callee.contains(f.caller.get(0))) // called only once but not recursive
+                            freeToInline.add(f);
+                    }
+                }
+            }
             if (f.caller.size() == 0 && !f.getIdentifier().equals("main")) elimFunctions.add(f);
         });
         elimFunctions.forEach(f -> {
