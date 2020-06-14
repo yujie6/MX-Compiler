@@ -133,12 +133,26 @@ public class Global2Local extends Pass {
 
     private int promoteNum = 0;
 
+    private boolean checkModified(Function callee, GlobalVariable gvar) {
+        return false;
+    }
+
     private void promoteGlobalToLocal() {
         HashSet<Function> goodFunctions = new HashSet<>();
         TopModule.updateCallGraph();
         for (Function function : TopModule.getFunctionMap().values()) {
             if (function.callee.isEmpty()) {
                 goodFunctions.add(function);
+            }
+            else {
+                boolean nope = false;
+                for (Function callee : function.callee) {
+                    if (!callee.isExternal()) {
+                        nope = true;
+                        break;
+                    }
+                }
+                if (!nope) goodFunctions.add(function);
             }
         }
         for (Value gvar : TopModule.getGlobalVarMap().values()) {
