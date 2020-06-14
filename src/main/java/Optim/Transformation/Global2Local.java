@@ -20,6 +20,7 @@ public class Global2Local extends Pass {
 
     private int elimNum = 0;
     private Module TopModule;
+
     public Global2Local(Module TopModule) {
         this.TopModule = TopModule;
     }
@@ -43,7 +44,11 @@ public class Global2Local extends Pass {
                 Function function = isGlobalPromotable(global);
 
                 if (function != null) {
-                    if (!function.getIdentifier().equals("main")) continue;
+                    if (!function.getIdentifier().equals("main")) {
+                        if (function.UserList.size() >= 2) continue;
+                        if (((Instruction) function.UserList.iterator().next()).getParent().loopDepth != 0)
+                            continue;
+                    }
                     elimNum += 1;
                     globalWorkList.add(global);
                     BasicBlock curBB = function.getHeadBlock();
@@ -69,7 +74,9 @@ public class Global2Local extends Pass {
                 }
             }
         }
-        globalWorkList.forEach(gvar -> {TopModule.getGlobalVarMap().remove(gvar.getIdentifier()); });
+        globalWorkList.forEach(gvar -> {
+            TopModule.getGlobalVarMap().remove(gvar.getIdentifier());
+        });
 
     }
 
@@ -132,7 +139,7 @@ public class Global2Local extends Pass {
     @Override
     public boolean optimize() {
         elimNum = 0;
-        if (TopModule.getInstNum() > 800) return false;
+        if (TopModule.getInstNum() > 3000) return false;
         eliminateTrivialGlobals();
         // promoteGlobalToLocal();
         if (elimNum != 0) {
