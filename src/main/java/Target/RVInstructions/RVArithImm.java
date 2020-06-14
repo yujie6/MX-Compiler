@@ -56,6 +56,10 @@ public class RVArithImm extends RVInstruction {
         }
     }
 
+    public RVOperand getImm() {
+        return imm;
+    }
+
     public void setImm(Immediate imm1) {
         this.imm = imm1;
     }

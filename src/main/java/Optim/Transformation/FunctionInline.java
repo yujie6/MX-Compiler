@@ -26,7 +26,7 @@ public class FunctionInline extends Pass {
         this.irMap = new IRMap();
     }
 
-    private int elimNum = 0, inlineBound = 1200;
+    private int elimNum = 0, inlineBound = 2048;
 
     private boolean tryInline() {
         this.freeToInline.clear();

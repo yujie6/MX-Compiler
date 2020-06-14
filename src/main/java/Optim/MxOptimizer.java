@@ -85,39 +85,51 @@ public class MxOptimizer {
         }
     }
 
-
-    public void optimize() {
-        (new DeadFuncElim(TopModule)).optimize();
-        buildDomTrees();
-        global2local();
-        mem2reg();
-        int instNum = TopModule.getInstNum();
-        do {
-            for (FuncOptimManager optimManager : funcOptimizers) {
-                if (!TopModule.getFunctionMap().containsKey(optimManager.getIdentifier())) {
-                    continue;
-                }
-                optimManager.buildDomTree();
-                while (true) {
-                    boolean changed = false;
-                    changed = optimManager.constFold();
-                    changed |= optimManager.dce();
-                    changed |= optimManager.cse();
-                    if (instNum < 3000)
-                        changed |= optimManager.loadelim();
-                    // changed |= optimManager.sccp();
-                    changed |= optimManager.cge();
-                    changed |= optimManager.peephole();
-                    changed |= optimManager.cfgSimplify();
-                    if (!changed) break;
-                }
+    private void localOptimize() {
+        for (FuncOptimManager optimManager : funcOptimizers) {
+            if (!TopModule.getFunctionMap().containsKey(optimManager.getIdentifier())) {
+                continue;
             }
-        } while (functionInline.optimize());
+            optimManager.buildDomTree();
+            while (true) {
+                boolean changed = false;
+                changed = optimManager.constFold();
+                changed |= optimManager.dce();
+                changed |= optimManager.cse();
+                if (instNum < 3000)
+                    changed |= optimManager.loadelim();
+                // changed |= optimManager.sccp();
+                changed |= optimManager.cge();
+                changed |= optimManager.peephole();
+                changed |= optimManager.cfgSimplify();
+                if (!changed) break;
+            }
+        }
+    }
+
+    private void LICM() {
         loopAnalysis();
         for (FuncOptimManager optimizer : funcOptimizers) {
             optimizer.buildDomTree();
         }
         loopInvariantCodeMotion();
         cfgSimplify();
+    }
+
+    private int instNum;
+
+
+    public void optimize() {
+        (new DeadFuncElim(TopModule)).optimize();
+        buildDomTrees();
+        global2local();
+        mem2reg();
+        instNum = TopModule.getInstNum();
+        do {
+            localOptimize();
+        } while (functionInline.optimize());
+
+        LICM();
+        localOptimize();
     }
 }

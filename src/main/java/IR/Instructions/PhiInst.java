@@ -65,7 +65,7 @@ public class PhiInst extends Instruction {
                 phi.AddPhiBranch(irMap.get(getBlock(i)), irMap.get(getValue(i)));
             } else {
                 phi.AddPhiBranch(irMap.get(getBlock(i)), new StringConst("PlaceHolder"));
-                MxOptimizer.logger.warning("Build one PL");
+                // MxOptimizer.logger.warning("Build one PL");
             }
         }
         other.AddInstAtTail(phi);
@@ -77,7 +77,7 @@ public class PhiInst extends Instruction {
             Value fakeVal = newPhi.getValue(i);
             if (fakeVal instanceof StringConst && ((StringConst) fakeVal).getConstValue().equals("PlaceHolder")) {
                 newPhi.setValue(i, irMap.get(getValue(i)));
-                MxOptimizer.logger.warning("Eliminate one PL");
+                // MxOptimizer.logger.warning("Eliminate one PL");
             }
         }
     }

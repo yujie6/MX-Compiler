@@ -2,13 +2,11 @@ package Target;
 
 import IR.Function;
 import Optim.MxOptimizer;
-import Target.RVInstructions.RVInstruction;
-import Target.RVInstructions.RVLoad;
-import Target.RVInstructions.RVMove;
-import Target.RVInstructions.RVStore;
+import Target.RVInstructions.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 
 public class RVPeephole {
@@ -21,6 +19,25 @@ public class RVPeephole {
 
 
     private int elimNum = 0;
+
+    private void removeMove(RVFunction rvFunction) {
+        for (RVBlock rvBlock : rvFunction.getRvBlockList()) {
+            for (RVInstruction inst : List.copyOf(rvBlock.rvInstList)) {
+                if (inst instanceof RVMove) {
+                    if (((RVMove) inst).getSrc().equals(((RVMove) inst).getDest())) {
+                        inst.eraseFromParent();
+                        elimNum += 1;
+                    }
+                }
+                /*else if (inst instanceof RVArithImm) {
+                    if (inst.getOpcode().equals("addi") && ((RVArithImm) inst).getImm().toString().equals("0")) {
+                        inst.eraseFromParent();
+                        elimNum += 1;
+                    }
+                }*/
+            }
+        }
+    }
 
     private void removeLoad(RVFunction rvFunction) {
 
@@ -48,13 +65,14 @@ public class RVPeephole {
             eraseWorkList.forEach(RVInstruction::eraseFromParent);
         }
         if (elimNum != 0)
-            MxOptimizer.logger.info(String.format("Peephole eliminated %d insts for %s", elimNum,
+            MxOptimizer.logger.info(String.format("RV <Peephole> eliminated %d insts for %s", elimNum,
                 rvFunction.getIdentifier() ));
     }
 
     public void optimize() {
         for (RVFunction rvFunction : TopModule.rvFunctions) {
             removeLoad(rvFunction);
+            removeMove(rvFunction);
         }
     }
 
