@@ -115,6 +115,7 @@ public class Global2Local extends Pass {
         // add a load at first BB, and store at last BB
         BasicBlock head = function.getHeadBlock();
         AllocaInst replaceVal = new AllocaInst(head, gvar.getOriginalType());
+        head.AddInstAtTop(replaceVal);
         Instruction insertInst = getInsertPlace(head);
         gvar.replaceAllUsesWith(replaceVal, function);
 
@@ -130,6 +131,8 @@ public class Global2Local extends Pass {
         retBB.AddInstBeforeBranch(st);
     }
 
+    private int promoteNum = 0;
+
     private void promoteGlobalToLocal() {
         HashSet<Function> goodFunctions = new HashSet<>();
         TopModule.updateCallGraph();
@@ -140,10 +143,24 @@ public class Global2Local extends Pass {
         }
         for (Value gvar : TopModule.getGlobalVarMap().values()) {
             if (gvar instanceof GlobalVariable && !((GlobalVariable) gvar).isStringConst) {
+                boolean goodToPromote = true;
+                for (User U : List.copyOf(gvar.UserList)) {
+                    if (!(U instanceof LoadInst || U instanceof StoreInst)) {
+                        goodToPromote = false;
+                        break;
+                    }
+                }
+                if (!goodToPromote) break;
+                ArrayList<Function> visited = new ArrayList<>();
                 for (User U : List.copyOf(gvar.UserList)) {
                     Function candidate = ((Instruction) U).getParent().getParent();
+                    if (visited.contains(candidate) || candidate.getBlockList().size() == 1) continue;
                     if (goodFunctions.contains(candidate)) {
+                        MxOptimizer.logger.warning(String.format("Promote %s on function %s", ((GlobalVariable) gvar).getIdentifier(),
+                                candidate.getIdentifier()));
                         promoteOnFunction(candidate, ((GlobalVariable) gvar));
+                        visited.add(candidate);
+                        promoteNum += 1;
                     }
                 }
             }
@@ -170,13 +187,17 @@ public class Global2Local extends Pass {
     @Override
     public boolean optimize() {
         elimNum = 0;
+        promoteNum = 0;
         if (TopModule.getInstNum() > 3000) return false;
         eliminateTrivialGlobals();
         eliminateConstGlobal();
-        // promoteGlobalToLocal();
+        promoteGlobalToLocal();
         if (elimNum != 0) {
-            MxOptimizer.logger.fine(String.format("Global2local promote %d global variables", elimNum));
+            MxOptimizer.logger.fine(String.format("Global2local elim %d global variables", elimNum));
         }
-        return elimNum != 0;
+        if (promoteNum != 0) {
+            MxOptimizer.logger.fine(String.format("Global2local promote %d set of [global, function]", promoteNum));
+        }
+        return (elimNum + promoteNum) != 0;
     }
 }

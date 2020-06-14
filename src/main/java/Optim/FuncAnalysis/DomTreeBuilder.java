@@ -77,7 +77,7 @@ public class DomTreeBuilder {
         if (defBB != useBB) {
             return dominates(defBB, useBB);
         } else {
-            return defBB.getInstList().indexOf(def) > defBB.getInstList().indexOf(use);
+            return defBB.getInstList().indexOf(def) < defBB.getInstList().indexOf(use);
         }
     }
 

@@ -23,6 +23,7 @@ public class Peephole extends FunctionPass {
 
             }
         }
+
         return elimNum != 0;
     }
 }

@@ -76,7 +76,7 @@ public class CommonGEPElim extends FunctionPass {
                 gepExpr key = new gepExpr(((GetPtrInst) inst));
                 if (gepMap.containsKey(key)) {
                     GetPtrInst replaceVal = gepMap.get(new gepExpr(((GetPtrInst) inst)));
-                    if (dm.dominates(replaceVal, inst)) {
+                    if (dm.dominates(replaceVal, inst) && replaceVal.getParent() == inst.getParent()) {
                         inst.replaceAllUsesWith(replaceVal);
                         inst.eraseFromParent();
                         elimNum += 1;

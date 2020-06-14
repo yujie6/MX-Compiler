@@ -69,8 +69,8 @@ check {
 
 run {
     // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/sorting/bubble_sort.mx", "-o", "/tmp/test.s"]
-    // args = ["-g" ,"3", "-i", "./src/test/resources/optim/segtree.mx", "-o", "/tmp/test.s"]
-    args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t55.mx", "-o", "/tmp/test.s"] // 30
+    args = ["-g" ,"3", "-i", "./src/test/resources/optim/segtree.mx", "-o", "/tmp/test.s"]
+    // args = ["-g" ,"3", "-i", "./src/test/resources/codegen/t27.mx", "-o", "/tmp/test.s"] // 30
     // args = ["-g" ,"3", "-i", "/home/yujie6/Documents/Compiler/LearnLLVM/codegen/t.mx", "-o", "/tmp/test.s"]
     // options.warnings = false
 }

@@ -48,7 +48,7 @@ public class LoadElim extends FunctionPass {
                 Instruction inst = BB.getInstList().get(i);
                 if (inst instanceof LoadInst) {
                     LoadInst elimLoad = null;
-                    for (int j = 1; i + j < Math.min(i + 10, len); j++) {
+                    for (int j = 1; i + j < Math.min(i + 14, len); j++) {
                         Instruction elim = BB.getInstList().get(i + j);
                         if (elim instanceof StoreInst) {
                             break;

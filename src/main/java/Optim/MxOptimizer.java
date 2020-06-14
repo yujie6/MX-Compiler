@@ -91,6 +91,7 @@ public class MxOptimizer {
         buildDomTrees();
         global2local();
         mem2reg();
+        int instNum = TopModule.getInstNum();
         do {
             for (FuncOptimManager optimManager : funcOptimizers) {
                 if (!TopModule.getFunctionMap().containsKey(optimManager.getIdentifier())) {
@@ -102,10 +103,11 @@ public class MxOptimizer {
                     changed = optimManager.constFold();
                     changed |= optimManager.dce();
                     changed |= optimManager.cse();
-                    changed |= optimManager.loadelim();
+                    if (instNum < 3000)
+                        changed |= optimManager.loadelim();
                     // changed |= optimManager.sccp();
-                    // changed |= optimManager.cge();
-                    // changed |= optimManager.peephole();
+                    changed |= optimManager.cge();
+                    changed |= optimManager.peephole();
                     changed |= optimManager.cfgSimplify();
                     if (!changed) break;
                 }
